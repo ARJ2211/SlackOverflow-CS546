@@ -10,7 +10,7 @@ export async function getEmbedding(data) {
     try {
         const embedder = await pipeline(
             "feature-extraction",
-            "Xenova/nomic-embed-text-v1"
+            "Xenova/e5-large-v2"
         );
         const results = await embedder(data, {
             pooling: "mean",
