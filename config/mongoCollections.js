@@ -13,5 +13,6 @@ const getCollectionFn = (collection) => {
     };
 };
 
+export const questions = getCollectionFn("questions");
 export const professors = getCollectionFn("professors");
 export const courses = getCollectionFn("courses");
