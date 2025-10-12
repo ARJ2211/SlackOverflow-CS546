@@ -35,7 +35,7 @@ export const createQuestion = async (question) => {
  * @param {*} param1
  * @returns
  */
-export const search = async (query, { k = 5, numCandidates } = {}) => {
+export const searchQuestion = async (query, { k = 5, numCandidates } = {}) => {
     query = validator.isValidString(query);
     const questionsColl = await questions();
     const queryVector = await getEmbedding(query);
