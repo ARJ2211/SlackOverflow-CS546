@@ -28,4 +28,4 @@ ehthumbs.db
 Thumbs.db
 
 .github
-config/
+config/settings.js
