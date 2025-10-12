@@ -5,6 +5,8 @@ const db = await dbConnection();
 await db.dropDatabase();
 
 console.log("Seeding professors");
-await seedProfessors();
+const seeds = await seedProfessors();
+console.log(`Seeding professors complete!, seeded ${seeds} data`);
 
+console.log("Closing db connection");
 await closeConnection();

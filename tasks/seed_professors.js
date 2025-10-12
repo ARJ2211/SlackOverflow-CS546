@@ -26,7 +26,7 @@ const seedProfessors = async () => {
     try {
         validator.isArray(professorsData);
         for (const elem of professorsData) {
-            const insertedData = await professorsColl.insertOne({
+            await professorsColl.insertOne({
                 Pname: elem.title,
                 status: elem.status,
                 email: elem.email,
@@ -34,11 +34,11 @@ const seedProfessors = async () => {
                 office: elem.office,
                 profilePicture: elem.image,
             });
-            console.log(`inserted ${elem.title} as ${insertedData.insertedId}`);
         }
     } catch (e) {
         console.log(e);
     }
+    return professorsData.length;
 };
 
 export default seedProfessors;
