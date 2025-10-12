@@ -1,0 +1,24 @@
+{
+  "name": "slackoverflow-cs546",
+  "version": "1.0.0",
+  "description": "A course QnA board where students can ask questions",
+  "homepage": "https://github.com/ARJ2211/SlackOverflow-CS546#readme",
+  "bugs": {
+    "url": "https://github.com/ARJ2211/SlackOverflow-CS546/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ARJ2211/SlackOverflow-CS546.git"
+  },
+  "license": "MIT",
+  "author": "Aayush Rajesh Jadhav",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongodb": "^6.20.0"
+  }
+}
