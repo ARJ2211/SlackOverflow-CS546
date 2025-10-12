@@ -14,3 +14,4 @@ const getCollectionFn = (collection) => {
 };
 
 export const professors = getCollectionFn("professors");
+export const courses = getCollectionFn("courses");
