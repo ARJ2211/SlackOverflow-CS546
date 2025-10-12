@@ -15,7 +15,9 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "start": "node app.js",
+    "seed": "node tasks/seed.js"
   },
   "dependencies": {
     "express": "^5.1.0",
