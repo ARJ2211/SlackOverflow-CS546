@@ -17,11 +17,12 @@ export const createQuestion = async (question) => {
 
     let embedding = await getEmbedding(question);
 
+    await new Promise((r) => setTimeout(r, 1500)); // Allow mongo Atlas to index the question
     const prevSimilarQuestions = await searchQuestion(question);
     if (prevSimilarQuestions.length !== 0) {
         const bestFirstScore = prevSimilarQuestions[0].score;
         if (bestFirstScore >= THRESOLD) {
-            throw "Error: This question already exists!";
+            throw `Error: This question already exists with score ${bestFirstScore} for question ${prevSimilarQuestions[0].question}!`;
         }
     }
     const doc = {
