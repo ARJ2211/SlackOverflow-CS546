@@ -16,7 +16,7 @@
   "main": "app.js",
   "scripts": {
     "test": "node test.js",
-    "start": "node app.js",
+    "start": "node --env-file=.env app.js",
     "seed": "node tasks/seed.js"
   },
   "dependencies": {

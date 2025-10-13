@@ -3,8 +3,10 @@ import seedProfessors from "./seed_professors.js";
 import { createVectorIndex } from "./seed_vector_index.js";
 
 try {
+    console.log("Dropping database");
     const db = await dbConnection();
     await db.dropDatabase();
+    console.log("Dropping database completed!");
 
     console.log("Seeding professors");
     const count = await seedProfessors();

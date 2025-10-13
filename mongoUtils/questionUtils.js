@@ -2,6 +2,8 @@ import { questions } from "../config/mongoCollections.js";
 import { getEmbedding } from "../ragUtils/getEmbeddings.js";
 import * as validator from "../validator.js";
 
+const THRESOLD = 0.95;
+
 /**
  * Insert a question into the questions collection along with
  * the vector embeddings
@@ -13,11 +15,15 @@ export const createQuestion = async (question) => {
 
     const questionsColl = await questions();
 
-    const existing = await questionsColl.find({ question }).toArray();
-    if (existing.length !== 0) return existing;
-
     let embedding = await getEmbedding(question);
 
+    const prevSimilarQuestions = await searchQuestion(question);
+    if (prevSimilarQuestions.length !== 0) {
+        const bestFirstScore = prevSimilarQuestions[0].score;
+        if (bestFirstScore >= THRESOLD) {
+            throw "Error: This question already exists!";
+        }
+    }
     const doc = {
         question,
         embedding, // array of numbers for Atlas Vector Search
@@ -25,6 +31,7 @@ export const createQuestion = async (question) => {
     };
 
     const { insertedId } = await questionsColl.insertOne(doc);
+    await new Promise((r) => setTimeout(r, 1500)); // Allow mongo Atlas to index the question
     const createdQuestion = await questionsColl.findOne({ _id: insertedId });
     return createdQuestion;
 };
