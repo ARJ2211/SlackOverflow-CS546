@@ -1,4 +1,4 @@
-import { professors } from "../config/mongoCollections.js";
+import * as professorUtils from "../mongoUtils/professorUtils.js";
 import * as validator from "../validator.js";
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
@@ -12,7 +12,6 @@ const __dirname = path.dirname(__filename);
  */
 const seedProfessors = async () => {
     const jsonPath = path.resolve(__dirname, "../datasets/professors.json");
-    const professorsColl = await professors();
     let professorsData;
 
     try {
@@ -26,14 +25,14 @@ const seedProfessors = async () => {
     try {
         validator.isArray(professorsData);
         for (const elem of professorsData) {
-            await professorsColl.insertOne({
-                Pname: elem.title,
-                status: elem.status,
-                email: elem.email,
-                phone: elem.phone,
-                office: elem.office,
-                profilePicture: elem.image,
-            });
+            await professorUtils.createProfessor(
+                elem.title,
+                elem.status,
+                elem.email,
+                elem.phone,
+                elem.office,
+                elem.image
+            );
         }
     } catch (e) {
         console.log(e);

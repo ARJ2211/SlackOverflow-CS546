@@ -17,8 +17,10 @@
   "scripts": {
     "test": "node test.js",
     "start": "node --env-file=.env app.js",
+    "seed-professors": "node tasks/seed_professors.js",
+    "seed-faqs": "node tasks/seed_javascript_faq.js",
+    "fetch-model": "bash tasks/fetch-models.sh",
     "seed": "node tasks/seed.js",
-    "fetch_model": "bash tasks/fetch-models.sh",
     "tasks": "node tasks/seed.js && bash tasks/fetch-models.sh"
   },
   "dependencies": {
