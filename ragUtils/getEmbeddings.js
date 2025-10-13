@@ -21,7 +21,7 @@ async function getEmbedder() {
  * @param {*} data
  * @returns {Array}
  */
-export async function getEmbedding(text, { isQuery = false } = {}) {
+export async function getEmbedding(text, { isQuery = true } = {}) {
     const embedder = await getEmbedder();
     const input = isQuery ? `query: ${text}` : `passage: ${text}`;
     const out = await embedder(input, { pooling: "mean", normalize: true });

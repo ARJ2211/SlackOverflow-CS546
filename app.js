@@ -47,6 +47,7 @@ async function startApp() {
             "I wanted to know more about strict mode in javascript",
             "What should I do if I am constipated?",
             "What is the difference between common js and module",
+            "What is lambda function in python? And where do we use it?",
         ];
         for (const q of queries) {
             console.log(q);

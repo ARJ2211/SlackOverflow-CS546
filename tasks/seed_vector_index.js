@@ -15,7 +15,7 @@ export const createVectorIndex = async () => {
                 {
                     type: "vector",
                     path: "embedding",
-                    similarity: "dotProduct",
+                    similarity: "euclidean",
                     numDimensions: 1024,
                 },
             ],
