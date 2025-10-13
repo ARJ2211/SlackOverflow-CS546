@@ -6,7 +6,18 @@ MODEL_ID="${MODEL_ID:-Xenova/bge-large-en-v1.5}"
 TARGET_DIR="${TARGET_DIR:-models/Xenova/bge-large-en-v1.5}"
 
 # install huggingface_hub CLI if not present
-python3 -m pip install -U "huggingface_hub[cli]"
+if ! command -v huggingface-cli >/dev/null 2>&1; then
+  echo "huggingface-cli not found. Installing huggingface_hub[cli]..."
+  if command -v python3 >/dev/null 2>&1; then
+    python3 -m pip install -U "huggingface_hub[cli]"
+  elif command -v python >/dev/null 2>&1; then
+    python -m pip install -U "huggingface_hub[cli]"
+  else
+    echo "Python is required but was not found. Please install Python 3 and re-run."
+    exit 1
+  fi
+fi
+
 
 mkdir -p "$TARGET_DIR"
 
