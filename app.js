@@ -20,7 +20,7 @@ async function seedQuestions() {
     for (const q of questions) {
         try {
             const saved = await questionUtils.createQuestion(q);
-            console.log("Saved:", saved);
+            console.log("Saved:", saved._id);
         } catch (e) {
             console.error("createQuestion error:", q, e);
         }
