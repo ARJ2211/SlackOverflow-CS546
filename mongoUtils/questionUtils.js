@@ -2,7 +2,7 @@ import { questions } from "../config/mongoCollections.js";
 import { getEmbedding } from "../ragUtils/getEmbeddings.js";
 import * as validator from "../validator.js";
 
-const THRESOLD = 0.95;
+const THRESOLD = 0.9;
 
 /**
  * Insert a question into the questions collection along with
