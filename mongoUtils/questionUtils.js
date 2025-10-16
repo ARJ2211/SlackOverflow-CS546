@@ -144,6 +144,7 @@ export const updateQuestion = async (filter, obj) => {
  * @returns {Object}
  */
 export const deleteQuestion = async (questionId) => {
+    //TODO: Cascading deletes required.
     questionId = validator.isValidMongoId(questionId);
     const questionsColl = await questions();
     const deletedResult = await questionsColl.deleteOne({ _id: questionId });
