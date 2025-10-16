@@ -41,7 +41,7 @@ export const createQuestion = async (question) => {
     const doc = {
         question,
         embedding, // array of numbers for Atlas Vector Search
-        canonicalKey, // helps prevent trivial duplicates like punctuation/case changes
+        canonical_key: canonicalKey, // helps prevent trivial duplicates like punctuation/case changes
         createdAt: new Date(),
     };
 

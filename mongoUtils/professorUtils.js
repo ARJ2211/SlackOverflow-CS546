@@ -2,6 +2,7 @@ import { professors } from "../config/mongoCollections.js";
 import * as validator from "../validator.js";
 
 /**
+ * TODO: Add better validations + courses fk connection.
  * Creates a new professor document
  * @param {*} Pname
  * @param {*} status
@@ -25,6 +26,7 @@ export const createProfessor = async (
         Pname = validator.isValidString(Pname);
     } catch (e) {
         console.log("Pname", e);
+        throw `Name connot be empty`;
     }
 
     try {
@@ -37,6 +39,7 @@ export const createProfessor = async (
         email = validator.isValidString(email);
     } catch (e) {
         console.log("email", e);
+        throw `Email cannot be empty!`;
     }
 
     try {
@@ -59,7 +62,6 @@ export const createProfessor = async (
 
     const exists = await professorColl.findOne({
         $or: [
-            { Pname: new RegExp(`^${Pname}$`, "i") },
             { email: new RegExp(`^${email}$`, "i") },
             { phone: new RegExp(`^${phone}$`, "i") },
         ],
