@@ -97,3 +97,39 @@ export const searchQuestion = async (query, { k = 5, numCandidates } = {}) => {
     }
     return similarQuestions;
 };
+
+/**
+ * Update the collection based on the inputs provided. Returns the
+ * newly updated object
+ * @param {Object} filter
+ * @param {Object} obj
+ * @returns {Object}
+ */
+export const updateQuestion = async (filter, obj) => {
+    const questionsColl = await questions();
+    filter = validator.isValidObject();
+    obj = validator.isValidObject();
+
+    const updateObj = {
+        $set: {
+            ...obj,
+        },
+    };
+
+    const updatedObj = await questionsColl.findOneAndUpdate(filter, updateObj, {
+        returnNewDocument: true,
+    });
+    return updatedObj;
+};
+
+/**
+ * Delete a question from the questions collection.
+ * @param {*} questionId
+ * @returns {Object}
+ */
+export const deleteQuestion = async (questionId) => {
+    questionId = validator.isValidMongoId(questionId);
+    const questionsColl = await questions();
+    const deletedResult = await questionsColl.deleteOne({ _id: questionId });
+    return deletedResult;
+};
