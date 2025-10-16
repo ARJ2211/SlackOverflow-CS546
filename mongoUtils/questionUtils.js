@@ -12,7 +12,8 @@ const JACCARD_THRESHOLD = 0.65;
  * @param {*} question
  * @returns {Object}
  */
-export const createQuestion = async (question) => {
+export const createQuestion = async (question, course) => {
+    course = validator.isValidMongoId(course);
     question = validator.isValidString(question);
 
     const questionsColl = await questions();
@@ -42,7 +43,9 @@ export const createQuestion = async (question) => {
         question,
         embedding, // array of numbers for Atlas Vector Search
         canonicalKey, // helps prevent trivial duplicates like punctuation/case changes
-        createdAt: new Date(),
+        created_time: new Date(),
+        replies: [], // will be empty on create as no replies yet
+        course: course, // TODO: will need to get the course ID from the input params
     };
 
     const { insertedId } = await questionsColl.insertOne(doc);
