@@ -1,12 +1,6 @@
 import * as professorUtils from "./mongoUtils/professorUtils.js";
 import * as questionUtils from "./mongoUtils/questionUtils.js";
 
-try {
-    const prof = await professorUtils.getProfessorByFullName("Patrick hill");
-    console.log(prof);
-} catch (e) {
-    console.log(e);
-}
 
 async function seedQuestions() {
     const questions = [
@@ -19,6 +13,7 @@ async function seedQuestions() {
 
     for (const q of questions) {
         try {
+            console.log("createQuestion start");
             const saved = await questionUtils.createQuestion(q);
             console.log("Saved:", saved._id);
         } catch (e) {
@@ -40,8 +35,8 @@ async function searchQuestions(query) {
 
 async function startApp() {
     try {
-        await seedQuestions();
-        console.log();
+        // await seedQuestions();
+
         const queries = [
             "Good evening professor, I wanted to know what the difference is between == and ===",
             "I wanted to know more about strict mode in javascript",
