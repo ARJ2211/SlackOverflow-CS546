@@ -74,6 +74,8 @@ export const createProfessor = async (
         phone,
         office,
         profilePicture,
+        otp: null,
+        password: null,
     });
 
     if (!insertInfo.insertedId) {
