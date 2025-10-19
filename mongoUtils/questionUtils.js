@@ -2,7 +2,6 @@ import { Normalize, Jaccard, Tokens } from "../ragUtils/jaccardNormalizer.js";
 import { questions } from "../config/mongoCollections.js";
 import { getEmbedding } from "../ragUtils/getEmbeddings.js";
 import * as validator from "../validator.js";
-import { fileURLToPath } from "url";
 
 const THRESOLD = 0.9;
 const JACCARD_THRESHOLD = 0.65;
