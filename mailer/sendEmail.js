@@ -28,7 +28,7 @@ const transporter = nodemailer.createTransport({
         user: GMAIL_ID,
         clientId: CLIENT_ID,
         clientSecret: CLIENT_SECRET,
-        refreshToken: REFRESH_TOKEN,
+        refreshToken: REFRESH_TOKEN, // must be minted with scope https://mail.google.com/
     },
 });
 
@@ -47,16 +47,31 @@ const sendEmail = async (to, subject, text, html) => {
             from: `"SlackOverflow" <${GMAIL_ID}>`,
             to,
             subject,
-            text,
-            html,
+            text: text || "Hello from SlackOverflow mailer.",
+            html: html || "<p>Hello from SlackOverflow mailer.</p>",
+            envelope: { from: GMAIL_ID, to }, // align SMTP MAIL FROM / RCPT TO
+            dsn: {
+                id: String(Date.now()),
+                return: "headers",
+                notify: ["failure", "delay"],
+                recipient: to,
+            },
+            headers: { "X-Entity-Ref-ID": String(Date.now()) },
             auth: {
                 user: GMAIL_ID,
-                accessToken,
+                accessToken, // explicit fresh access token
                 refreshToken: REFRESH_TOKEN,
             },
         });
 
-        console.log("Message sent:", info.messageId);
+        console.log(
+            "Message sent:",
+            info.messageId,
+            "accepted:",
+            info.accepted,
+            "rejected:",
+            info.rejected
+        );
         return info;
     } catch (err) {
         console.error("sendEmail failed:", err?.response?.data || err);
