@@ -31,3 +31,4 @@ Thumbs.db
 config/settings.js
 models/
 test.js
+gmail_creds.json
