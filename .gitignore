@@ -30,3 +30,4 @@ Thumbs.db
 .github
 config/settings.js
 models/
+test.js
