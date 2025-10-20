@@ -121,3 +121,27 @@ export const getProfessorByEmail = async (email) => {
     }
     return professorsData;
 };
+
+/**
+ * Updates the professor document and returns the updated
+ * document back
+ * @param {*} filter
+ * @param {*} obj
+ */
+export const updateProfessor = async (filter, obj) => {
+    const professorColl = await professors();
+    filter = validator.isValidObject(filter);
+    obj = validator.isValidObject(obj);
+
+    const updateObj = {
+        $set: {
+            ...obj,
+        },
+    };
+    const updatedObj = await professorColl.findOneAndUpdate(filter, updateObj, {
+        returnDocument: "after",
+    });
+    if (!updatedObj || updatedObj === null)
+        throw `ERROR: document not updated.`;
+    return updatedData;
+};
