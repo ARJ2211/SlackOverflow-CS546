@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en" style="margin:0;padding:0;">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>SlackOverflow Verification Code</title>
+    <!-- Preheader (hidden in most clients) -->
+    <style>
+      .preheader { display:none !important; visibility:hidden; opacity:0; color:transparent; height:0; width:0; overflow:hidden; mso-hide:all; }
+      @media (prefers-color-scheme: dark) {
+        .wrapper { background-color:#0b0b0c !important; }
+        .card { background-color:#121213 !important; border-color:#1e1f24 !important; }
+        .text { color:#e8e8ea !important; }
+        .muted { color:#9b9ca3 !important; }
+        .brand { color:#7aa2ff !important; }
+        .btn { background-color:#7aa2ff !important; color:#0b0b0c !important; }
+        .code { background:#1b1c20 !important; color:#e8e8ea !important; }
+      }
+      /* Outlook-specific line-height fix */
+      .lh-fix { line-height: 24px; }
+    </style>
+  </head>
+  <body style="margin:0;padding:0;background:#f4f5f7;">
+    <div class="preheader">
+      Your SlackOverflow verification code is ${otp}.
+    </div>
+
+    <!-- Full-width background wrapper -->
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="wrapper" style="background:#f4f5f7;margin:0;padding:24px 0;">
+      <tr>
+        <td align="center">
+          <!-- Card -->
+          <table role="presentation" width="600" cellspacing="0" cellpadding="0" border="0" class="card" style="max-width:600px;width:100%;background:#ffffff;border:1px solid #e6e8eb;border-radius:12px;overflow:hidden;">
+            <!-- Header -->
+            <tr>
+              <td style="padding:24px 28px;background:#0f172a;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td align="left">
+                      <div class="brand" style="font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-weight:700;font-size:18px;letter-spacing:0.2px;color:#ffffff;">
+                        SlackOverflow
+                      </div>
+                      <div style="height:4px;"></div>
+                      <div class="muted" style="font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;color:#cbd5e1;">
+                        Verify your account
+                      </div>
+                    </td>
+                    <td align="right">
+                      <!-- Optional mini-badge -->
+                      <div class="muted" style="font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;color:#cbd5e1;">
+                        Security code
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:28px;">
+                <div class="text lh-fix" style="font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-size:16px;color:#0f172a;">
+                  Hi ${name},
+                </div>
+                <div style="height:12px;"></div>
+                <div class="text lh-fix" style="font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-size:16px;color:#0f172a;">
+                  Use the code below to verify your SlackOverflow account. This helps us confirm that only approved faculty can create courses and onboard students.
+                </div>
+
+                <div style="height:20px;"></div>
+
+                <!-- Big OTP code -->
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                  <tr>
+                    <td align="center">
+                      <div class="code" style="display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,'Liberation Mono','Courier New',monospace;font-weight:700;letter-spacing:8px;font-size:28px;line-height:1;background:#f1f5f9;color:#0f172a;border:1px solid #e6e8eb;border-radius:10px;padding:16px 20px;">
+                        ${otp}
+                      </div>
+                    </td>
+                  </tr>
+                </table>
+
+                <div style="height:16px;"></div>
+
+                <div class="muted lh-fix" style="font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-size:14px;color:#475569;">
+                  The code expires in 10 minutes. If you didn’t request this, you can safely ignore this email.
+                </div>
+
+                <div style="height:24px;"></div>
+
+                <!-- Optional CTA (if your flow supports a deep link) -->
+                <!--
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                  <tr>
+                    <td class="btn" style="border-radius:10px;background:#1e293b;">
+                      <a href="${verifyUrl}" style="display:inline-block;padding:12px 18px;text-decoration:none;font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-size:14px;color:#ffffff;">
+                        Verify account
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                -->
+
+                <div style="height:28px;"></div>
+
+                <div class="muted lh-fix" style="font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-size:13px;color:#64748b;">
+                  For security, don’t share this code with anyone.
+                </div>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="padding:18px 28px;border-top:1px solid #e6e8eb;background:#fafbfc;">
+                <div class="muted" style="font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;color:#6b7280;">
+                  Sent by SlackOverflow • slackoverflowcs546@gmail.com
+                </div>
+                <div style="height:6px;"></div>
+                <div class="muted" style="font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-size:12px;color:#6b7280;">
+                  If this wasn’t you, contact us immediately.
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Legal tiny print -->
+          <div style="height:16px;"></div>
+          <div class="muted" style="font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;font-size:11px;color:#8a8f98;text-align:center;max-width:600px;">
+            You’re receiving this because someone attempted to create or sign in to a SlackOverflow professor account using this email.
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!--[if mso]>
+      <style type="text/css">
+        .lh-fix { line-height:24px !important; }
+      </style>
+    <![endif]-->
+  </body>
+</html>
