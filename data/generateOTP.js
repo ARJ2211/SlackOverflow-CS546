@@ -52,19 +52,18 @@ export const sendOTPEmail = async (id, type = "professor") => {
         } catch (e) {
             throw e;
         }
-
-        let html = await fs.readFile(filePath, "utf-8");
-        html = renderTemplateLiteral(html, { otp, name: Pname });
-        const email = data.email;
-        await sendEmail(
-            (to = email),
-            (subject = "SlackOverflow OTP confirmation"),
-            (text = `Good day ${data.Pname}! \nPlease use the below OTP to authenticate yourself to the website.`),
-            (html = html)
-        );
     } else if (type === "student") {
         // TODO: IMPLEMENT THIS!
         console.log("NOT IMPLEMENTED!!!!");
     }
+    let html = await fs.readFile(filePath, "utf-8");
+    html = renderTemplateLiteral(html, { otp, name: Pname });
+    const email = data.email;
+    await sendEmail(
+        (to = email),
+        (subject = "SlackOverflow OTP confirmation"),
+        (text = `Good day ${data.Pname}! \nPlease use the below OTP to authenticate yourself to the website.`),
+        (html = html)
+    );
     return data;
 };
