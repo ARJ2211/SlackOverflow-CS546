@@ -5,9 +5,10 @@
  */
 export const isArray = (val) => {
     if (!Array.isArray(val)) throw `object is not an array`;
-    if (val.length === 0) throw `empty array`;
+    
+    return val;
 };
-
+/*==================================================================*/
 /**
  * Used for validating the type of variable and making
  * sure it is of valid string. We return a trimmed string.
@@ -22,9 +23,10 @@ export const isValidString = (val) => {
     if (val.length === 0) {
         throw `ERROR: empty string detected.`;
     }
+    
     return val;
 };
-
+/*==================================================================*/
 /**
  * Used for validating the type of variable and making
  * sure it is of valid number.
@@ -36,7 +38,7 @@ export const isValidNumber = (val) => {
     }
     return val;
 };
-
+/*==================================================================*/
 /**
  * Used to check if the type of variable is a valid object
  * or not.
@@ -51,5 +53,43 @@ export const isValidObject = (val) => {
     ) {
         throw `ERROR: provided input is not an object`;
     }
+    
+    return val;
+};
+/*==================================================================*/
+/**
+ * Used to check if the courseId is valid
+ * @param {*} val
+ * @param {*} variableName
+ * @returns
+ */
+export const isValidCourseId = (val, variableName = "courseId") => {
+    val = isValidString(val, variableName);
+
+    const courseIdRegex = /^[A-Za-z]+\d+$/;
+    if (!courseIdRegex.test(val)) {
+        throw `ERROR: provided courseId is not a string`;
+    }
+
+    return val.toUpperCase();
+};
+/*==================================================================*/
+/**
+ * Used to check if the studentId is valid
+ * @param {*} val
+ * @param {*} variableName
+ * @returns
+ */
+export const isValidStudentArray = (val, variableName = "enrolledStudents") => {
+    val = isArray(val, variableName);
+
+    if (val.length > 0) {
+        val.forEach((studentId) => {
+            if (typeof studentId !== 'string' && typeof studentId !== 'object') {
+                throw `ERROR: provided studentId is not a string/object`;
+            }
+        });
+    }
+
     return val;
 };
