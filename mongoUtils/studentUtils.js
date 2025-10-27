@@ -1,39 +1,45 @@
 import { professors } from "../config/mongoCollections.js";
 import * as validator from "../validator.js";
-
+//Hello
 
 /**
- * Creates a new professor document
- * @param {*} id
+ * Creates a new student document
+ * @param {*} full_name
  * @param {*} first_name
+ * @param {*} middle_name
  * @param {*} last_name
- * @param {*} email
- * @param {*} age
- * @param {*} major
- * @param {*} gpa
+ * @param {*} is_ta
+ * @param {*} questions_asked
+ * @param {*} otp
+ * @param {*} password
  * @returns {Object}
  */
 
 export const creatStudent = async (
-    id,
-    first_name,
-    last_name,
-    email,
-    age,
-    major,
-    gpa,
+full_name,
+first_name,
+middle_name,
+last_name,
+is_ta,
+questions_asked,
+otp,
+password,
 ) => {
 const studentColl = await students();
     try {
-        id = validator.isValidString(id);
+        full_name = validator.isValidString(full_name);
     } catch (e) {
-        console.log("id", e);
+        console.log("full_name", e);
     }
-
     try {
         first_name = validator.isValidString(first_name);
     } catch (e) {
         console.log("first_name", e);
+    }
+    try {
+        middle_name = validator.isValidString(middle_name);
+    } catch (e) {
+        console.log("middle_name", e);
     }
     try {
         last_name = validator.isValidString(last_name);
@@ -41,58 +47,69 @@ const studentColl = await students();
         console.log("last_name", e);
     }
     try {
-        email = validator.isValidString(email);
+        is_ta = validator.isValidBoolean(is_ta); //actually says binData instead? 
     } catch (e) {
-        console.log("email", e);
-    }
-
-    try {
-        age = validator.isValidString(age);
-    } catch (e) {
-        console.log("age", e);
+        console.log("is_ta", e);
     }
     try {
-        office = validator.isValidString(major);
+        questions_asked = validator.isArray(questions_asked);
     } catch (e) {
-        console.log("major", e);
+        console.log("questions_asked", e);
     }
     try {
-        office = validator.isValidString(gpa);
+        otp = validator.isValidString(otp);
     } catch (e) {
-        console.log("gpa", e);
+        console.log("otp", e);
+    }
+    try {
+        password = validator.isValidString(password);
+    } catch (e) {
+        console.log("password", e);
     }
 
     const exists = await studentColl.findOne({
         $or: [
             { id: new RegExp(`^${id}$`, "i") },
-            {
-                $and: [
-                { first_name: new RegExp(`^${first_name}`, "i")},
-                { last_name: new RegExp(`^${last_name}`, "i")}, //maybe change to name or first and last?
-            ]
-        },
+            {full_name: new RegExp(`^${full_name}$`, "i")},
             { email: new RegExp(`^${email}$`, "i")}
         ]
     });
 
     if (exists) {
-        throw `409 student already exists. ${exists.first_name + " " + exists.last_name}`;
+        throw `409 student already exists. ${exists.full_name}`;
     }
 }
 
 
-
+/**
+ * Returns the details of the student by Id
+ * @param {*} id 
+ * @returns {Object}
+ */
 export const getStudentById = async (id) => {
     const studentColl = await students();
-    id = validator.isValidString(id); 
-    let studentId = id.trim() //trim whitespace
-    let student = studentColl.find((s) => String(s.id)===String(studentId));
-
-    return student;
+    fullName = validator.isValidString(id); 
+    const studenData = await studentColl.findOne({
+        id: new RegExp(`^${id}$`, "i"),
+    });
+    if (!studentData){
+        throw '404 student not found!';
+    }
+    return studentData;
 };
+
+/**
+ * Returns all of the students in an array
+ * @returns {Array}
+ */
+export const getAllStudents = async () => {
+    const studentColl = await students();
+    const allStudents = studentColl.find({}).toArray();;
+    return allStudents;
+}
 
 export const updateStudent = async (id) => {
     if (!id){
-        throw 
+        throw '404 student not found!';
     }
 }
