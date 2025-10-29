@@ -118,8 +118,10 @@ export const updateCourse = async (course_id, updateData) => {
                 updateFields.course_id = validator.isValidString(value, 'course_id');
                 // Check if new course_id already exists
                 const existedCourse = await courseColl.findOne({
-                    course_id: new RegExp(`^${value}$`, 'i'),
-                    course_id: { $ne: course_id }
+                    $and:[
+                        {course_id: {$regex: new RegExp(`^${value}$`, 'i')}},
+                        {course_id: {$ne: course_id}}
+                    ]
                 });
                 if (existedCourse) {
                     throw `409 The course existed ${value}`;
@@ -176,4 +178,5 @@ export const deleteCourse = async (course_id) => {
         message: `"${course.course_name}" has been successfully deleted`
     };
 };
+
 
