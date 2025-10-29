@@ -129,7 +129,7 @@ export const updateCourse = async (course_id, updateData) => {
                 updateFields.course_description = validator.isValidString(value, 'course_description');
                 break;
             case 'enrolled_students':
-                updateFields.enrolled_students = validator.isValidStudentArray(value, 'enrolled_students');
+                updateFields.enrolled_students = validator.isArray(value, 'enrolled_students');
                 break;
         }
     }
@@ -176,3 +176,4 @@ export const deleteCourse = async (course_id) => {
         message: `"${course.course_name}" has been successfully deleted`
     };
 };
+
