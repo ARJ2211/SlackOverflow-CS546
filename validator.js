@@ -5,7 +5,6 @@
  */
 export const isArray = (val) => {
     if (!Array.isArray(val)) throw `object is not an array`;
-    
     return val;
 };
 /*==================================================================*/
@@ -23,7 +22,6 @@ export const isValidString = (val) => {
     if (val.length === 0) {
         throw `ERROR: empty string detected.`;
     }
-    
     return val;
 };
 /*==================================================================*/
@@ -53,7 +51,6 @@ export const isValidObject = (val) => {
     ) {
         throw `ERROR: provided input is not an object`;
     }
-    
     return val;
 };
 /*==================================================================*/
@@ -63,7 +60,7 @@ export const isValidObject = (val) => {
  * @param {*} variableName
  * @returns
  */
-export const isValidCourseId = (val, variableName = "courseId") => {
+export const isValidCourseId = (val, variableName = "course_id") => {
     val = isValidString(val, variableName);
 
     const courseIdRegex = /^[A-Za-z]+\d+$/;
@@ -75,21 +72,18 @@ export const isValidCourseId = (val, variableName = "courseId") => {
 };
 /*==================================================================*/
 /**
- * Used to check if the studentId is valid
+ * Used to check if the courseName is valid
  * @param {*} val
  * @param {*} variableName
  * @returns
  */
-export const isValidStudentArray = (val, variableName = "enrolledStudents") => {
-    val = isArray(val, variableName);
+export const isValidCourseName = (val, variableName = "course_name") => {
+    val = isValidString(val, variableName);
 
-    if (val.length > 0) {
-        val.forEach((studentId) => {
-            if (typeof studentId !== 'string' && typeof studentId !== 'object') {
-                throw `ERROR: provided studentId is not a string/object`;
-            }
-        });
+    const courseNameRegex = /^[A-Za-z0-9\s\-.,()&]+$/;
+    if (!courseNameRegex.test(val)) {
+        throw `ERROR: provided courseName contains invalid characters`;
     }
 
-    return val;
+    return val.trim();
 };
