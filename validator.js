@@ -88,6 +88,7 @@ export const isValidCourseName = (val, variableName = "course_name") => {
     }
 
     return val.trim();
+};
 /*==================================================================*/
 /**
  * Used to check if the type of variable is a valid boolean
@@ -99,6 +100,7 @@ export const isValidBoolean = (val) => {
         throw `ERROR: ${val} is not a valid boolean.`;
     }
     return val;
+};
 /*==================================================================*/
 /**
  * Used to check if the type of string is a valid mongo
