@@ -26,7 +26,7 @@ const seedJavaScriptFAQ = async () => {
             lineData = validator.isValidString(lineData);
             try {
                 console.log(`\n Trying to insert question ${lineData}`);
-                await questionUtils.createQuestion(lineData);
+                await questionUtils.createQuestion(lineData, "CS546");
                 confirmCount += 1;
             } catch (e) {
                 console.log(e);
