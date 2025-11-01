@@ -26,5 +26,8 @@ export const createVectorIndex = async () => {
         await coll.dropSearchIndex(indexName);
     } catch {}
 
+    console.log("VECTOR DATABASE IS CREATING THE INDEX PLEASE WAIT........");
+    await new Promise((r) => setTimeout(r, 3500)); // allow Atlas to index
+
     await coll.createSearchIndex(index);
 };
