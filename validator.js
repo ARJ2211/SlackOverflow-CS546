@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 /**
  * Used to validate the type of variable is an array or not
  * does not return anything
@@ -64,4 +66,16 @@ export const isValidBoolean = (val) => {
         throw `ERROR: ${val} is not a valid boolean.`;
     }
     return val;
+  
+/**
+ * Used to check if the type of string is a valid mongo
+ * object ID and if yes, return it.
+ * @param {*} val
+ */
+export const isValidMongoId = (val) => {
+    val = isValidString(val);
+    if (!ObjectId.isValid(val)) {
+        throw `ERROR: not a valid mongo object id`;
+    }
+    return new ObjectId.createFromHexString(val);
 };
