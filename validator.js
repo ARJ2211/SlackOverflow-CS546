@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 /**
  * Used to validate the type of variable is an array or not
  * does not return anything
@@ -5,9 +7,9 @@
  */
 export const isArray = (val) => {
     if (!Array.isArray(val)) throw `object is not an array`;
-    if (val.length === 0) throw `empty array`;
+    return val;
 };
-
+/*==================================================================*/
 /**
  * Used for validating the type of variable and making
  * sure it is of valid string. We return a trimmed string.
@@ -24,7 +26,7 @@ export const isValidString = (val) => {
     }
     return val;
 };
-
+/*==================================================================*/
 /**
  * Used for validating the type of variable and making
  * sure it is of valid number.
@@ -36,7 +38,7 @@ export const isValidNumber = (val) => {
     }
     return val;
 };
-
+/*==================================================================*/
 /**
  * Used to check if the type of variable is a valid object
  * or not.
@@ -52,4 +54,61 @@ export const isValidObject = (val) => {
         throw `ERROR: provided input is not an object`;
     }
     return val;
+};
+/*==================================================================*/
+/**
+ * Used to check if the courseId is valid
+ * @param {*} val
+ * @param {*} variableName
+ * @returns
+ */
+export const isValidCourseId = (val, variableName = "course_id") => {
+    val = isValidString(val, variableName);
+
+    const courseIdRegex = /^[A-Za-z]+\d+$/;
+    if (!courseIdRegex.test(val)) {
+        throw `ERROR: provided courseId is not a string`;
+    }
+
+    return val.toUpperCase();
+};
+/*==================================================================*/
+/**
+ * Used to check if the courseName is valid
+ * @param {*} val
+ * @param {*} variableName
+ * @returns
+ */
+export const isValidCourseName = (val, variableName = "course_name") => {
+    val = isValidString(val, variableName);
+
+    const courseNameRegex = /^[A-Za-z0-9\s\-.,()&]+$/;
+    if (!courseNameRegex.test(val)) {
+        throw `ERROR: provided courseName contains invalid characters`;
+    }
+
+    return val.trim();
+/*==================================================================*/
+/**
+ * Used to check if the type of variable is a valid boolean
+ * or not.
+ * @param {*} val
+ */
+export const isValidBoolean = (val) => {
+    if (typeof val !== "boolean") {
+        throw `ERROR: ${val} is not a valid boolean.`;
+    }
+    return val;
+/*==================================================================*/
+/**
+ * Used to check if the type of string is a valid mongo
+ * object ID and if yes, return it.
+ * @param {*} val
+ */
+export const isValidMongoId = (val) => {
+    val = isValidString(val);
+    if (!ObjectId.isValid(val)) {
+        throw `ERROR: not a valid mongo object id`;
+    }
+    return new ObjectId.createFromHexString(val);
 };

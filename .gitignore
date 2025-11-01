@@ -30,3 +30,5 @@ Thumbs.db
 .github
 config/settings.js
 models/
+test.js
+gmail_creds.json
