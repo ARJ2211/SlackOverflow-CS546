@@ -57,6 +57,17 @@ export const isValidObject = (val) => {
 };
 
 /**
+ * Used to check if the type of variable is a valid boolean
+ * or not.
+ * @param {*} val
+ */
+export const isValidBoolean = (val) => {
+    if (typeof val !== "boolean") {
+        throw `ERROR: ${val} is not a valid boolean.`;
+    }
+    return val;
+  
+/**
  * Used to check if the type of string is a valid mongo
  * object ID and if yes, return it.
  * @param {*} val
