@@ -62,9 +62,6 @@ export const isValidObject = (val) => {
  * @param {*} val
  */
 export const isValidMongoId = (val) => {
-    if (val instanceof ObjectId) {
-        return val;
-    }
     val = isValidString(val);
     if (!ObjectId.isValid(val)) {
         throw `ERROR: not a valid mongo object id`;
