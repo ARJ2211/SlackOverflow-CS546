@@ -1,0 +1,94 @@
+// LEAN SCHEMA: 4 collections (users, courses, questions, answers)
+// Labels: each course keeps its own label list. Label names must be unique per course.
+// Questions store label IDs that come from course.labels._id.
+
+// =========================
+// users
+// =========================
+// Everyone lives here (students, TAs, professors, admins). Minimal OTP login.
+{
+  _id: ObjectId,            // user id
+  email: String,            // unique email for login
+  name: String,             // display name
+  role: String,             // "student" | "ta" | "professor" | "admin"
+  otp: Number|null,         // 6-digit code while verifying; set to null after verify
+  created_at: Date          // when the user was created
+}
+
+
+
+// =========================
+// courses
+// =========================
+// Course info, roster, and the label catalog for that course.
+{
+  _id: ObjectId,            // course id
+  course_name: String,      // e.g., "Web Programming"
+  course_id: String,        // e.g., "CS546" (keep unique)
+  course_description: String, // short text about the course
+
+  enrolled_students: [      // per-course membership and role
+    {
+      user_id: ObjectId,    // users._id
+      role: String          // "instructor" | "ta" | "student"
+    }
+  ],
+
+  labels: [                 // labels available in this course
+    {
+      _id: ObjectId,        // label id (used by questions.labels)
+      name: String          // label name; must be unique within this course
+    }
+  ],
+
+  created_at: Date,         // when the course was created
+  updated_at: Date          // last time roster or labels changed
+}
+
+
+
+// =========================
+// questions
+// =========================
+// A post in a course. Keeps votes and bookmarks inline to stay lean.
+{
+  _id: ObjectId,            // question id
+  course: ObjectId,         // courses._id
+  author_id: ObjectId,      // users._id (who asked)
+  question: String,         // text of the question
+
+  canonical_key: String,    // normalized key for dedupe/search suggestions
+  embedding: [Number],      // optional vector for similarity search
+
+  labels: [ObjectId],       // ids from courses.labels._id for this course
+
+  upvotes: [ObjectId],      // user ids who upvoted (use $addToSet)
+  bookmarks: [ObjectId],    // user ids who bookmarked (use $addToSet)
+
+  accepted_answer_id: ObjectId|null, // answers._id if resolved, else null
+  status: String,           // "open" or "resolved" (keep in sync with accepted_answer_id)
+
+  answer_count: Number,     // cached count of answers (optional; helps listing)
+
+  created_time: Date,       // when it was created
+  updated_at: Date          // last edit or status change
+}
+
+
+
+// =========================
+// answers
+// =========================
+// An answer (or a reply if parent_id is set).
+{
+  _id: ObjectId,            // answer id
+  questionId: ObjectId,     // questions._id
+  created_by: ObjectId,     // users._id (who answered)
+
+  answer: String,           // answer text (not empty)
+  parent_id: ObjectId|null, // answers._id if this is a reply to another answer
+
+  is_accepted: Boolean,     // true if this is the accepted answer
+
+  created_at: Date          // when it was posted
+}
