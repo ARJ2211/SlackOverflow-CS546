@@ -16,6 +16,7 @@
   "main": "app.js",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test-email": "node test-email.js",
     "start": "node --env-file=.env app.js",
     "seed-professors": "node tasks/seed_professors.js",
     "seed-faqs": "node tasks/seed_javascript_faq.js",
