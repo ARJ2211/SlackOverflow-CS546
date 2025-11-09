@@ -1,4 +1,4 @@
-import * as professorUtils from "../mongoUtils/professorUtils.js";
+import * as usersUtils from "../mongoUtils/usersUtils.js";
 import * as validator from "../validator.js";
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
@@ -25,13 +25,15 @@ const seedProfessors = async () => {
     try {
         validator.isArray(professorsData);
         for (const elem of professorsData) {
-            await professorUtils.createProfessor(
-                elem.title,
-                elem.status,
+            const full_name = elem.title.split(" ");
+            const first_name = full_name[0];
+            const last_name = full_name[full_name.length - 1];
+
+            await usersUtils.createUser(
+                first_name,
+                last_name,
                 elem.email,
-                elem.phone,
-                elem.office,
-                elem.image
+                "professor"
             );
         }
     } catch (e) {
