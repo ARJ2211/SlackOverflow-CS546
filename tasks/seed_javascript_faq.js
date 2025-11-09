@@ -16,18 +16,16 @@ const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const seedJavaScriptFAQ = async () => {
     const filePath = path.resolve(__dirname, "../datasets/javascript_faq.txt");
-    const lines = (await fs.readFile(filePath, "utf-8")).split("\n");
+    console.log(filePath);
+    const fileData = (await fs.readFile(filePath, "utf-8")).split("\n");
 
     const usersColl = await users();
-    const creator =
-        (await usersColl.findOne({ role: "professor" })) ||
-        (await usersColl.findOne({ role: "admin" }));
+    const creator = await usersColl.findOne({ email: "aayushrj22@gmail.com" });
     if (!creator) throw { status: 400, message: "No professor/admin found" };
 
     const courseName = "Web Programming I";
     const courseCode = "CS546";
 
-    // just createCourse (existence checks handled elsewhere)
     const courseDoc = await createCourse(
         courseName,
         courseCode,
@@ -51,14 +49,15 @@ const seedJavaScriptFAQ = async () => {
     const qsColl = await questions();
 
     const questionsList = [];
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const m = /^\d+\./.exec(line);
-        if (m) {
+    for (let line = 0; line < fileData.length; line++) {
+        let lineData = fileData[line];
+        const linePattern = /^\d+\./.exec(lineData);
+        if (linePattern !== null) {
+            lineData = lineData.replace(linePattern[0], "");
             try {
-                const q = validator.isValidString(line.replace(m[0], ""));
-                questionsList.push(q);
-            } catch {}
+                lineData = validator.isValidString(lineData);
+                questionsList.push(lineData);
+            } catch (_) {}
         }
     }
 
@@ -67,7 +66,7 @@ const seedJavaScriptFAQ = async () => {
             format:
                 "CLI Progress |" +
                 colors.cyan("{bar}") +
-                "| {percentage}% || {value}/{total} || {name}",
+                "| {percentage}% || {value}/{total} || {status}",
             barCompleteChar: "\u2588",
             barIncompleteChar: "\u2591",
             hideCursor: true,
@@ -78,38 +77,35 @@ const seedJavaScriptFAQ = async () => {
         cliProgress.Presets.shades_classic
     );
 
-    bar.start(questionsList.length, 0, { name: "" });
+    let confirmCount = 0;
+    bar.start(questionsList.length, 0, { status: "" });
 
-    const originalLog = console.log;
-    console.log = () => {};
-
-    let inserted = 0;
-    try {
-        for (const q of questionsList) {
-            try {
-                const created = await questionUtils.createQuestion(
-                    q,
-                    courseDoc._id.toString()
-                );
-                await qsColl.updateOne(
-                    { _id: created._id },
-                    {
-                        $addToSet: { labels: generalLabel._id },
-                        $set: { updated_at: new Date() },
-                    }
-                );
-                inserted += 1;
-                bar.increment(1, { name: q.slice(0, 40) });
-            } catch {
-                bar.increment(1, { name: "skipped" });
-            }
+    for (const q of questionsList) {
+        // show what we’re trying — same line via bar.update
+        bar.update({ status: `Trying: ${q.slice(0, 80)}` });
+        try {
+            const created = await questionUtils.createQuestion(
+                q,
+                courseDoc._id.toString()
+            );
+            await qsColl.updateOne(
+                { _id: created._id },
+                {
+                    $addToSet: { labels: generalLabel._id },
+                    $set: { updated_at: new Date() },
+                }
+            );
+            confirmCount += 1;
+            bar.increment(1, { status: `Inserted: ${q.slice(0, 60)}` });
+        } catch (e) {
+            // keep error (with score/jaccard text) on the same line
+            const msg = String(e).replace(/\s+/g, " ").slice(0, 120);
+            bar.increment(1, { status: `Skipped: ${msg}` });
         }
-    } finally {
-        bar.stop();
-        console.log = originalLog;
     }
 
-    return inserted;
+    bar.stop();
+    return confirmCount;
 };
 
 export default seedJavaScriptFAQ;

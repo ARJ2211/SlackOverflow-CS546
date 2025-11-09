@@ -13,7 +13,7 @@ const JACCARD_THRESHOLD = 0.65;
  * @returns {Object}
  */
 export const createQuestion = async (question, course_id) => {
-    course = validator.isValidMongoId(course_id);
+    course_id = validator.isValidMongoId(course_id);
     question = validator.isValidString(question);
 
     const questionsColl = await questions();

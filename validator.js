@@ -110,11 +110,15 @@ export const isValidBoolean = (val) => {
  * @returns {ObjectId}
  */
 export const isValidMongoId = (val) => {
+    if (val instanceof ObjectId) {
+        return val;
+    }
     val = isValidString(val);
+
     if (!ObjectId.isValid(val)) {
         throw `ERROR: not a valid mongo object id`;
     }
-    return new ObjectId.createFromHexString(val);
+    return ObjectId.createFromHexString(val);
 };
 
 /**
