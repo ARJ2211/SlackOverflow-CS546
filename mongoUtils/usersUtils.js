@@ -69,19 +69,20 @@ export const updateUser = async (filter, obj) => {
     });
     if (!updatedObj || updatedObj === null)
         throw { status: 400, message: "data not updated." };
-    return updatedData;
+    return updatedObj;
 };
 
 /**
- * Returns the details of the professor by the id
+ * Returns the details of the professor by the
+ * email id
  * @param {*} id
  * @returns {Object}
  */
 export const getUserByEmail = async (id) => {
     const usersColl = await users();
-    id = validator.isValidMongoId(id);
+    id = validator.isValidEmail(id);
     const usersData = await usersColl.findOne({
-        _id: new RegExp(`^${id}$`, "i"),
+        email: new RegExp(`^${id}$`, "i"),
     });
     if (!usersData) {
         throw { status: 404, message: "user not found" };
@@ -91,6 +92,8 @@ export const getUserByEmail = async (id) => {
 
 /**
  * Create email OTP: save and send to user
+ * @param {*} email
+ * @returns {Object}
  */
 export const sendSaveOTP = async (email) => {
     email = validator.isValidEmail(email);
@@ -103,4 +106,40 @@ export const sendSaveOTP = async (email) => {
     };
     const updatedUser = await updateUser(filter, updateObj);
     return updatedUser;
+};
+
+/**
+ * Fetch all users
+ */
+export const getAllUsers = async () => {
+    const usersColl = await users();
+    const allUsers = await usersColl.find({}).toArray();
+    return allUsers;
+};
+
+/**
+ * Fetch all professors
+ */
+export const getAllProfessors = async () => {
+    const usersColl = await users();
+    const professors = await usersColl.find({ role: "professor" }).toArray();
+    return professors;
+};
+
+/**
+ * Fetch all students
+ */
+export const getAllStudents = async () => {
+    const usersColl = await users();
+    const students = await usersColl.find({ role: "student" }).toArray();
+    return students;
+};
+
+/**
+ * Fetch all TA's
+ */
+export const getAllTas = async () => {
+    const usersColl = await users();
+    const tas = await usersColl.find({ role: "ta" }).toArray();
+    return tas;
 };
