@@ -135,15 +135,10 @@ export const isValidEmail = (val) => {
  */
 export const isValidRole = (val) => {
     val = isValidString(val);
-    const validRoles = new Set(["professor", "ta", "student"]);
+    const validRoles = new Set(["professor", "student"]);
 
     if (!validRoles.has(val)) {
         throw `ERROR: role does not exist`;
     }
     return val;
 };
-
-/**
- * Used to check if the label object
- * is a valid string or not
- */

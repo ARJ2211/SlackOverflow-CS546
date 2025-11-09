@@ -3,7 +3,7 @@ import { sendOTPEmail } from "../processes/generateOTP.js";
 import * as validator from "../validator.js";
 
 /**
- * Creates a new professor document
+ * Creates a new user document
  * @param {*} first_name
  * @param {*} last_name
  * @param {*} email
@@ -26,7 +26,7 @@ export const createUser = async (first_name, last_name, email, role) => {
         $or: [{ email: new RegExp(`^${email}$`, "i") }],
     });
     if (exists) {
-        throw `409 professor already exists. ${exists.first_name}`;
+        throw `409 user already exists. ${exists.first_name}`;
     }
     const insertInfo = await usersColl.insertOne({
         first_name,
@@ -39,13 +39,13 @@ export const createUser = async (first_name, last_name, email, role) => {
     });
 
     if (!insertInfo.insertedId) {
-        throw `500 failed to create professor!`;
+        throw `500 failed to create user!`;
     }
 
-    const newProfessor = await usersColl.findOne({
+    const newUser = await usersColl.findOne({
         _id: insertInfo.insertedId,
     });
-    return newProfessor;
+    return newUser;
 };
 
 /**
@@ -136,7 +136,7 @@ export const getAllStudents = async () => {
 };
 
 /**
- * Fetch all TA's
+ * Fetch all TA's (depricated)
  */
 export const getAllTas = async () => {
     const usersColl = await users();
