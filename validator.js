@@ -107,6 +107,7 @@ export const isValidBoolean = (val) => {
  * Used to check if the type of string is a valid mongo
  * object ID and if yes, return it.
  * @param {*} val
+ * @returns {ObjectId}
  */
 export const isValidMongoId = (val) => {
     val = isValidString(val);
@@ -141,3 +142,8 @@ export const isValidRole = (val) => {
     }
     return val;
 };
+
+/**
+ * Used to check if the label object
+ * is a valid string or not
+ */
