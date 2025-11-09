@@ -79,7 +79,7 @@ export const updateUser = async (filter, obj) => {
 export const getProfessorByEmail = async (id) => {
     const usersColl = await users();
     id = validator.isValidMongoId(id);
-    const professorsData = await professorColl.findOne({
+    const professorsData = await usersColl.findOne({
         _id: new RegExp(`^${id}$`, "i"),
     });
     if (!professorsData) {
