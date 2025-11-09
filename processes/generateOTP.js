@@ -25,9 +25,6 @@ const generateRandomSixDigitNumber = () => {
     return Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
 };
 
-const randomNumber = generateRandomSixDigitNumber();
-console.log(randomNumber);
-
 const createAndUpdateProfessorOTP = async (id) => {
     id = validator.isValidMongoId(id);
     const otp = generateRandomSixDigitNumber();
@@ -42,28 +39,17 @@ const createAndUpdateProfessorOTP = async (id) => {
     return { updatedData, otp };
 };
 
-export const sendOTPEmail = async (id, type = "professor") => {
-    id = validator.isValidMongoId(id);
-    let data, otp;
-    if (type === "professor") {
-        const filePath = path.resolve(__dirname, "../htmls/otpMailer.html");
-        try {
-            ({ data, otp } = createAndUpdateProfessorOTP(id));
-        } catch (e) {
-            throw e;
-        }
-    } else if (type === "student") {
-        // TODO: IMPLEMENT THIS!
-        console.log("NOT IMPLEMENTED!!!!");
-    }
+export const sendOTPEmail = async (email) => {
+    email = validator.isValidEmail(email);
+    const temp_name = email.split("@")[0];
+    const otp = generateRandomSixDigitNumber();
     let html = await fs.readFile(filePath, "utf-8");
-    html = renderTemplateLiteral(html, { otp, name: Pname });
-    const email = data.email;
+    html = renderTemplateLiteral(html, { otp, name: temp_name });
     await sendEmail(
         (to = email),
         (subject = "SlackOverflow OTP confirmation"),
-        (text = `Good day ${data.Pname}! \nPlease use the below OTP to authenticate yourself to the website.`),
+        (text = `Good day ${temp_name}! \nPlease use the below OTP to authenticate yourself to the website.`),
         (html = html)
     );
-    return data;
+    return otp;
 };

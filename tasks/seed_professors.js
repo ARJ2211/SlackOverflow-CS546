@@ -36,6 +36,12 @@ const seedProfessors = async () => {
                 "professor"
             );
         }
+        await usersUtils.createUser(
+            "Dr.",
+            "Aayush",
+            "aayushrj22@gmail.com",
+            "professor"
+        );
     } catch (e) {
         console.log(e);
     }

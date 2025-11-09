@@ -1,4 +1,5 @@
 import { users } from "../config/mongoCollections.js";
+import { sendOTPEmail } from "../processes/generateOTP.js";
 import * as validator from "../validator.js";
 
 /**
@@ -18,7 +19,7 @@ export const createUser = async (first_name, last_name, email, role) => {
         email = validator.isValidEmail(email);
         role = validator.isValidRole(role);
     } catch (e) {
-        throw { status: 400, message: e?.message || e };
+        throw { status: 400, message: e };
     }
 
     const exists = await usersColl.findOne({
@@ -76,14 +77,30 @@ export const updateUser = async (filter, obj) => {
  * @param {*} id
  * @returns {Object}
  */
-export const getProfessorByEmail = async (id) => {
+export const getUserByEmail = async (id) => {
     const usersColl = await users();
     id = validator.isValidMongoId(id);
-    const professorsData = await usersColl.findOne({
+    const usersData = await usersColl.findOne({
         _id: new RegExp(`^${id}$`, "i"),
     });
-    if (!professorsData) {
+    if (!usersData) {
         throw { status: 404, message: "user not found" };
     }
-    return professorsData;
+    return usersData;
+};
+
+/**
+ * Create email OTP: save and send to user
+ */
+export const sendSaveOTP = async (email) => {
+    email = validator.isValidEmail(email);
+    const otp = await sendOTPEmail(email);
+    const filter = {
+        email: new RegExp(`^${email}$`, "i"),
+    };
+    const updateObj = {
+        otp: otp,
+    };
+    const updatedUser = await updateUser(filter, updateObj);
+    return updatedUser;
 };
