@@ -13,6 +13,7 @@ const Users = {
     status: String, // "inactive" until they set a password; then "active"
     password: String, // plain text password (no hashing)
     created_at: Date, // when the user was created
+    otp: Number, // OTP of the user saved in mongo sent via email
 };
 
 // =========================
