@@ -91,6 +91,24 @@ export const getUserByEmail = async (id) => {
 };
 
 /**
+ * Returns the details of the professor by the
+ * mongo id
+ * @param {*} id
+ * @returns {Object}
+ */
+export const getUserById = async (id) => {
+    const usersColl = await users();
+    id = validator.isValidMongoId(id);
+    const usersData = await usersColl.findOne({
+        _id: id,
+    });
+    if (!usersData) {
+        throw { status: 404, message: "user not found" };
+    }
+    return usersData;
+};
+
+/**
  * Create email OTP: save and send to user
  * @param {*} email
  * @returns {Object}

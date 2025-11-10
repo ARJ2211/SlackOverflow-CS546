@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { courses, users } from "../config/mongoCollections.js";
 import randomName from "@scaleway/random-name";
-import { createUser, sendSaveOTP } from "./usersUtils.js";
+import { createUser, sendSaveOTP, getUserById } from "./usersUtils.js";
 import * as validator from "../validator.js";
 
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -42,6 +42,13 @@ export const createCourse = async (
         throw { status: 409, message: `Course already exists` };
     }
 
+    // Check to see if the creator of course exists
+    // and that they are a professor!!!!!
+    const professorData = await getUserById(created_by);
+    if (professorData.role !== "professor") {
+        throw { status: 403, message: "Only professor can create a course" };
+    }
+
     const created_at = new Date();
     const updated_at = created_at;
 
@@ -52,6 +59,8 @@ export const createCourse = async (
         created_by,
         created_at,
         updated_at,
+        labels: [],
+        enrolled_students: [],
     });
 
     if (!insertInfo.insertedId) {
@@ -74,17 +83,35 @@ export const getAllCourses = async () => {
 };
 
 /**
- * Get a course by its ID
- * @param {string} id - Course ID
+ * Get a course by its Id
+ * @param {ObjectId} id - mongo ID
  * @returns {Object} Course document
  */
 export const getCourseById = async (id) => {
-    id = validator.isValidCourseId(id, "course_id");
+    id = validator.isValidMongoId(id);
     const courseColl = await courses();
     const course = await courseColl.findOne({ _id: id });
-    if (!course) throw "404 Course not found";
-
+    if (!course) throw { status: 404, message: "Course not found" };
     return course;
+};
+
+/**
+ * Used to get a list of courses that the professor has created
+ * and returns and array of objects
+ * @param {*} professorId
+ * @returns {Array<Object>}
+ */
+export const getCourseByProfessorId = async (professorId) => {
+    const coursesColl = await courses();
+    try {
+        professorId = validator.isValidMongoId(professorId);
+    } catch (e) {
+        throw { status: 400, message: e };
+    }
+    const professorCourses = coursesColl
+        .find({ created_by: professorId })
+        .toArray();
+    return professorCourses;
 };
 
 /**
@@ -182,7 +209,7 @@ export const addLabelToCourse = async (id, label) => {
     } catch (e) {
         throw { status: 400, message: e };
     }
-
+    await getCourseById(id);
     const existingLabelCourse = await courseColl.findOne({
         _id: id,
         "labels.name": new RegExp(`^${esc(label)}$`, "i"),
@@ -261,8 +288,10 @@ export const enrollStudentToCourse = async (id, email, is_ta) => {
             { _id: id },
             {
                 $addToSet: {
-                    user_id: existingStudentUser._id,
-                    is_ta: is_ta,
+                    enrolled_students: {
+                        user_id: existingStudentUser._id,
+                        is_ta: is_ta,
+                    },
                 },
                 $set: { updated_at: new Date() },
             },
@@ -289,19 +318,25 @@ export const enrollStudentToCourse = async (id, email, is_ta) => {
         sendSaveOTP(email);
         const createdUserId = createdUser._id;
         // Add that student into the course
-        const updatedCourse = await courseColl.findOneAndUpdate(
+        await courseColl.findOneAndUpdate(
             { _id: id },
             {
                 $addToSet: {
-                    user_id: createdUserId,
-                    is_ta: is_ta,
+                    enrolled_students: {
+                        user_id: createdUserId,
+                        is_ta: is_ta,
+                    },
                 },
             },
             { returnDocument: "after" }
         );
-        if (!updatedCourse || updatedCourse === null)
-            throw { status: 400, message: "data not updated." };
-        return updatedCourse;
+        if (!courseColl || courseColl === null)
+            throw { status: 400, message: "course not updated" };
+
+        const studentUser = await getUserById(createdUserId);
+        if (!studentUser || studentUser === null)
+            throw { status: 400, message: "user not created" };
+        return studentUser;
     }
 };
 

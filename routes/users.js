@@ -102,6 +102,9 @@ router.route("/verify-otp").post(async (req, res) => {
     }
     try {
         const userData = await usersData.getUserByEmail(reqBody.email);
+        if (userData.status === "active") {
+            return res.status(400).send("User is already active");
+        }
         if (userData.otp === reqBody.otp) {
             const updatedData = await usersData.updateUser(
                 {
