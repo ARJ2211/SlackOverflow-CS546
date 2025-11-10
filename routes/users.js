@@ -79,8 +79,12 @@ router.route("/sign-up").post(async (req, res) => {
             },
             { password: reqBody.passowrd }
         );
-        const updatedData = await usersData.sendSaveOTP(reqBody.email);
-        return res.status(200).json(updatedData);
+
+        if (!userData.otp) {
+            const updatedData = await usersData.sendSaveOTP(reqBody.email);
+            return res.status(200).json(updatedData);
+        }
+        return res.status(200).json(userData);
     } catch (e) {
         console.log(e);
         if (e.status) {

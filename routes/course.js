@@ -116,6 +116,7 @@ router
                     last_name: studentUserData.last_name,
                     email: studentUserData.email,
                     is_ta: enrolledStudent.is_ta,
+                    status: studentUserData.status,
                 });
             }
             return res.status(200).json(studentsData);
