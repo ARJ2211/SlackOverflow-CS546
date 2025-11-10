@@ -28,7 +28,7 @@ export const sendOTPEmail = async (email) => {
     email = validator.isValidEmail(email);
     const temp_name = email.split("@")[0];
     const otp = generateRandomSixDigitNumber();
-    const filePath = path.resolve(__dirname, "../htmls/otpMailer.html");
+    const filePath = path.resolve(__dirname, "../public/htmls/otpMailer.html");
     let html = await fs.readFile(filePath, "utf-8");
     html = renderTemplateLiteral(html, { otp, name: temp_name });
     await sendEmail(
