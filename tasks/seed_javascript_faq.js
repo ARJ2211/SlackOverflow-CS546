@@ -81,7 +81,7 @@ const seedJavaScriptFAQ = async () => {
     bar.start(questionsList.length, 0, { status: "" });
 
     for (const q of questionsList) {
-        // show what we’re trying — same line via bar.update
+        // show what we’re trying same line via bar.update
         bar.update({ status: `Trying: ${q.slice(0, 80)}` });
         try {
             const created = await questionUtils.createQuestion(
