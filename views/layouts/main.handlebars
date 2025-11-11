@@ -9,13 +9,14 @@
 </head>
 
 <body class="min-h-screen bg-[#F9FAFE]  flex items-center justify-center">
-    {{!-- {{> header}} --}}
+
 
     <main>
         {{{body}}}
     </main>
 
-    {{!-- {{> footer}} --}}
+    <div id="auth-toast" class="fixed top-5 right-5 z-50 space-y-3"></div>
+    <script src="/public/js/auth.js"></script>
 </body>
 
 </html>

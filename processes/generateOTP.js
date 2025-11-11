@@ -1,4 +1,4 @@
-import * as validator from "../validator.js";
+import * as validator from "../utils/validator.js";
 import sendEmail from "../mailer/sendEmail.js";
 // TODO: Create one for the students also!!!!!!
 

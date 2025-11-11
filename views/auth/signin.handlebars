@@ -3,7 +3,9 @@
     <h1 class="text-3xl font-semibold text-gray-900 text-center mb-3">Sign In</h1>
     <p class="text-gray-400 text-center mb-10">Sign in below to access your account</p>
 
-    <form action="/auth/signin" method="POST" class="space-y-4">
+    <div id="toast" class="hidden mb-6 p-4 rounded-lg text-sm"></div>
+
+    <form class="space-y-4" onsubmit="handleSignIn(event)">
       <div>
         <input type="email" name="email" placeholder="Email Address"
           class="w-full px-4 py-3.5 text-gray-900 placeholder-gray-300 bg-white border-b-2 border-gray-200 focus:border-amber-500 focus:outline-none transition-colors"
@@ -23,7 +25,7 @@
 
       <p class="text-center text-sm text-gray-400 mt-6">
         Don't have an account yet?
-        <a href="/auth/signup" class="text-[#F0BD66] font-medium hover:text-amber-600 transition-colors">Sign up</a>
+        <a href="/auth/sign-up" class="text-[#F0BD66] font-medium hover:text-amber-600 transition-colors">Sign up</a>
       </p>
     </form>
   </div>

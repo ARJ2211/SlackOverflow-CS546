@@ -1,6 +1,6 @@
 import { users } from "../config/mongoCollections.js";
 import { sendOTPEmail } from "../processes/generateOTP.js";
-import * as validator from "../validator.js";
+import * as validator from "../utils/validator.js";
 
 /**
  * Creates a new user document

@@ -1,5 +1,5 @@
 import * as usersUtils from "../mongoUtils/usersUtils.js";
-import * as validator from "../validator.js";
+import * as validator from "../utils/validator.js";
 import { fileURLToPath } from "url";
 import * as cliProgress from "cli-progress";
 import colors from "ansi-colors";
@@ -49,7 +49,7 @@ const seedProfessors = async () => {
 
         // silence console.log while the bar is active to avoid new lines
         const originalLog = console.log;
-        console.log = () => {};
+        console.log = () => { };
 
         try {
             for (const elem of professorsData) {

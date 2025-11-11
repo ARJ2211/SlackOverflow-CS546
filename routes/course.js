@@ -1,6 +1,6 @@
 import * as coursesData from "../mongoUtils/courseUtils.js";
 import { getUserById } from "../mongoUtils/usersUtils.js";
-import * as validator from "../validator.js";
+import * as validator from "../utils/validator.js";
 
 import { Router } from "express";
 

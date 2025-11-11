@@ -1,6 +1,6 @@
 import * as usersData from "../mongoUtils/usersUtils.js";
-import * as validator from "../validator.js";
-
+import * as validator from "../utils/validator.js";
+import { handleError } from "../utils/helperFunctions.js";
 import { Router } from "express";
 
 const router = Router();
@@ -30,28 +30,28 @@ router.route("/sign-in").post(async (req, res) => {
     try {
         reqBody = validator.isValidObject(reqBody);
         reqBody.email = validator.isValidEmail(reqBody.email);
-        reqBody.passowrd = validator.isValidString(reqBody.password);
+        reqBody.password = validator.isValidString(reqBody.password);
     } catch (e) {
         console.log(e);
-        return res.status(400).send(e);
+        return handleError(res, e);
     }
 
     try {
         const userData = await usersData.getUserByEmail(reqBody.email);
         if (userData.status === "inactive") {
-            return res.status(400).send("User is not active, please sign up!");
+            return handleError(res, "User is not active, please sign up!");
         }
-        if (userData.password !== reqBody.passowrd) {
-            return res.status(400).send("Password is incorrect. Try again");
+        if (userData.password !== reqBody.password) {
+            return handleError(res, "Password is incorrect. Try again");
         }
 
-        return res.status(200).send(`Signing in as role: ${userData.role}`);
+        return res.status(200).json({ message: `Signing in as role: ${userData.role}` });
     } catch (e) {
         console.log(e);
         if (e.status) {
-            return res.status(e.status).send(e.message);
+            return handleError(res, e.message);
         }
-        return res.status(400).send(e);
+        return handleError(res, e);
     }
 });
 
@@ -60,37 +60,35 @@ router.route("/sign-up").post(async (req, res) => {
     try {
         reqBody = validator.isValidObject(reqBody);
         reqBody.email = validator.isValidEmail(reqBody.email);
-        reqBody.passowrd = validator.isValidString(reqBody.password);
+        reqBody.password = validator.isValidString(reqBody.password);
     } catch (e) {
-        return res.status(400).send(e);
+        return handleError(res, e);
     }
 
     try {
-        const userData = await usersData.getUserByEmail(reqBody.email);
+        let userData = await usersData.getUserByEmail(reqBody.email);
         if (userData.status === "active") {
-            return res
-                .status(400)
-                .send("Account already exists please sign in");
+            return handleError(res, "Account already exists please sign in");
         }
 
-        await usersData.updateUser(
+        userData = await usersData.updateUser(
             {
                 email: new RegExp(`^${reqBody.email}$`),
             },
-            { password: reqBody.passowrd }
+            { password: reqBody.password }
         );
 
         if (!userData.otp) {
             const updatedData = await usersData.sendSaveOTP(reqBody.email);
             return res.status(200).json(updatedData);
         }
-        return res.status(200).json(userData);
+        return res.status(200).json({ email: userData.email, status: userData.status });
     } catch (e) {
         console.log(e);
         if (e.status) {
-            return res.status(e.status).send(e.message);
+            return handleError(res, e.message);
         }
-        return res.status(400).send(e);
+        return handleError(res, e);
     }
 });
 
@@ -102,12 +100,12 @@ router.route("/verify-otp").post(async (req, res) => {
         reqBody.otp = validator.isValidNumber(reqBody.otp);
     } catch (e) {
         console.log(e);
-        return res.status(400).send(e);
+        return handleError(res, e);
     }
     try {
         const userData = await usersData.getUserByEmail(reqBody.email);
         if (userData.status === "active") {
-            return res.status(400).send("User is already active");
+            return handleError(res, "User is already active");
         }
         if (userData.otp === reqBody.otp) {
             const updatedData = await usersData.updateUser(
@@ -118,14 +116,14 @@ router.route("/verify-otp").post(async (req, res) => {
             );
             return res.status(200).json(updatedData);
         } else {
-            return res.status(400).send("Invalid OTP entered");
+            return handleError(res, "Invalid OTP entered");
         }
     } catch (e) {
         console.log(e);
         if (e.status) {
-            return res.status(e.status).send(e.message);
+            return handleError(res, e.message);
         }
-        return res.status(400).send(e);
+        return handleError(res, e);
     }
 });
 

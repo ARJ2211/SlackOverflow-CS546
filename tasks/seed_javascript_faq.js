@@ -1,6 +1,6 @@
 // seeds/seed_js_faq.js
 import * as questionUtils from "../mongoUtils/questionUtils.js";
-import * as validator from "../validator.js";
+import * as validator from "../utils/validator.js";
 import { fileURLToPath } from "url";
 import * as cliProgress from "cli-progress";
 import colors from "ansi-colors";
@@ -57,7 +57,7 @@ const seedJavaScriptFAQ = async () => {
             try {
                 lineData = validator.isValidString(lineData);
                 questionsList.push(lineData);
-            } catch (_) {}
+            } catch (_) { }
         }
     }
 
