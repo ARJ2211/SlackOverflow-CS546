@@ -1,3 +1,5 @@
+import * as validator from "./validator.js";
+
 const handleError = (res, error) => {
     let status = 400;
     let message = "Unknown error";
@@ -15,4 +17,18 @@ const handleError = (res, error) => {
     return res.status(status).json({ message });
 }
 
-export { handleError }
+const getCoursesForProfessor = async (user, coursesData) => {
+    if (!user) throw "User not found in session";
+
+    const userId = validator.isValidMongoId(user.id);
+    if (user.role !== "professor") return [];
+
+    const courses = await coursesData.getCourseByProfessorId(userId);
+    return courses.map(course => ({
+        _id: course._id.toString(),
+        course_id: course.course_id,
+        course_name: course.course_name
+    }));
+};
+
+export { handleError, getCoursesForProfessor }

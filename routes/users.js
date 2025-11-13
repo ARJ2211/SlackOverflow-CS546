@@ -50,7 +50,6 @@ router.route("/sign-in").post(async (req, res) => {
             name: userData.name,
             email: userData.email,
             role: userData.role,
-            isProfessor: userData.role === 'professor'
         };
 
         return res.status(200).json({ message: `Signing in as role: ${userData.role}` });

@@ -7,7 +7,7 @@ const ensureAuth = (req, res, next) => {
 
 const redirectIfAuthenticated = (req, res, next) => {
     if (req.session.user && req.originalUrl !== '/auth/sign-out') {
-        return res.redirect('/dashboard');
+        return res.redirect('/main/dashboard');
     }
     next();
 };

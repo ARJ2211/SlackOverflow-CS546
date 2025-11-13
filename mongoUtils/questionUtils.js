@@ -137,6 +137,25 @@ export const updateQuestion = async (filter, obj) => {
     return updatedObj;
 };
 
+
+/**
+ * get all questions including course id.
+ * @param {string} courseId
+ * @returns {Array}
+ */
+export const getQuestionsByCourseId = async (courseId) => {
+    courseId = validator.isValidMongoId(courseId);
+
+    const questionsColl = await questions();
+    const questionsArray = await questionsColl
+        .find({ course: courseId })
+        .sort({ created_time: -1 })
+        .toArray();
+
+    return questionsArray;
+};
+
+
 /**
  * Delete a question from the questions collection.
  * @param {*} questionId
