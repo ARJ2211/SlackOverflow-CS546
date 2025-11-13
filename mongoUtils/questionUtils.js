@@ -1,6 +1,6 @@
-import { Normalize, Jaccard, Tokens } from "../ragUtils/jaccardNormalizer.js";
+import { Normalize, Jaccard, Tokens } from "../utils/ragUtils/jaccardNormalizer.js";
 import { questions } from "../config/mongoCollections.js";
-import { getEmbedding } from "../ragUtils/getEmbeddings.js";
+import { getEmbedding } from "../utils/ragUtils/getEmbeddings.js";
 import * as validator from "../utils/validator.js";
 
 const THRESOLD = 0.9;

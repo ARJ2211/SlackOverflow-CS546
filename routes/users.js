@@ -45,6 +45,14 @@ router.route("/sign-in").post(async (req, res) => {
             return handleError(res, "Password is incorrect. Try again");
         }
 
+        req.session.user = {
+            id: userData._id,
+            name: userData.name,
+            email: userData.email,
+            role: userData.role,
+            isProfessor: userData.role === 'professor'
+        };
+
         return res.status(200).json({ message: `Signing in as role: ${userData.role}` });
     } catch (e) {
         console.log(e);

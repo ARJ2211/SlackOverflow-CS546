@@ -24,8 +24,6 @@ const handleSignIn = (event) => {
                 return;
             }
 
-            // if (body.token) localStorage.setItem("token", body.token);
-
             showToast("Login successful! Redirecting...", "success");
 
             setTimeout(() => {

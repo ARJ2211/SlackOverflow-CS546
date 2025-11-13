@@ -1,7 +1,8 @@
 import usersRoutes from "./users.js";
 import coursesRoutes from "./course.js";
-import authRenderRoutes from "./authRender.js";
-
+import renderAuthRoutes from "./renderAuth.js";
+import renderDashboardRoutes from "./renderDashboard.js";
+import { ensureAuth, redirectIfAuthenticated, noCacheAuth } from "../middleware/auth.js";
 import { static as staticDir } from 'express';
 import path from 'path';
 
@@ -12,7 +13,8 @@ const constructorMethod = (app) => {
         res.redirect('auth/sign-in');
     });
 
-    app.use("/auth", authRenderRoutes);
+    app.use("/auth", redirectIfAuthenticated, noCacheAuth, renderAuthRoutes);
+    app.use('/dashboard', ensureAuth, renderDashboardRoutes);
 
     app.use('/public', staticDir('public'));
     app.use("/{*splat}", (req, res) => {
