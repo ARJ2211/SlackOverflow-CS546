@@ -21,6 +21,7 @@ router.get('/dashboard', async (req, res) => {
             layout: 'main',
             title: 'Dashboard',
             page: "Dashboard",
+            path: '/ dashboard',
             courses: courses,
         });
     } catch (error) {
@@ -51,6 +52,7 @@ router.get('/courses/:id', async (req, res) => {
             layout: 'main',
             title: `${course.course_id} ${course.course_name}`,
             page: `Course ${course.course_id} ${course.course_name}`,
+            path: `/ courses / ${course.course_id}`,
             selectedCourse: courseId.toString(),
             courses: courses,
             course: course,
@@ -76,6 +78,7 @@ router.get('/management/course', async (req, res) => {
             layout: 'main',
             title: 'Course Management',
             page: "Course Management",
+            path: '/ management / course',
             courses: courses,
         });
     } catch (error) {
@@ -97,6 +100,7 @@ router.get('/management/student', async (req, res) => {
             layout: 'main',
             title: 'Student Management',
             page: "Student Management",
+            path: '/ management / student',
             courses: courses,
         });
     } catch (error) {
@@ -118,6 +122,7 @@ router.get('/analytics', async (req, res) => {
             layout: 'main',
             title: 'Analytics',
             page: "Analytics",
+            path: '/ analytics',
             courses: courses,
         });
     } catch (error) {
@@ -139,7 +144,12 @@ router.get('/profile', async (req, res) => {
             layout: 'main',
             title: 'Profile',
             page: "Profile",
+            path: '/ profile',
             courses: courses,
+            userInitials: userData.name
+                ? userData.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                : 'U',
+
         });
     } catch (error) {
         console.error("/main/profile Error:", error);

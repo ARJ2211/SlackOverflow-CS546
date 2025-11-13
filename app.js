@@ -18,7 +18,7 @@ app.use(methodOverride);
 app.use(setSessionLocals);
 app.engine('handlebars', handlebars.engine({
     defaultLayout: 'main',
-    helpers: { eq: (a, b) => a === b }
+    helpers: { eq: (a, b) => a === b, json: context => JSON.stringify(context) }
 }));
 app.set('view engine', 'handlebars');
 
