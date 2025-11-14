@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import * as validatorPackage from "validator";
 
 /**
  * Used to validate the type of variable is an array or not
@@ -106,11 +107,42 @@ export const isValidBoolean = (val) => {
  * Used to check if the type of string is a valid mongo
  * object ID and if yes, return it.
  * @param {*} val
+ * @returns {ObjectId}
  */
 export const isValidMongoId = (val) => {
+    if (val instanceof ObjectId) {
+        return val;
+    }
     val = isValidString(val);
+
     if (!ObjectId.isValid(val)) {
         throw `ERROR: not a valid mongo object id`;
     }
-    return new ObjectId.createFromHexString(val);
+    return ObjectId.createFromHexString(val);
+};
+
+/**
+ * Used to check if a string is a valid email
+ * id and then return the trimmed value
+ */
+export const isValidEmail = (val) => {
+    val = isValidString(val);
+    if (!validatorPackage.default.isEmail(val)) {
+        throw `ERROR: not a valid email`;
+    }
+    return val;
+};
+
+/**
+ * Used to check if the user has a valid
+ * role or not [professor, ta, student]
+ */
+export const isValidRole = (val) => {
+    val = isValidString(val);
+    const validRoles = new Set(["professor", "student"]);
+
+    if (!validRoles.has(val)) {
+        throw `ERROR: role does not exist`;
+    }
+    return val;
 };

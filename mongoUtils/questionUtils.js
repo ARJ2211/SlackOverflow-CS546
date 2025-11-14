@@ -1,7 +1,7 @@
 import { Normalize, Jaccard, Tokens } from "../ragUtils/jaccardNormalizer.js";
 import { questions } from "../config/mongoCollections.js";
 import { getEmbedding } from "../ragUtils/getEmbeddings.js";
-import * as validator from "../validator.js";
+import * as validator from "../utils/validator.js";
 
 const THRESOLD = 0.9;
 const JACCARD_THRESHOLD = 0.65;
@@ -12,8 +12,8 @@ const JACCARD_THRESHOLD = 0.65;
  * @param {*} question
  * @returns {Object}
  */
-export const createQuestion = async (question, course) => {
-    course = validator.isValidString(course); //TODO: This has to be a mongo ObjectID
+export const createQuestion = async (question, course_id) => {
+    course_id = validator.isValidMongoId(course_id);
     question = validator.isValidString(question);
 
     const questionsColl = await questions();
@@ -45,7 +45,7 @@ export const createQuestion = async (question, course) => {
         canonical_key, // helps prevent trivial duplicates like punctuation/case changes
         created_time: new Date(),
         replies: [], // will be empty on create as no replies yet
-        course: course, // TODO: will need to get the course ID from the input params
+        course: course_id,
     };
 
     const { insertedId } = await questionsColl.insertOne(doc);
