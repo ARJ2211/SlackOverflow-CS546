@@ -11,7 +11,7 @@ router.get("/sign-in", (req, res) => {
 router.get('/sign-out', (req, res) => {
     return req.session.destroy(() => {
         res.clearCookie('SlackOverflowSession');
-        res.redirect('auth/sign-in');
+        res.redirect('/auth/sign-in');
     });
 });
 

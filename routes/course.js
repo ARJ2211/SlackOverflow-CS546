@@ -1,7 +1,7 @@
 import * as coursesData from "../mongoUtils/courseUtils.js";
 import { getUserById } from "../mongoUtils/usersUtils.js";
 import * as validator from "../utils/validator.js";
-
+import { handleError } from "../utils/helperFunctions.js";
 import { Router } from "express";
 
 const router = Router();
@@ -21,12 +21,10 @@ router
                 reqBody.course_name
             );
             reqBody.course_id = validator.isValidCourseId(reqBody.course_id);
-            reqBody.course_description = validator.isValidString(
-                reqBody.course_description
-            );
-            reqBody.created_by = validator.isValidMongoId(reqBody.created_by);
+            reqBody.course_description = validator.isValidString(reqBody.course_description, "course_description");
+            reqBody.created_by = validator.isValidMongoId(reqBody.created_by, "created_by");
         } catch (e) {
-            return res.status(400).send(e);
+            return handleError(res, e);
         }
 
         try {
@@ -39,9 +37,9 @@ router
             return res.status(200).json(createdCourse);
         } catch (e) {
             if (e.status) {
-                return res.status(e.status).send(e.message);
+                return handleError(res, e.message);
             }
-            return res.status(400).send(e);
+            return handleError(res, e);
         }
     });
 
@@ -147,12 +145,13 @@ router
                 reqBody.email,
                 reqBody.is_ta
             );
-            return res.status(200).json(studentUser);
+            return res.status(200).json({ message: "Student enrolled successfully!" });
         } catch (e) {
             if (e.status) {
-                return res.status(e.status).send(e.message);
+
+                return handleError(res, e.message)
             }
-            return res.status(400).send(e?.message || e);
+            return handleError(res, e?.message || e);
         }
     });
 

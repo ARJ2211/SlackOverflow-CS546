@@ -3,19 +3,32 @@ import * as coursesData from "../mongoUtils/courseUtils.js";
 import * as questionsData from "../mongoUtils/questionUtils.js";
 
 import * as validator from "../utils/validator.js";
-import { handleError, getCoursesForProfessor } from "../utils/helperFunctions.js";
+import { handleError } from "../utils/helperFunctions.js";
+import { getAllStudentsByCourseId } from '../mongoUtils/studentsUtils.js';
 
 const router = Router();
 
 // Dashboard 
 router.get('/dashboard', async (req, res) => {
 
-    const userData = req.session.user;
+    const userSesData = req.session.user;
     let courses = [];
 
     try {
-        courses = await getCoursesForProfessor(userData, coursesData);
 
+        if (userSesData.role == "professor") {
+            const professorId = validator.isValidMongoId(userSesData.id);
+            courses = await coursesData.getCourseByProfessorId(professorId);
+        } else {
+            const studentId = validator.isValidMongoId(userSesData.id);
+            courses = await coursesData.getCourseByStudentId(studentId)
+        }
+
+        courses = courses.map(course => ({
+            _id: course._id.toString(),
+            course_id: course.course_id,
+            course_name: course.course_name
+        }))
 
         return res.render('main/dashboard', {
             layout: 'main',
@@ -38,15 +51,29 @@ router.get('/courses/:id', async (req, res) => {
     let course;
     let questions = []
 
-    const userData = req.session.user;
+    const userSesData = req.session.user;
 
     try {
 
         courseId = validator.isValidMongoId(req.params.id);
-        courses = await getCoursesForProfessor(userData, coursesData);
+
+        if (userSesData.role == "professor") {
+            const professorId = validator.isValidMongoId(userSesData.id);
+            courses = await coursesData.getCourseByProfessorId(professorId);
+        } else {
+            const studentId = validator.isValidMongoId(userSesData.id);
+            courses = await coursesData.getCourseByStudentId(studentId)
+        }
+
+        courses = courses.map(course => ({
+            _id: course._id.toString(),
+            course_id: course.course_id,
+            course_name: course.course_name
+        }))
 
         course = await coursesData.getCourseById(courseId);
         questions = await questionsData.getQuestionsByCourseId(courseId);
+
 
         return res.render('main/course', {
             layout: 'main',
@@ -68,11 +95,17 @@ router.get('/courses/:id', async (req, res) => {
 // Course Management
 router.get('/management/course', async (req, res) => {
 
-    const userData = req.session.user;
+    const userSesData = req.session.user;
     let courses = [];
 
     try {
-        courses = await getCoursesForProfessor(userData, coursesData);
+        const professorId = validator.isValidMongoId(userSesData.id);
+
+        courses = await coursesData.getCourseByProfessorId(professorId);
+
+        courses.forEach(course => {
+            delete course.enrolled_students;
+        });
 
         return res.render('main/management/course', {
             layout: 'main',
@@ -90,18 +123,28 @@ router.get('/management/course', async (req, res) => {
 // Student Management
 router.get('/management/student', async (req, res) => {
 
-    const userData = req.session.user;
+    const userSesData = req.session.user;
     let courses = [];
+    let students = []
 
     try {
-        courses = await getCoursesForProfessor(userData, coursesData);
+        const professorId = validator.isValidMongoId(userSesData.id);
+
+        courses = await coursesData.getCourseByProfessorId(professorId);
+
+        for (const course of courses) {
+            const tempStudentArr = await getAllStudentsByCourseId(course._id);
+            students.push(...tempStudentArr);
+        }
 
         return res.render('main/management/student', {
             layout: 'main',
             title: 'Student Management',
             page: "Student Management",
             path: '/ management / student',
+            students: students,
             courses: courses,
+
         });
     } catch (error) {
         console.error("/main/management/student Error:", error);
@@ -112,11 +155,19 @@ router.get('/management/student', async (req, res) => {
 // Analytics
 router.get('/analytics', async (req, res) => {
 
-    const userData = req.session.user;
+    const userSesData = req.session.user;
     let courses = [];
 
     try {
-        courses = await getCoursesForProfessor(userData, coursesData);
+        const professorId = validator.isValidMongoId(userSesData.id);
+
+        courses = await coursesData.getCourseByProfessorId(professorId);
+
+        courses = courses.map(course => ({
+            _id: course._id.toString(),
+            course_id: course.course_id,
+            course_name: course.course_name
+        }))
 
         return res.render('main/analytics', {
             layout: 'main',
@@ -134,11 +185,23 @@ router.get('/analytics', async (req, res) => {
 // Profile
 router.get('/profile', async (req, res) => {
 
-    const userData = req.session.user;
+    const userSesData = req.session.user;
     let courses = [];
 
     try {
-        courses = await getCoursesForProfessor(userData, coursesData);
+        if (userSesData.role == "professor") {
+            const professorId = validator.isValidMongoId(userSesData.id);
+            courses = await coursesData.getCourseByProfessorId(professorId);
+        } else {
+            const studentId = validator.isValidMongoId(userSesData.id);
+            courses = await coursesData.getCourseByStudentId(studentId)
+        }
+
+        courses = courses.map(course => ({
+            _id: course._id.toString(),
+            course_id: course.course_id,
+            course_name: course.course_name
+        }))
 
         return res.render('main/profile', {
             layout: 'main',
@@ -146,10 +209,6 @@ router.get('/profile', async (req, res) => {
             page: "Profile",
             path: '/ profile',
             courses: courses,
-            userInitials: userData.name
-                ? userData.name.split(' ').map(n => n[0]).join('').toUpperCase()
-                : 'U',
-
         });
     } catch (error) {
         console.error("/main/profile Error:", error);

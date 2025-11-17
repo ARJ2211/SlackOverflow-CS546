@@ -114,6 +114,19 @@ export const getCourseByProfessorId = async (professorId) => {
     return professorCourses;
 };
 
+export const getCourseByStudentId = async (studentId) => {
+    const coursesColl = await courses();
+    try {
+        studentId = validator.isValidMongoId(studentId);
+    } catch (e) {
+        throw { status: 400, message: e };
+    }
+    const studentCourses = coursesColl
+        .find({ "enrolled_students.user_id": studentId })
+        .toArray();
+    return studentCourses;
+};
+
 /**
  * Updates the cousre document and returns the updated
  * document back

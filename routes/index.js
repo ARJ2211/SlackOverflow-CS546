@@ -14,7 +14,7 @@ const constructorMethod = (app) => {
     });
 
     app.use("/auth", redirectIfAuthenticated, noCacheAuth, renderAuthRoutes);
-    app.use('/main', ensureAuth, renderMainRoutes);
+    app.use('/main', ensureAuth, noCacheAuth, renderMainRoutes);
 
     app.use('/public', staticDir('public'));
     app.use("/{*splat}", (req, res) => {
