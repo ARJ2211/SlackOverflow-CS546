@@ -63,8 +63,8 @@
                 {{#if courses.length}}
                 {{#each courses}}
                 <a href="/main/courses/{{this._id}}"
-                    class="flex items-center  text-sm shadow-md font-medium rounded-lg px-3 py-2
-                            {{#if (eq ../selectedCourse this._id)}} bg-[#F0BD66] text-white {{else}} text-gray-700 hover:bg-gray-100{{/if}}">
+                    class="flex items-center   text-sm shadow-md font-medium rounded-lg px-3 py-2
+                            {{#if (eq ../selectedCourse this._id)}} bg-[#F0BD66] text-white {{else}} text-gray-700 bg-white hover:bg-gray-100{{/if}}">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor"
                         class="size-4 mr-2  {{#if (eq ../selectedCourse this._id)}} text-white {{else}}text-gray-400{{/if}}">
@@ -108,7 +108,7 @@
 
                 <a href="/main/management/course"
                     class="flex items-center  text-sm  shadow-md font-medium rounded-lg px-3 py-2
-                            {{#if (eq page 'Course Management')}} bg-[#F0BD66] text-white {{else}} text-gray-700 hover:bg-gray-100{{/if}}">
+                            {{#if (eq page 'Course Management')}} bg-[#F0BD66] text-white {{else}} text-gray-700 bg-white hover:bg-gray-100{{/if}}">
 
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor"
@@ -123,7 +123,7 @@
 
                 <a href="/main/management/student"
                     class="flex items-center  text-sm  shadow-md font-medium rounded-lg px-3 py-2
-                            {{#if (eq page 'Student Management')}} bg-[#F0BD66] text-white {{else}} text-gray-700 hover:bg-gray-100{{/if}}">
+                            {{#if (eq page 'Student Management')}} bg-[#F0BD66] text-white {{else}} text-gray-700 bg-white hover:bg-gray-100{{/if}}">
 
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor"
