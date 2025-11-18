@@ -1,7 +1,22 @@
 <div class="w-full h-full px-6 py-4">
     <!-- Header -->
     <div class="flex items-center justify-between mb-4 border-b pb-2">
-        <h1 class="text-2xl font-semibold text-gray-800">{{title}}</h1>
+        <div>
+            <h1 class="text-xl font-semibold text-gray-800">{{title}}
+
+            </h1>
+            <p class="text-gray-400 text-sm  flex items-center gap-1">
+                <a href="/">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        class="size-4 hover:text-[#F0BD66] ">
+                        <path fill-rule="evenodd"
+                            d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </a>
+                {{path}}
+            </p>
+        </div>
         <button
             class="bg-[#F0BD66] text-white flex items-center font-medium px-5 py-2 rounded-3xl hover:bg-[#e3aa4e] transition">
 

@@ -74,7 +74,6 @@ router.get('/courses/:id', async (req, res) => {
         course = await coursesData.getCourseById(courseId);
         questions = await questionsData.getQuestionsByCourseId(courseId);
 
-
         return res.render('main/course', {
             layout: 'main',
             title: `${course.course_id} ${course.course_name}`,
