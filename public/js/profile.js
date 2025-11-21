@@ -50,8 +50,6 @@ const handleUpdateProfile = (event) => {
         body.password = password
     }
 
-    console.log(body)
-
     if (Object.keys(body).length === 0) {
         showToast("No changes made.", "error")
         button.disabled = false

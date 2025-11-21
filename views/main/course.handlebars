@@ -1,4 +1,4 @@
-<div class="w-full h-full px-6 py-4">
+<div onclick="handleOutsideClick(event)" class="w-full h-full px-6 py-4">
     <!-- Header -->
     <div class="flex items-center justify-between mb-4 border-b pb-2">
         <div>
@@ -18,7 +18,7 @@
             </p>
         </div>
         <div class="flex gap-2">
-            <button id="openFilter"
+            <button onclick="handleFilterDropdown()" id="openFilter"
                 class="bg-[#F0BD66] text-white flex items-center font-medium px-5 py-2 rounded-3xl hover:bg-[#e3aa4e] transition">
                 Filters
 
@@ -44,7 +44,7 @@
     </div>
 
     <!-- Page Content -->
-    <div id="courseBodyContainer" data-course-id='{{{selectedCourse}}}'
+    <div id="courseContainer" data-course-id='{{{selectedCourse}}}'
         class=" flex-1  flex flex-col overflow-y-auto h-[88%] w-full gap-4 ">
         {{#if questions.length}}
         {{#each questions}}
@@ -53,15 +53,23 @@
             class="bg-white rounded-3xl shadow-sm py-3 px-6 border border-[#F0BD66] hover:cursor-pointer hover:bg-[#fcfaf6] hover:shadow-md">
             <div class=" flex items-center justify-between mb-2">
                 <div class="flex gap-3">
-                    <div class="border border-[#F0BD66] text-[#F0BD66] text-sm  px-4 rounded-3xl ">
-                        Assignment 1
+                    {{#each this.labels}}
+                    <div key="{{this._id}}" class="border border-[#F0BD66] text-[#F0BD66] text-sm  px-4 rounded-3xl ">
+                        {{this.name}}
                     </div>
-                    <div class="border border-[#F0BD66] text-[#F0BD66] text-sm  px-4 rounded-3xl ">
-                        Project
-                    </div>
+                    {{/each}}
                 </div>
                 <div>
-                    <span class="text-sm text-gray-500 font-medium">CS546 Web Programming</span>
+                    {{#if (eq this.status "open")}}
+
+                    <div class="border border-green-500 text-green-500 text-sm  px-4 rounded-3xl ">
+                        {{this.status}}
+                    </div>
+                    {{else}}
+                    <div class="border border-gray-500 text-gray-500 text-sm  px-4 rounded-3xl ">
+                        Closed
+                    </div>
+                    {{/if}}
                 </div>
             </div>
 
@@ -78,8 +86,8 @@
                             d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                     </svg>
 
-                    <span class="font-medium">Swapnil Jadhav</span>
-                    <span>asked 5h ago</span>
+                    <span class="font-medium">{{this.user.first_name}} {{this.user.last_name}}</span>
+                    <span>asked {{this.timeAgo}}</span>
                 </div>
 
                 <div class="flex items-center gap-6">
@@ -90,10 +98,23 @@
                                 d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
                         </svg>
 
-                        <span>8 answers</span>
+                        <span>{{#if this.answer_count}}{{this.answer_count}}{{else}}0{{/if}} answers</span>
+
                     </div>
 
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-4">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
 
+
+                        <span>{{#if this.views}}{{this.views}}{{else}}0{{/if}} views</span>
+
+                    </div>
 
                     <div class="flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -102,7 +123,7 @@
                                 d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
                         </svg>
 
-                        <span>5 votes</span>
+                        <span>{{#if this.votes}}{{this.votes}}{{else}}0{{/if}} votes</span>
                     </div>
                 </div>
             </div>
@@ -113,130 +134,7 @@
         {{/if}}
     </div>
 
-    <div id="filterDropdown" class="absolute right-10 top-20 w-72 bg-white rounded-xl shadow-lg border
-            opacity-0 scale-95 pointer-events-none transition-all duration-200 z-50">
 
-
-        <div class="flex items-center justify-between p-4 border-b">
-            <h3 class="text-lg font-semibold text-gray-800">Filters</h3>
-
-            <div class="flex items-center gap-4 text-[#F0BD66] text-sm font-medium">
-                <button class="hover:underline">Save view</button>
-                <button class="hover:underline">Clear all</button>
-            </div>
-        </div>
-
-
-        <div class="p-4">
-            <input type="text" placeholder="Search..."
-                class="w-full px-3 py-2 text-sm border rounded-lg focus:ring focus:ring-[#F0BD66] focus:outline-none  mb-4">
-
-            <div class="">
-                <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
-                    Labels
-                    <span class="text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                            <path fill-rule="evenodd"
-                                d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-                                clip-rule="evenodd" />
-                        </svg>
-
-                    </span>
-                </div>
-                <hr class="my-2">
-                <ul class="space-y-2 text-sm h-32 overflow-auto">
-                    <li class="flex items-center gap-2">
-                        <input type="checkbox" class="w-4 h-4">
-                        <label>Assignment 1</label>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <input type="checkbox" class="w-4 h-4">
-                        <label>Assignment 2</label>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <input type="checkbox" class="w-4 h-4">
-                        <label>Assignment 3</label>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <input type="checkbox" class="w-4 h-4">
-                        <label>Final project</label>
-                    </li>
-                    <li class="flex items-center gap-2">
-                        <input type="checkbox" class="w-4 h-4">
-                        <label>Other</label>
-                    </li>
-                </ul>
-            </div>
-            <hr class="my-2">
-            <div class="">
-                <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
-                    Asked by
-                    <span class="text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                            <path fill-rule="evenodd"
-                                d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-                                clip-rule="evenodd" />
-                        </svg>
-
-                    </span>
-                </div>
-                <hr class="my-2">
-                <input type="text" placeholder="John Snow"
-                    class="w-full px-3 py-2 text-sm border rounded-lg focus:ring focus:ring-[#F0BD66] focus:outline-none ">
-            </div>
-            <hr class="my-2">
-            <div class="">
-                <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
-                    Status
-                    <span class="text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
-                            <path fill-rule="evenodd"
-                                d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
-                                clip-rule="evenodd" />
-                        </svg>
-
-                    </span>
-                </div>
-                <hr class="my-2">
-                <div class="flex items-center gap-3">
-
-                    <label class="relative inline-block w-10 h-5 cursor-pointer">
-                        <input type="checkbox" checked class="peer sr-only">
-                        <span
-                            class="absolute inset-0 bg-gray-300 rounded-full peer-checked:bg-[#F0BD66] transition"></span>
-                        <span
-                            class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition"></span>
-                    </label>
-
-                    <span class="text-sm font-medium text-gray-500">Open</span>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-
-    <script>
-        const filterDropdown = document.getElementById("filterDropdown");
-        const filterBtn = document.getElementById("openFilter");
-
-        filterBtn.onclick = () => {
-            const isOpen = filterDropdown.classList.contains("pointer-events-none");
-
-            if (isOpen) {
-                filterDropdown.classList.remove("opacity-0", "scale-95", "pointer-events-none");
-            } else {
-                filterDropdown.classList.add("opacity-0", "scale-95", "pointer-events-none");
-            }
-        };
-
-        document.addEventListener("click", (e) => {
-            if (!filterDropdown.contains(e.target) && e.target !== filterBtn) {
-                filterDropdown.classList.add("opacity-0", "scale-95", "pointer-events-none");
-            }
-        });
-
-    </script>
 
 
 
@@ -248,7 +146,7 @@
 
         <div class=" mt-0  ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
             <div class="bg-white border border-gray-200 rounded-xl shadow-2xs pointer-events-auto">
-                <form onsubmit="handleUpdateProfile(event)">
+                <form onsubmit="handleSaveQuestion(event)">
                     <div class="p-4 sm:p-7">
                         <div class="text-center">
                             <h3 class="block text-xl sm:text-2xl font-semibold text-gray-800">Ask question</h3>
@@ -263,7 +161,21 @@
                         <div class="mt-8 sm:mt-10 ">
 
                             <div class="mb-3 flex-1">
-                                <textarea type="text" id="course_description" name="course_description"
+                                <label for="labels" class="block mb-2.5 text-sm font-medium text-heading">Labels</label>
+                                <select id="labels" name="labels[]"
+                                    class="py-2.5 sm:py-3 px-4  block w-full border border-gray-200 rounded-lg sm:text-sm focus:outline-none focus:border-yellow-500 focus:ring-yellow-500 disabled:opacity-50 disabled:pointer-events-none "
+                                    multiple>
+                                    <option value="" disabled>Choose labels</option>
+                                    {{#each course.labels}}
+                                    <option value="{{this._id}}">{{this.name}}
+                                    </option>
+                                    {{/each}}
+                                </select>
+                            </div>
+                            <div class="mb-3 flex-1">
+                                <label for="question"
+                                    class="block mb-2.5 text-sm font-medium text-heading">Question</label>
+                                <textarea type="text" id="question" name="question"
                                     class="py-2.5 sm:py-3 px-4 block w-full border border-gray-200 rounded-lg sm:text-sm  focus:outline-none focus:border-yellow-500 focus:ring-yellow-500 disabled:opacity-50 disabled:pointer-events-none "
                                     placeholder="NodeJs basics and express" required></textarea>
                             </div>
@@ -289,6 +201,111 @@
         </div>
 
     </div>
+
+
+    <form onsubmit="handleApplyFilters(event)" id="filterDropdown" class="absolute right-10 top-20 w-72 bg-white rounded-xl shadow-lg border
+            opacity-0 scale-95 pointer-events-none transition-all duration-200 z-50">
+
+
+        <div class="flex items-center justify-between p-4 border-b">
+            <h3 class="text-lg font-semibold text-gray-800">Filters</h3>
+
+            <div class="flex items-center gap-4 text-[#F0BD66] text-sm font-medium">
+                <button type="submit" class="hover:underline">Save view</button>
+                <button type="reset" onclick="handleClearFilters(event)" class="hover:underline">Clear all</button>
+            </div>
+        </div>
+
+
+        <div class="p-4">
+            <input type="text" name="question" placeholder="Search question..."
+                class="w-full px-3 py-2 text-sm border rounded-lg focus:ring focus:ring-[#F0BD66] focus:outline-none  mb-4">
+
+            <div class="">
+                <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
+                    Labels
+                    <span class="text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                            <path fill-rule="evenodd"
+                                d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                                clip-rule="evenodd" />
+                        </svg>
+
+                    </span>
+                </div>
+                <hr class="my-2">
+                <ul class="space-y-2 text-sm h-20 overflow-auto">
+                    {{#each course.labels}}
+                    <li class="flex items-center gap-2">
+                        <input type="checkbox" name="labels[]" value="{{this._id}}" class="w-4 h-4">
+                        <label>{{this.name}}</label>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+            <hr class="my-2">
+            <div class="">
+                <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
+                    Asked by
+                    <span class="text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                            <path fill-rule="evenodd"
+                                d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                                clip-rule="evenodd" />
+                        </svg>
+
+                    </span>
+                </div>
+                <hr class="my-2">
+                <input type="text" name="user_name" placeholder="John Snow"
+                    class="w-full px-3 py-2 text-sm border rounded-lg focus:ring focus:ring-[#F0BD66] focus:outline-none ">
+            </div>
+            <hr class="my-2">
+            <div class="">
+                <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
+                    Status
+                    <span class="text-gray-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                            <path fill-rule="evenodd"
+                                d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                                clip-rule="evenodd" />
+                        </svg>
+
+                    </span>
+                </div>
+                <hr class="my-2">
+                <div class="flex items-center gap-3">
+
+                    <label class="relative inline-block w-10 h-5 cursor-pointer">
+                        <input type="checkbox" name="status_open" class="peer sr-only">
+                        <span
+                            class="absolute inset-0 bg-gray-300 rounded-full peer-checked:bg-[#F0BD66] transition"></span>
+                        <span
+                            class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition"></span>
+                    </label>
+
+                    <span class="text-sm font-medium text-gray-500">Open</span>
+
+                </div>
+                <div class="flex items-center gap-3 mt-2">
+
+                    <label class="relative inline-block w-10 h-5 cursor-pointer">
+                        <input type="checkbox" name="status_closed" class="peer sr-only">
+                        <span
+                            class="absolute inset-0 bg-gray-300 rounded-full peer-checked:bg-[#F0BD66] transition"></span>
+                        <span
+                            class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition"></span>
+                    </label>
+
+                    <span class="text-sm font-medium text-gray-500">Closed</span>
+
+                </div>
+            </div>
+        </div>
+    </form>
+
+
+
 
     <script src="/public/js/course.js"></script>
 

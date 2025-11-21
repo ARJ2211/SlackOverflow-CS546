@@ -12,7 +12,7 @@ const JACCARD_THRESHOLD = 0.65;
  * @param {*} question
  * @returns {Object}
  */
-export const createQuestion = async (question, course_id) => {
+export const createQuestion = async (question, course_id, user_id, labels = []) => {
     course_id = validator.isValidMongoId(course_id);
     question = validator.isValidString(question);
 
@@ -46,6 +46,14 @@ export const createQuestion = async (question, course_id) => {
         created_time: new Date(),
         replies: [], // will be empty on create as no replies yet
         course: course_id,
+        user_id: user_id,
+        labels: labels,
+        up_votes: [],
+        bookmarks: [],
+        accepted_answer_id: null,
+        status: "open",
+        answer_count: 0,
+        views: 0
     };
 
     const { insertedId } = await questionsColl.insertOne(doc);
@@ -149,6 +157,47 @@ export const getQuestionsByCourseId = async (courseId) => {
     const questionsColl = await questions();
     const questionsArray = await questionsColl
         .find({ course: courseId })
+        .sort({ created_time: -1 })
+        .toArray();
+
+    return questionsArray;
+};
+
+
+export const getQuestionsByCourseIdFiltered = async (courseId, filters) => {
+    courseId = validator.isValidMongoId(courseId);
+
+    let {
+        question = "",
+        status_open = "",
+        status_closed = "",
+        labels = []
+    } = filters
+
+    let query = { course: courseId };
+
+    if (question.trim() !== "") {
+        question = validator.isValidString(question);
+        query.question = { $regex: new RegExp(question.trim(), "i") };
+    }
+
+    if (status_open && !status_closed) {
+        query.status = "open";
+    } else if (!status_open && status_closed) {
+        query.status = "closed";
+    }
+
+    if (labels && labels.length > 0) {
+        labels = labels.map((id) => {
+            return validator.isValidMongoId(id, "query.labels");
+        });
+
+        query["labels"] = { $all: labels };
+    }
+
+    const questionsColl = await questions();
+    const questionsArray = await questionsColl
+        .find(query)
         .sort({ created_time: -1 })
         .toArray();
 

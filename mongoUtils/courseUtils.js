@@ -252,6 +252,19 @@ export const addLabelToCourse = async (id, label) => {
     return updatedObj;
 };
 
+export const getLabelsByCourseId = async (id) => {
+    id = validator.isValidMongoId(id);
+    const courseColl = await courses();
+    const course = await courseColl.findOne(
+        { _id: id },
+        { projection: { labels: 1 } }
+    );
+
+    if (!course) throw { status: 404, message: "Course not found" };
+
+    return course.labels;
+};
+
 /**
  * Enroll a student to course. Create their user profile
  * and send them an email to authenticate themselves.
