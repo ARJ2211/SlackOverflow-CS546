@@ -106,14 +106,17 @@ const handleApplyFilters = async (event) => {
     const status_closed = form.status_closed.checked ? "closed" : ""
 
     const params = new URLSearchParams()
-    params.append("question", question)
-    params.append("user_name", user_name)
-    params.append("status_open", status_open)
-    params.append("status_closed", status_closed)
 
-    labels.forEach(label => params.append("labels", label))
+    if (question) params.append("question", question)
+    if (user_name) params.append("user_name", user_name)
+    if (status_open) params.append("status_open", status_open)
+    if (status_closed) params.append("status_closed", status_closed)
+
+
+    if (labels.length > 0) labels.forEach(label => params.append("labels", label))
 
     const url = `/main/courses/${course_id}/filters?${params.toString()}`;
+
     window.location.href = url;
 
     return false
