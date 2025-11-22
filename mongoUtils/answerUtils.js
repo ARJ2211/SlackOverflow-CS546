@@ -1,6 +1,6 @@
 import { answers } from "../config/mongoCollections.js";
 import { ObjectId } from "mongodb";
-import * as validator from "../validator.js";
+import * as validator from "../utils/validator.js";
 
 /**
  * create answer 
