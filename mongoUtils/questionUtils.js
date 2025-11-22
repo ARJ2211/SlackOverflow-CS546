@@ -178,7 +178,8 @@ export const getQuestionsByCourseIdFiltered = async (courseId, filters) => {
 
     if (question.trim() !== "") {
         question = validator.isValidString(question);
-        query.question = { $regex: new RegExp(question.trim(), "i") };
+        question = question.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        query.question = { $regex: new RegExp(question, "i") };
     }
 
     if (status_open && !status_closed) {

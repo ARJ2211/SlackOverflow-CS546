@@ -117,9 +117,26 @@ const handleApplyFilters = async (event) => {
 
     const url = `/main/courses/${course_id}/filters?${params.toString()}`;
 
-    window.location.href = url;
+    try {
+        const response = await fetch(url, {
+            method: "GET"
+        });
 
-    return false
+        if (response.status !== 200) {
+            const data = await response.json();
+            showToast(data.message || "Unknown error in apply filters", "error");
+            return;
+        }
+
+        window.location.href = url;
+
+    } catch (err) {
+        console.error("handleApplyFilters error:", err);
+        showToast("Server error. Please try again.", "error");
+    }
+
+    return false;
+
 
 }
 
