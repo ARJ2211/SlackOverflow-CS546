@@ -1,5 +1,6 @@
 # Node.js
 node_modules/
+package-lock.json
 npm-debug.log*
 .env
 .DS_Store
@@ -30,3 +31,6 @@ Thumbs.db
 .github
 config/settings.js
 models/
+test.js
+test-email.js
+gmail_creds.json

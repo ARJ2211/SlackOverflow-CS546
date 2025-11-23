@@ -1,5 +1,6 @@
 import { dbConnection, closeConnection } from "../config/mongoConnection.js";
 import seedProfessors from "./seed_professors.js";
+import seedJavaScriptFAQ from "./seed_javascript_faq.js";
 import { createVectorIndex } from "./seed_vector_index.js";
 
 try {
@@ -8,15 +9,20 @@ try {
     await db.dropDatabase();
     console.log("Dropping database completed!");
 
-    console.log("Seeding professors");
+    console.log("\nSeeding professors");
     const count = await seedProfessors();
     console.log(`Seeding professors complete! seeded ${count} records`);
 
     await db.createCollection("questions").catch(() => {});
-
-    console.log("Creating the vector index");
+    console.log("\nCreating the vector index");
     await createVectorIndex();
     console.log("Creating the vector index completed!");
+
+    console.log("\nSeeding javascript FAQ questions");
+    const questions = await seedJavaScriptFAQ();
+    console.log(
+        `Seeding javascript FAQ questions complete! seeded ${questions} records`
+    );
 } catch (e) {
     console.error("Seed failed:", e);
 } finally {
