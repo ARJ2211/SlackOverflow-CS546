@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 import { courses, users } from "../config/mongoCollections.js";
 import randomName from "@scaleway/random-name";
-import { createUser, sendSaveOTP, getUserById } from "./usersUtils.js";
+import { createUser, sendSaveOTP, getUserById } from "./users.js";
 import * as validator from "../utils/validator.js";
 
 const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

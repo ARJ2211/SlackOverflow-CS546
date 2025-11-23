@@ -1,4 +1,4 @@
-import * as usersData from "../mongoUtils/usersUtils.js";
+import * as usersData from "../data/users.js";
 import * as validator from "../utils/validator.js";
 import { handleError } from "../utils/helperFunctions.js";
 import { Router } from "express";

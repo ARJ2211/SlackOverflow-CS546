@@ -1,4 +1,4 @@
-import * as usersUtils from "../mongoUtils/usersUtils.js";
+import * as usersUtils from "../data/users.js";
 import * as validator from "../utils/validator.js";
 import { fileURLToPath } from "url";
 import * as cliProgress from "cli-progress";
