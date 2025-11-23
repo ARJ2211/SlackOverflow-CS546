@@ -25,6 +25,61 @@ router.route("/tas").get(async (req, res) => {
     return res.status(200).json(allTas);
 });
 
+router.route("/profile").patch(async (req, res) => {
+
+    let updateProfile = {};
+    const user = req.session.user;
+    const userId = validator.isValidMongoId(user.id)
+    let { first_name, last_name, email, password } = req.body;
+
+    try {
+        if (first_name) {
+            first_name = validator.isValidString(first_name);
+            updateProfile.first_name = first_name;
+        }
+        if (last_name) {
+            last_name = validator.isValidString(last_name);
+            updateProfile.last_name = last_name;
+        }
+        if (email) {
+            email = validator.isValidEmail(email);
+            updateProfile.email = email;
+        }
+        if (password) {
+            password = validator.isValidString(password);
+            updateProfile.password = password;
+        }
+    } catch (error) {
+        return handleError(res, error);
+    }
+
+    if (Object.keys(updateProfile).length === 0) {
+        return handleError(res, "No changes provided")
+    }
+
+    try {
+        let userData = await usersData.updateUser(
+            {
+                _id: userId,
+            },
+            updateProfile
+        );
+
+        req.session.user = {
+            id: userData._id,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            email: userData.email,
+            role: userData.role,
+            status: userData.status,
+        };
+
+        return res.status(200).json({ message: "Updated profile successfully!" });
+    } catch (error) {
+        return handleError(res, error);
+    }
+});
+
 router.route("/sign-in").post(async (req, res) => {
     let reqBody = req.body;
     try {
@@ -44,6 +99,15 @@ router.route("/sign-in").post(async (req, res) => {
         if (userData.password !== reqBody.password) {
             return handleError(res, "Password is incorrect. Try again");
         }
+
+        req.session.user = {
+            id: userData._id,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            email: userData.email,
+            role: userData.role,
+            status: userData.status,
+        };
 
         return res.status(200).json({ message: `Signing in as role: ${userData.role}` });
     } catch (e) {

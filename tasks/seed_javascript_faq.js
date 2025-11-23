@@ -86,7 +86,8 @@ const seedJavaScriptFAQ = async () => {
         try {
             const created = await questionUtils.createQuestion(
                 q,
-                courseDoc._id.toString()
+                courseDoc._id.toString(),
+                creator._id,
             );
             await qsColl.updateOne(
                 { _id: created._id },

@@ -114,6 +114,19 @@ export const getCourseByProfessorId = async (professorId) => {
     return professorCourses;
 };
 
+export const getCourseByStudentId = async (studentId) => {
+    const coursesColl = await courses();
+    try {
+        studentId = validator.isValidMongoId(studentId);
+    } catch (e) {
+        throw { status: 400, message: e };
+    }
+    const studentCourses = coursesColl
+        .find({ "enrolled_students.user_id": studentId })
+        .toArray();
+    return studentCourses;
+};
+
 /**
  * Updates the cousre document and returns the updated
  * document back
@@ -237,6 +250,19 @@ export const addLabelToCourse = async (id, label) => {
     if (!updatedObj || updatedObj === null)
         throw { status: 400, message: "data not updated." };
     return updatedObj;
+};
+
+export const getLabelsByCourseId = async (id) => {
+    id = validator.isValidMongoId(id);
+    const courseColl = await courses();
+    const course = await courseColl.findOne(
+        { _id: id },
+        { projection: { labels: 1 } }
+    );
+
+    if (!course) throw { status: 404, message: "Course not found" };
+
+    return course.labels;
 };
 
 /**

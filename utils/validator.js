@@ -17,9 +17,9 @@ export const isArray = (val) => {
  * @param {*} val
  * @returns {String}
  */
-export const isValidString = (val) => {
+export const isValidString = (val, variableName) => {
     if (typeof val !== "string") {
-        throw `ERROR: ${val} is not a valid string.`;
+        throw `ERROR:  ${variableName || "provided variable"} == ${val} is not a valid string.`;
     }
     val = val.trim();
     if (val.length === 0) {
@@ -33,9 +33,9 @@ export const isValidString = (val) => {
  * sure it is of valid number.
  * @param {*} val
  */
-export const isValidNumber = (val) => {
+export const isValidNumber = (val, variableName) => {
     if (typeof val !== "number" || !Number.isFinite(val)) {
-        throw `ERROR: ${val} is not a valid number.`;
+        throw `ERROR: ${variableName || "provided variable"} == ${val} is not a valid number.`;
     }
     return val;
 };
@@ -68,7 +68,7 @@ export const isValidCourseId = (val, variableName = "course_id") => {
 
     const courseIdRegex = /^[A-Za-z]+\d+$/;
     if (!courseIdRegex.test(val)) {
-        throw `ERROR: provided courseId is not a string`;
+        throw `ERROR: provided courseId contains invalid characters`;
     }
 
     return val.toUpperCase();
@@ -96,9 +96,9 @@ export const isValidCourseName = (val, variableName = "course_name") => {
  * or not.
  * @param {*} val
  */
-export const isValidBoolean = (val) => {
+export const isValidBoolean = (val, variableName) => {
     if (typeof val !== "boolean") {
-        throw `ERROR: ${val} is not a valid boolean.`;
+        throw `ERROR: ${variableName || "provided variable"} == ${val} is not a valid boolean.`;
     }
     return val;
 };
@@ -109,14 +109,14 @@ export const isValidBoolean = (val) => {
  * @param {*} val
  * @returns {ObjectId}
  */
-export const isValidMongoId = (val) => {
+export const isValidMongoId = (val, variableName) => {
     if (val instanceof ObjectId) {
         return val;
     }
-    val = isValidString(val);
+    val = isValidString(val, variableName);
 
     if (!ObjectId.isValid(val)) {
-        throw `ERROR: not a valid mongo object id`;
+        throw `ERROR: ${variableName || "provided variable"} is not a valid mongo object id`;
     }
     return ObjectId.createFromHexString(val);
 };
@@ -125,10 +125,10 @@ export const isValidMongoId = (val) => {
  * Used to check if a string is a valid email
  * id and then return the trimmed value
  */
-export const isValidEmail = (val) => {
-    val = isValidString(val);
+export const isValidEmail = (val, variableName) => {
+    val = isValidString(val, variableName);
     if (!validatorPackage.default.isEmail(val)) {
-        throw `ERROR: not a valid email`;
+        throw `ERROR: ${variableName || "provided variable"} == ${val} is not a valid email`;
     }
     return val;
 };

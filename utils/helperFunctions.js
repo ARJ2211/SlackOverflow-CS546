@@ -1,3 +1,5 @@
+import * as validator from "./validator.js";
+
 const handleError = (res, error) => {
     let status = 400;
     let message = "Unknown error";
@@ -14,5 +16,7 @@ const handleError = (res, error) => {
 
     return res.status(status).json({ message });
 }
+
+
 
 export { handleError }
