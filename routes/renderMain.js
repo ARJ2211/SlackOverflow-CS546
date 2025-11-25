@@ -213,6 +213,41 @@ router.get('/courses/:id/filters', async (req, res) => {
 });
 
 
+router.get('/question/:id', async (req, res) => {
+
+    const userSesData = req.session.user;
+    let courses = [];
+
+    try {
+
+        if (userSesData.role == "professor") {
+            const professorId = validator.isValidMongoId(userSesData.id);
+            courses = await coursesData.getCourseByProfessorId(professorId);
+        } else {
+            const studentId = validator.isValidMongoId(userSesData.id);
+            courses = await coursesData.getCourseByStudentId(studentId)
+        }
+
+        courses = courses.map(course => ({
+            _id: course._id.toString(),
+            course_id: course.course_id,
+            course_name: course.course_name
+        }))
+
+        return res.render('main/question', {
+            layout: 'main',
+            title: 'Question Details',
+            page: "Question",
+            path: '/ question',
+            courses: courses,
+        });
+    } catch (error) {
+        console.error("/main/question/:id Error:", error);
+        return handleError(res, error);
+    }
+});
+
+
 // Course Management
 router.get('/management/course', async (req, res) => {
 
