@@ -146,6 +146,15 @@ export const updateQuestion = async (filter, obj) => {
 };
 
 
+export const getQuestionById = async (questionId) => {
+    questionId = validator.isValidMongoId(questionId);
+
+    const questionsColl = await questions();
+    const question = await questionsColl.findOne({ _id: questionId })
+
+    return question;
+};
+
 /**
  * get all questions including course id.
  * @param {string} courseId

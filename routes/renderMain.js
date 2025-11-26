@@ -217,8 +217,35 @@ router.get('/question/:id', async (req, res) => {
 
     const userSesData = req.session.user;
     let courses = [];
+    let question;
+    let course;
+    let questionId;
+    let courseLabels = []
 
     try {
+
+        questionId = validator.isValidMongoId(req.params.id, "req.params.id");
+
+        question = await questionsData.getQuestionById(questionId);
+        course = await coursesData.getCourseById(question.course);
+        courseLabels = course.labels
+
+        question.labels = question.labels.map(labelId =>
+            courseLabels.find(label => label._id.toString() === labelId.toString())
+        );
+
+        const tempUser = await usersData.getUserById(question.user_id);
+        question.user = {
+            first_name: tempUser.first_name,
+            last_name: tempUser.last_name
+        };
+
+        let tempTimeAgo = moment(question.created_time).fromNow()
+        question.timeAgo = tempTimeAgo
+
+        delete question.embedding
+        delete question.canonical_key
+
 
         if (userSesData.role == "professor") {
             const professorId = validator.isValidMongoId(userSesData.id);
@@ -236,10 +263,13 @@ router.get('/question/:id', async (req, res) => {
 
         return res.render('main/question', {
             layout: 'main',
-            title: 'Question Details',
+            title: 'Question Thread',
             page: "Question",
-            path: '/ question',
+            path: `/ courses / ${course.course_id} / question`,
             courses: courses,
+            question: question,
+            course: course,
+            selectedCourse: course._id.toString(),
         });
     } catch (error) {
         console.error("/main/question/:id Error:", error);
