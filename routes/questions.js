@@ -64,7 +64,7 @@ router.post("/bookmarks/:id", checkAuth, async (req, res) => {
     }
 });
 
-router.delete("/bookmarks/:id", checkAuth, async (req, res) => {
+router.delete("/bookmarks", checkAuth, async (req, res) => {
     const userSesData = req.session.user;
     let questionId;
     let userId;
@@ -73,7 +73,8 @@ router.delete("/bookmarks/:id", checkAuth, async (req, res) => {
         if (!userSesData || !userSesData.id) {
             return res.status(401).json({ message: 'User session not found' });
         }
-        questionId = validator.isValidMongoId(req.params.id, "questionId");
+        // Validate question_id from request body
+        questionId = validator.isValidMongoId(req.body.question_id, "question_id");
         userId = validator.isValidMongoId(userSesData.id, "userId");
     } catch (e) {
         return handleError(res, e);
@@ -81,7 +82,7 @@ router.delete("/bookmarks/:id", checkAuth, async (req, res) => {
 
     try {
         await questionsData.removeBookmark(questionId, userId);
-        return res.status(200).json({ message: 'Bookmark removed successfully' });
+        return res.status(200).json({ message: "Bookmark added successfully" });
     } catch (e) {
         return handleError(res, e);
     }
