@@ -207,6 +207,61 @@ export const getQuestionsByCourseIdFiltered = async (courseId, filters) => {
 
 
 /**
+ * Get all questions bookmarked by a user
+ * @param {string} userId
+ * @returns {Array}
+ */
+export const getBookmarkedQuestionsByUserId = async (userId) => {
+    userId = validator.isValidMongoId(userId);
+    const questionsColl = await questions();
+    const questionsArray = await questionsColl
+        .find({ bookmarks: userId })
+        .sort({ created_time: -1 })
+        .toArray();
+    return questionsArray;
+};
+
+/**
+ * Add a bookmark to a question
+ * @param {string} questionId
+ * @param {string} userId
+ * @returns {Object}
+ */
+export const addBookmark = async (questionId, userId) => {
+    questionId = validator.isValidMongoId(questionId);
+    userId = validator.isValidMongoId(userId);
+    const questionsColl = await questions();
+    const updateResult = await questionsColl.updateOne(
+        { _id: questionId },
+        { $addToSet: { bookmarks: userId } }
+    );
+    if (updateResult.matchedCount === 0) {
+        throw "Question not found";
+    }
+    return { success: true, message: "Bookmark added successfully" };
+};
+
+/**
+ * Remove a bookmark from a question
+ * @param {string} questionId
+ * @param {string} userId
+ * @returns {Object}
+ */
+export const removeBookmark = async (questionId, userId) => {
+    questionId = validator.isValidMongoId(questionId);
+    userId = validator.isValidMongoId(userId);
+    const questionsColl = await questions();
+    const updateResult = await questionsColl.updateOne(
+        { _id: questionId },
+        { $pull: { bookmarks: userId } }
+    );
+    if (updateResult.matchedCount === 0) {
+        throw "Question not found";
+    }
+    return { success: true, message: "Bookmark removed successfully" };
+};
+
+/**
  * Delete a question from the questions collection.
  * @param {*} questionId
  * @returns {Object}
