@@ -372,4 +372,83 @@ router.get('/profile', async (req, res) => {
     }
 });
 
+// Bookmarks
+router.get('/bookmarks', async (req, res) => {
+    const userSesData = req.session.user;
+    let courses = [];
+    let bookmarkedQuestions = [];
+
+    try {
+        const userId = validator.isValidMongoId(userSesData.id);
+
+        // Get user's courses for sidebar
+        if (userSesData.role == "professor") {
+            const professorId = validator.isValidMongoId(userSesData.id);
+            courses = await coursesData.getCourseByProfessorId(professorId);
+        } else {
+            const studentId = validator.isValidMongoId(userSesData.id);
+            courses = await coursesData.getCourseByStudentId(studentId)
+        }
+
+        courses = courses.map(course => ({
+            _id: course._id.toString(),
+            course_id: course.course_id,
+            course_name: course.course_name
+        }))
+
+        // Get bookmarked questions
+        bookmarkedQuestions = await questionsData.getBookmarkedQuestionsByUserId(userId);
+
+        // Enrich bookmarked questions with course info, labels, user info, and bookmark date
+        for (const question of bookmarkedQuestions) {
+            // Get course information
+            const course = await coursesData.getCourseById(question.course);
+            question.courseInfo = {
+                _id: course._id.toString(),
+                course_id: course.course_id,
+                course_name: course.course_name
+            };
+
+            // Get labels
+            question.labels = question.labels.map(labelId =>
+                course.labels.find(label => label._id.toString() === labelId.toString())
+            ).filter(label => label !== undefined);
+
+            // Get user information
+            const tempUser = await usersData.getUserById(question.user_id);
+            question.user = {
+                first_name: tempUser.first_name,
+                last_name: tempUser.last_name
+            };
+
+            // Format time ago
+            question.timeAgo = moment(question.created_time).fromNow();
+
+            // Calculate votes (check both upvotes and up_votes for compatibility)
+            question.votes = (question.upvotes && question.upvotes.length) || (question.up_votes && question.up_votes.length) || 0;
+
+            // Get bookmark date (we'll use created_time as bookmark date for now)
+            // In a real implementation, you might want to track when the bookmark was added
+            question.bookmarkDate = moment(question.created_time).format('MMMM Do YYYY, h:mm:ss a');
+
+            // Clean up unnecessary fields
+            delete question.embedding;
+            delete question.canonical_key;
+            delete question.replies;
+        }
+
+        return res.render('main/bookmarks', {
+            layout: 'main',
+            title: 'My Bookmarks',
+            page: "Bookmarks",
+            path: '/ bookmarks',
+            courses: courses,
+            bookmarks: bookmarkedQuestions,
+        });
+    } catch (error) {
+        console.error("/main/bookmarks Error:", error);
+        return handleError(res, error);
+    }
+});
+
 export default router;
