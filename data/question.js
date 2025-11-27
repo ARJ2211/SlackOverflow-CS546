@@ -12,9 +12,11 @@ const JACCARD_THRESHOLD = 0.65;
  * @param {*} question
  * @returns {Object}
  */
-export const createQuestion = async (question, course_id, user_id, labels = []) => {
+export const createQuestion = async (question, course_id, user_id, labels = [], question_content, question_delta) => {
     course_id = validator.isValidMongoId(course_id);
     question = validator.isValidString(question);
+    question_content = validator.isValidString(question_content);
+    question_delta = validator.isValidString(question_delta);
 
     const questionsColl = await questions();
 
@@ -41,6 +43,8 @@ export const createQuestion = async (question, course_id, user_id, labels = []) 
 
     const doc = {
         question,
+        question_content,
+        question_delta,
         embedding, // array of numbers for Atlas Vector Search
         canonical_key, // helps prevent trivial duplicates like punctuation/case changes
         created_time: new Date(),

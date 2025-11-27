@@ -12,7 +12,7 @@ router
     .route("/")
     .post(async (req, res) => {
 
-        let { labels, course_id, question, user_id } = req.body;
+        let { labels, course_id, question, user_id, question_content, question_delta } = req.body;
 
 
         try {
@@ -23,6 +23,8 @@ router
                 labels[i] = validator.isValidMongoId(labels[i], `label ${i}`);
             }
             question = validator.isValidString(question);
+            question_content = validator.isValidString(question_content);
+            question_delta = validator.isValidString(question_delta);
 
         } catch (e) {
             return handleError(res, e)
@@ -33,7 +35,9 @@ router
                 question,
                 course_id,
                 user_id,
-                labels
+                labels,
+                question_content,
+                question_delta
             );
             return res.status(200).json({ message: 'Question created successfully' });
         } catch (e) {
