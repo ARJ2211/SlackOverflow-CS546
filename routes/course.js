@@ -3,6 +3,7 @@ import { getUserById } from "../data/users.js";
 import * as validator from "../utils/validator.js";
 import { handleError } from "../utils/helperFunctions.js";
 import { Router } from "express";
+import { ObjectId } from "mongodb";
 
 const router = Router();
 
@@ -185,8 +186,29 @@ router.route("/:courseId")
     } catch (e) {
         return res.status(400).send(e);
     }
+    try{
+        courseUpdate = await coursesData.updateCourse(
+        { _id: new ObjectId(courseId) },  
+        courseData                         
+);
+        return res.status(200).json(updatedCourse);
 
-});
+    }catch (e){
+         if (e.status) {
+            return res.status(e.status).send(e.message);
+        }
+        return res.status(400).send(e);
+    }
+})
+.delete(async (req, res) => {
+    let courseId = req.params.courseId;
+    try {
+        courseId = validator.isValidMongoId(courseId);
+    } catch (e) {
+        return res.status(400).send(e);
+    }
+}
+);
 
 router.route("/professor/:professorId").get(async (req, res) => {
     // Get all courses taught by professor
