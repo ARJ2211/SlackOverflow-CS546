@@ -155,7 +155,8 @@ router
         }
     });
 
-router.route("/:courseId").get(async (req, res) => {
+router.route("/:courseId")
+.get(async (req, res) => {
     // Get a coruse by the course ID
     let courseId = req.params.courseId;
     try {
@@ -172,6 +173,19 @@ router.route("/:courseId").get(async (req, res) => {
         }
         return res.status(400).send(e);
     }
+})
+.patch(async (req, res) => {
+    let courseId = req.params.courseId;
+    let courseData = req.body;
+    try {
+        courseId = validator.isValidMongoId(courseId);
+        courseData.course_name = validator.isValidCourseName(courseData.course_name);
+        courseData.course_id = validator.isValidCourseId(courseData.course_id);
+        courseData.course_description = validator.isValidString(courseData.course_description, "course_description");
+    } catch (e) {
+        return res.status(400).send(e);
+    }
+
 });
 
 router.route("/professor/:professorId").get(async (req, res) => {
