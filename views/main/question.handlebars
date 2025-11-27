@@ -65,13 +65,15 @@
                 const delta = {{{ question.question_delta }}}
                 const container = document.getElementById(`questionDisplay-{{question._id}}`);
                 const editor = document.createElement('div');
+                editor.classList.add('text-sm')
                 container.appendChild(editor);
                 const quillQuestion = new Quill(editor, {
                     theme: 'snow',
                     readOnly: true,
                     modules: { toolbar: false }
                 });
-                quillQuestion.setContents(delta);
+
+                quillQuestion.setContents(delta)
             </script>
 
 
