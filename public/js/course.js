@@ -201,12 +201,30 @@ const handleToggleBookmark = async (questionId, buttonElement, event) => {
 
     try {
         const method = isBookmarked ? 'DELETE' : 'POST';
-        const response = await fetch(`/questions/bookmarks/${questionId}`, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        let url, options;
+        
+        if (method === 'POST') {
+            // POST /questions/bookmarks - send question_id in body
+            url = '/questions/bookmarks';
+            options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question_id: questionId })
+            };
+        } else {
+            // DELETE /questions/bookmarks/:id - questionId in URL
+            url = `/questions/bookmarks/${questionId}`;
+            options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+        }
+        
+        const response = await fetch(url, options);
 
         // Check if response is JSON
         const contentType = response.headers.get('content-type');

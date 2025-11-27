@@ -251,6 +251,18 @@ export const removeBookmark = async (questionId, userId) => {
     questionId = validator.isValidMongoId(questionId);
     userId = validator.isValidMongoId(userId);
     const questionsColl = await questions();
+        
+    // Verify that the question exists before removing bookmark
+    const question = await questionsColl.findOne({ _id: questionId });
+    if (!question) {
+        throw "Question not found";
+    }
+    
+    // Check if user has bookmarked this question
+    if (!question.bookmarks || !question.bookmarks.some(id => id.toString() === userId.toString())) {
+        throw "User has not bookmarked this question";
+    }
+    
     const updateResult = await questionsColl.updateOne(
         { _id: questionId },
         { $pull: { bookmarks: userId } }
