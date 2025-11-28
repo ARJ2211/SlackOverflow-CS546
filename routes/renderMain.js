@@ -94,6 +94,12 @@ router.get('/courses/:id', async (req, res) => {
             let tempTimeAgo = moment(question.created_time).fromNow()
             question.timeAgo = tempTimeAgo
 
+            question.hasUpvoted = question.up_votes.some((id) => id.toString() === userSesData.id.toString())
+
+            question.hasViewed = question.views.some((id) => id.toString() === userSesData.id.toString())
+
+            question.hasAnswered = question.answer_count.some((id) => id.toString() === userSesData.id.toString())
+
             delete question.embedding
             delete question.canonical_key
             delete question.replies
@@ -189,6 +195,12 @@ router.get('/courses/:id/filters', async (req, res) => {
             question.user = { first_name: tempUser.first_name, last_name: tempUser.last_name }
             question.timeAgo = moment(question.created_time).fromNow()
 
+            question.hasUpvoted = question.up_votes.some((id) => id.toString() === userSesData.id.toString())
+
+            question.hasViewed = question.views.some((id) => id.toString() === userSesData.id.toString())
+
+            question.hasAnswered = question.answer_count.some((id) => id.toString() === userSesData.id.toString())
+
             delete question.embedding
             delete question.canonical_key
             delete question.replies
@@ -279,8 +291,11 @@ router.get('/question/:id', async (req, res) => {
 
         views = await questionsData.updateViews(questionId, userSesData.id)
 
-        const hasUpvoted = question.up_votes.map(id => id.toString()).includes(userSesData.id.toString())
+        const hasUpvoted = question.up_votes.some(id => id.toString() === userSesData.id.toString());
 
+        const hasViewed = views.some(id => id.toString() === userSesData.id.toString());
+
+        const hasAnswered = question.answer_count.some(id => id.toString() === userSesData.id.toString());
 
         return res.render('main/question', {
             layout: 'main',
@@ -292,8 +307,10 @@ router.get('/question/:id', async (req, res) => {
             question_id: question._id.toString(),
             answers: answers,
             course: course,
-            views: views.length,
+            views: views,
             hasUpvoted,
+            hasViewed,
+            hasAnswered,
             selectedCourse: course._id.toString(),
         });
     } catch (error) {

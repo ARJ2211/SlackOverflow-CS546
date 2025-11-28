@@ -81,7 +81,7 @@ router
             );
 
             if (newAnswer) {
-                await questionsData.updateAnswerCount(question_id);
+                await questionsData.updateAnswerCount(question_id, user_id);
             }
 
             return res.status(200).json({ message: "Answer added to the question" });

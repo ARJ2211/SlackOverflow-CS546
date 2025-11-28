@@ -57,7 +57,7 @@ export const createQuestion = async (question, course_id, user_id, labels = [], 
         bookmarks: [],
         accepted_answer_id: null,
         status: "open",
-        answer_count: 0,
+        answer_count: [],
         views: []
     };
 
@@ -150,33 +150,22 @@ export const updateQuestion = async (filter, obj) => {
     return updatedObj;
 };
 
-export const updateAnswerCount = async (questionId) => {
+export const updateAnswerCount = async (questionId, userId) => {
 
     questionId = validator.isValidMongoId(questionId);
+    userId = validator.isValidMongoId(userId);
 
-    const answersColl = await answers();
     const questionsColl = await questions();
-
-    const answersList = await answersColl
-        .find({ question_id: questionId })
-        .toArray();
-
-    const answerCount = answersList.length
 
     const updateInfo = await questionsColl.updateOne(
         { _id: questionId },
-        { $set: { answer_count: answerCount } }
+        { $push: { answer_count: userId } }
     );
-
-    if (updateInfo.modifiedCount === 0) {
-        throw `500 failed to update question ${questionId}`;
-    }
 
     const updatedQuestion = await questionsColl.findOne({ _id: questionId });
 
-    const result = { "answer_count": updatedQuestion.answer_count }
+    return updatedQuestion.answer_count
 
-    return result
 }
 
 export const updateViews = async (questionId, userId) => {
@@ -193,7 +182,7 @@ export const updateViews = async (questionId, userId) => {
 
     const updatedQuestion = await questionsColl.findOne({ _id: questionId });
 
-    return { views: updatedQuestion.views }
+    return updatedQuestion.views
 }
 
 export const updateUpVotes = async (questionId, userId) => {
@@ -226,7 +215,7 @@ export const updateUpVotes = async (questionId, userId) => {
 
     const updatedQuestion = await questionsColl.findOne({ _id: questionId })
 
-    return { up_votes: updatedQuestion.up_votes }
+    return updatedQuestion.up_votes
 }
 
 export const getQuestionById = async (questionId) => {
