@@ -236,6 +236,7 @@ router.get('/question/:id', async (req, res) => {
     let courseLabels = []
     let answers = []
     let views;
+    let isTa = false
     try {
 
         questionId = validator.isValidMongoId(req.params.id, "req.params.id");
@@ -243,6 +244,14 @@ router.get('/question/:id', async (req, res) => {
         question = await questionsData.getQuestionById(questionId);
         course = await coursesData.getCourseById(question.course);
         courseLabels = course.labels
+
+
+        if (userSesData.role === "student") {
+            const student = course.enrolled_students.find((student) => student.user_id.toString() === userSesData.id.toString())
+            if (student && student.is_ta) {
+                isTa = student.is_ta
+            }
+        }
 
         question.labels = question.labels.map(labelId =>
             courseLabels.find(label => label._id.toString() === labelId.toString())
@@ -311,6 +320,7 @@ router.get('/question/:id', async (req, res) => {
             hasUpvoted,
             hasViewed,
             hasAnswered,
+            isTa,
             selectedCourse: course._id.toString(),
         });
     } catch (error) {

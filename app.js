@@ -20,10 +20,8 @@ app.engine('handlebars', handlebars.engine({
     defaultLayout: 'main',
     helpers: {
         eq: (a, b) => a === b,
+        or: (a, b) => a || b,
         json: obj => JSON.stringify(obj),
-        jsonSafe: (context) => encodeURIComponent(JSON.stringify(context))
-
-
     }
 }));
 app.set('view engine', 'handlebars');

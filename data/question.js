@@ -162,9 +162,9 @@ export const updateAnswerCount = async (questionId, userId) => {
         { $push: { answer_count: userId } }
     );
 
-    const updatedQuestion = await questionsColl.findOne({ _id: questionId });
+    const question = await questionsColl.findOne({ _id: questionId });
 
-    return updatedQuestion.answer_count
+    return question.answer_count
 
 }
 
@@ -180,9 +180,9 @@ export const updateViews = async (questionId, userId) => {
         { $addToSet: { views: userId } }
     );
 
-    const updatedQuestion = await questionsColl.findOne({ _id: questionId });
+    const question = await questionsColl.findOne({ _id: questionId });
 
-    return updatedQuestion.views
+    return question.views
 }
 
 export const updateUpVotes = async (questionId, userId) => {
@@ -216,6 +216,27 @@ export const updateUpVotes = async (questionId, userId) => {
     const updatedQuestion = await questionsColl.findOne({ _id: questionId })
 
     return updatedQuestion.up_votes
+}
+
+export const updateStatus = async (questionId, status) => {
+    questionId = validator.isValidMongoId(questionId)
+    status = validator.isValidString(status)
+
+    if (!(status == 'open' || status == 'closed')) {
+        throw `Invalid Status: ${status}`
+    }
+
+    const questionsColl = await questions()
+
+    const updateInfo = await questionsColl.updateOne(
+        { _id: questionId },
+        { $set: { status: status } }
+    )
+
+    const question = await questionsColl.findOne({ _id: questionId })
+
+    return question.status
+
 }
 
 export const getQuestionById = async (questionId) => {

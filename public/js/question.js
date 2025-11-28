@@ -199,6 +199,47 @@ const handleUpdateUpVote = (event) => {
     return false
 }
 
+const handleUpdateStatus = (event) => {
+    event.preventDefault();
+
+    const questionContainer = document.getElementById('questionContainer');
+
+    const question_id = questionContainer.getAttribute('data-question-id') || '';
+    const statusCheckbox = event.target;
+    const newStatus = statusCheckbox.checked ? 'open' : 'closed';
+
+    fetch(`/questions/${question_id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus })
+    })
+        .then(async (res) => {
+            const responseBody = await res.json();
+            return { status: res.status, body: responseBody };
+        })
+        .then(({ status, body }) => {
+            if (status !== 200) {
+                showToast(body.message || "Unknown error.", "error");
+                statusCheckbox.checked = !statusCheckbox.checked;
+                return;
+            }
+
+            showToast("Status updated successfully!", "success");
+
+            // setTimeout(() => {
+            //     window.location.reload();
+            // }, 500);
+        })
+        .catch((err) => {
+            console.error("handleUpdateStatus error:", err);
+            showToast("Server error. Please try again.", "error");
+            statusCheckbox.checked = !statusCheckbox.checked;
+        });
+
+    return false;
+};
+
+
 
 handleInputFieldQuillSetup()
 handleQuestionQuillSetup()

@@ -116,6 +116,28 @@ router
 
     })
 
+router
+    .route("/:id/status")
+    .patch(async (req, res) => {
+        let question_id = req.params.id;
+        let status = req.body.status;
+
+        try {
+            question_id = validator.isValidMongoId(question_id, "question_id");
+            status = validator.isValidString(status, "status");
+        } catch (e) {
+            e.status = 400
+            return handleError(res, e)
+        }
+
+        try {
+            const updatedStatus = await questionsData.updateStatus(question_id, status);
+            return res.status(200).json({ message: "Status changed successfully" });
+        } catch (e) {
+            e.status = 404
+            return handleError(res, e)
+        }
+    })
 
 
 

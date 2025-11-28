@@ -43,17 +43,51 @@
                     </div>
                     {{/each}}
                 </div>
-                <div>
-                    {{#if (eq question.status "open")}}
-
-                    <div class="border border-green-500 text-green-500 text-sm  px-4 rounded-3xl ">
-                        {{question.status}}
+                <div class="flex items-center justify-center gap-4">
+                    {{#if (or (eq user.role "professor") isTa) }}
+                    <div>
+                        <label class="relative inline-flex cursor-pointer items-center">
+                            <input type="checkbox" value="" {{#if (eq question.status "open" )}} checked {{/if}}
+                                class="peer sr-only" onchange="handleUpdateStatus(event)" />
+                            <div
+                                class="peer flex h-7 items-center gap-4 rounded-full bg-gray-500 px-3 after:absolute after:left-[5px] after: after:h-5 after:w-12 after:rounded-full after:bg-white/40 after:transition-all after:content-[''] peer-checked:bg-green-500 peer-checked:after:translate-x-full peer-focus:outline-none  text-sm text-white">
+                                <span>close</span>
+                                <span>open</span>
+                            </div>
+                        </label>
                     </div>
                     {{else}}
-                    <div class="border border-gray-500 text-gray-500 text-sm  px-4 rounded-3xl ">
-                        Closed
+                    <div class="w-20 text-center">
+                        {{#if (eq this.status "open")}}
+
+                        <div class="border border-green-500 text-green-500 text-sm  px-4 rounded-3xl ">
+                            open
+                        </div>
+                        {{else}}
+                        <div class="border border-gray-500 text-gray-500 text-sm  px-4 rounded-3xl ">
+                            closed
+                        </div>
+                        {{/if}}
                     </div>
+
                     {{/if}}
+
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor"
+                            class="size-4 hover:cursor-pointer hover:text-[#F0BD66] hover:scale-125">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                        </svg>
+
+                    </div>
                 </div>
             </div>
 
