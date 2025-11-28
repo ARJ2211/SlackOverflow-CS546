@@ -131,7 +131,8 @@
 
         <div class=" py-4 pb-6 divide-y divide-gray-200 flex flex-col ">
 
-            <!-- Answer -->
+            {{#if questions.length}}
+            {{#each questions}}
             <div class="p-6 text-base  rounded-lg dark:bg-gray-900">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex items-center">
@@ -184,7 +185,13 @@
                     creation of the design strategy.</p>
 
             </div>
-
+            {{/each}}
+            {{else}}
+            <div class="text-gray-400  w-full h-full flex flex-col justify-center items-center ">
+                <img src="/public/images/emptyContent.png" alt="No Questions" class=" w-[300px] h-[250px]  mb-4">
+                {{!-- <div class="text-2xl text-gray-500 font-medium font-mono ">Be the first to answer!</div> --}}
+            </div>
+            {{/if}}
 
         </div>
     </div>
