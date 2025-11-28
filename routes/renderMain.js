@@ -7,6 +7,7 @@ import { handleError } from "../utils/helperFunctions.js";
 import { getAllStudentsByCourseId } from '../data/students.js';
 import * as usersData from '../data/users.js';
 import moment from "moment";
+import * as answersData from '../data/answer.js';
 
 const router = Router();
 
@@ -221,6 +222,7 @@ router.get('/question/:id', async (req, res) => {
     let course;
     let questionId;
     let courseLabels = []
+    let answers = []
 
     try {
 
@@ -247,6 +249,20 @@ router.get('/question/:id', async (req, res) => {
         delete question.canonical_key
 
 
+        answers = await answersData.getAnswersByQuestionId(questionId)
+
+        for (const answer of answers) {
+            const tempAnswerUser = await usersData.getUserById(answer.user_id);
+            answer.user = {
+                _id: tempAnswerUser._id.toString(),
+                first_name: tempAnswerUser.first_name,
+                last_name: tempAnswerUser.last_name
+            };
+
+            let tempAnswerTimeAgo = moment(answer.created_at).fromNow()
+            answer.timeAgo = tempAnswerTimeAgo
+        }
+
         if (userSesData.role == "professor") {
             const professorId = validator.isValidMongoId(userSesData.id);
             courses = await coursesData.getCourseByProfessorId(professorId);
@@ -269,6 +285,7 @@ router.get('/question/:id', async (req, res) => {
             courses: courses,
             question: question,
             question_id: question._id.toString(),
+            answers: answers,
             course: course,
             selectedCourse: course._id.toString(),
         });
