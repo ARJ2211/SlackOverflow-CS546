@@ -1,6 +1,7 @@
 import * as coursesData from "../data/course.js";
 import * as usersData from "../data/users.js";
 import * as questionsData from "../data/question.js";
+import * as answersData from "../data/answer.js";
 import { getUserById } from "../data/users.js";
 import * as validator from "../utils/validator.js";
 import { handleError } from "../utils/helperFunctions.js";
@@ -43,6 +44,47 @@ router
         } catch (e) {
             return handleError(res, e)
         }
+    });
+
+router
+    .route("/:id/answer")
+    .post(async (req, res) => {
+
+        let answer;
+        let answer_delta
+        let answer_content
+        let user_id
+        let is_accepted
+
+        let question_id = req.params.id;
+
+        try {
+            question_id = validator.isValidMongoId(question_id, "question_id");
+            answer = validator.isValidString(req.body.answer, "answer");
+            answer_delta = validator.isValidString(req.body.answer_delta, "answer_delta");
+            answer_content = validator.isValidString(req.body.answer_content, "answer_content");
+            user_id = validator.isValidMongoId(req.body.user_id, "user_id");
+            is_accepted = Boolean(req.body.is_accepted);
+        } catch (e) {
+            e.status = 400
+            return handleError(res, e)
+        }
+
+        try {
+            const newAnswer = await answersData.createAnswer(
+                question_id,
+                answer,
+                answer_delta,
+                answer_content,
+                user_id,
+                is_accepted
+            );
+            return res.status(200).json(newAnswer);
+        } catch (e) {
+            e.status = 404
+            return handleError(res, e)
+        }
+
     });
 
 

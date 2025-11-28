@@ -10,47 +10,27 @@ import * as validator from "../utils/validator.js";
  * @returns {Object}
  */
 
-export const createAnswer = async (questionId, answer, created_by) => {
+export const createAnswer = async (question_id, answer, answer_delta, answer_content, user_id, is_accepted) => {
+
     const answersColl = await answers();
 
-    try {
-        questionId = validator.isValidString(questionId);
-    } catch (e) {
-        throw `questionId: ${e}`;
-    }
+
+    question_id = validator.isValidMongoId(question_id, "question_id");
+    answer = validator.isValidString(answer, "answer");
+    answer_delta = validator.isValidString(answer_delta, "answer_delta");
+    answer_content = validator.isValidString(answer_content, "answer_content");
+    user_id = validator.isValidMongoId(user_id, "user_id");
+    is_accepted = validator.isValidBoolean(is_accepted, "is_accepted");
 
 
-    try {
-        answer = validator.isValidString(answer);
-    } catch (e) {
-        throw `answer: ${e}`;
-    }
-
-    try {
-        created_by = validator.isValidString(created_by);
-    } catch (e) {
-        throw `created_by: ${e}`;
-    }
-
-    let questionObjectId;
-    try {
-        questionObjectId = new ObjectId(questionId);
-    } catch (e) {
-        throw `ERROR: questionId is not a valid ObjectId`;
-    }
-
-    let createdByObjectId;
-
-    try {
-        createdByObjectId = new ObjectId(created_by);
-    } catch (e) {
-        throw `ERROR: created_by is not a valid ObjectId`;
-    }
 
     const answerDoc = {
-        questionId: questionObjectId,
+        question_id,
         answer,
-        created_by: createdByObjectId,
+        answer_delta,
+        answer_content,
+        user_id,
+        is_accepted,
         created_at: new Date(),
     };
 
@@ -100,17 +80,10 @@ export const getAnswerById = async (answerId) => {
  */
 export const getAnswersByQuestionId = async (questionId) => {
     const answersColl = await answers();
-    questionId = validator.isValidString(questionId);
-
-    let questionObjectId;
-    try {
-        questionObjectId = new ObjectId(questionId);
-    } catch (e) {
-        throw `ERROR: questionId is not a valid ObjectId`;
-    }
+    questionId = validator.isValidMongoId(questionId);
 
     const answersList = await answersColl
-        .find({ questionId: questionObjectId })
+        .find({ question_id: questionId })
         .sort({ created_at: -1 })
         .toArray();
 
