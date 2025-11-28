@@ -79,6 +79,11 @@ router
                 user_id,
                 is_accepted
             );
+
+            if (newAnswer) {
+                await questionsData.updateAnswerCount(question_id);
+            }
+
             return res.status(200).json(newAnswer);
         } catch (e) {
             e.status = 404

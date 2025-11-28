@@ -84,7 +84,6 @@ export const getAnswersByQuestionId = async (questionId) => {
 
     const answersList = await answersColl
         .find({ question_id: questionId })
-        .sort({ created_at: -1 })
         .toArray();
 
     return answersList;

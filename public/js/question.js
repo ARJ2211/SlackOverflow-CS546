@@ -1,7 +1,7 @@
 let answerQuill;
 
-const handleAnswerQuillSetup = () => {
-    answerQuill = new Quill('#editor', {
+const handleInputFieldQuillSetup = () => {
+    answerQuill = new Quill('#answerEditor', {
         theme: 'snow',
         modules: {
             toolbar: '#toolbar'
@@ -9,8 +9,8 @@ const handleAnswerQuillSetup = () => {
         placeholder: 'Type your comment here...'
     });
 
-    const editor = document.getElementById('editor');
-    const handle = document.getElementById("resizeHandle");
+    const editor = document.getElementById('answerEditor');
+    const handle = document.getElementById("answerResizeHandle");
     let valueY, valueH;
     handle.onmousedown = e => {
         valueY = e.clientY;
@@ -120,6 +120,47 @@ const handleSaveAnswer = (event) => {
 
     return false
 }
+const handleQuestionQuillSetup = () => {
+    const questionCards = document.querySelectorAll(".questionContainer")
+
+    questionCards.forEach(questionCard => {
+        const questionDelta = JSON.parse(questionCard.dataset.question)
+        const questionEditor = document.createElement("div")
+        questionEditor.classList.add("text-sm")
+
+        questionCard.appendChild(questionEditor);
+
+        const questionQuill = new Quill(questionEditor, {
+            theme: "snow",
+            readOnly: true,
+            modules: { toolbar: false }
+        });
+
+        questionQuill.setContents(questionDelta);
+    });
+
+}
+
+const handleAnswerQuillSetup = () => {
+    const answerCards = document.querySelectorAll(".answerContainer")
+    answerCards.forEach(answerCard => {
+        const answerDelta = JSON.parse(answerCard.dataset.answer)
+        const answerEditor = document.createElement("div")
+        answerEditor.classList.add("text-sm")
+
+        answerCard.appendChild(answerEditor);
+
+        const answerQuill = new Quill(answerEditor, {
+            theme: "snow",
+            readOnly: true,
+            modules: { toolbar: false }
+        });
+        answerQuill.setContents(answerDelta);
+    });
+
+}
 
 
+handleInputFieldQuillSetup()
+handleQuestionQuillSetup()
 handleAnswerQuillSetup()

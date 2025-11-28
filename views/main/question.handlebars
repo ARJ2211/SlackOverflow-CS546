@@ -58,21 +58,8 @@
             </div>
 
 
-            <div id="questionDisplay-{{question._id}}" class=" "></div>
-            <script>
-                const delta = {{{ question.question_delta }}}
-                const container = document.getElementById(`questionDisplay-{{question._id}}`);
-                const editor = document.createElement('div');
-                editor.classList.add('text-base')
-                container.appendChild(editor);
-                const quillQuestion = new Quill(editor, {
-                    theme: 'snow',
-                    readOnly: true,
-                    modules: { toolbar: false }
-                });
-
-                quillQuestion.setContents(delta)
-            </script>
+            <div class="questionContainer" id="questionDisplay-{{question._id}}"
+                data-question='{{ question.question_delta }}'></div>
 
 
 
@@ -127,12 +114,12 @@
             </div>
         </div>
 
-        <!-- Comment Section -->
+
 
         <div class=" py-4 pb-6 divide-y divide-gray-200 flex flex-col ">
 
-            {{#if questions.length}}
-            {{#each questions}}
+            {{#if answers.length}}
+            {{#each answers}}
             <div class="p-6 text-base  rounded-lg dark:bg-gray-900">
                 <div class="flex justify-between items-center mb-2">
                     <div class="flex items-center">
@@ -143,10 +130,9 @@
                                     d="M10 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.465 14.493a1.23 1.23 0 0 0 .41 1.412A9.957 9.957 0 0 0 10 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 0 0-13.074.003Z" />
                             </svg>
 
-                            Michael Gough
+                            {{this.user.first_name}} {{this.user.last_name}}
                         </p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400"><time pubdate datetime="2022-02-08"
-                                title="February 8th, 2022">Feb. 8, 2022</time></p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">posted {{this.timeAgo}}</p>
                     </div>
                     <div class="relative">
                         <div onclick="handleActionsDropdown()" id="openActionsDropdown"
@@ -179,10 +165,8 @@
 
                     </div>
                 </div>
-                <p class="text-gray-500 dark:text-gray-400">Very straight-to-point article. Really worth time
-                    reading. Thank you! But tools are just the
-                    instruments for the UX designers. The knowledge of the design tools are as important as the
-                    creation of the design strategy.</p>
+
+                <div class="answerContainer" id="answerDisplay-{{this._id}}" data-answer='{{this.answer_delta}}'></div>
 
             </div>
             {{/each}}
@@ -197,19 +181,20 @@
     </div>
 
 
-
     <div class="">
         <form onsubmit="handleSaveAnswer(event)"
             class="bg-white relative border border-gray-300 rounded-2xl shadow-md flex flex-col  ">
 
 
-            <div id="editor" class=" pt-1  rounded-t-2xl resize-none focus:outline-none"></div>
+            <div id="answerEditor" class=" pt-1  rounded-t-2xl resize-none focus:outline-none"></div>
 
-            <div id="resizeHandle"
-                class=" absolute -top-0 -right-0 hover:-top-1 hover:bg-slate-100 rounded-full p-1 text-gray-400 ">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6">
+
+            <div id="answerResizeHandle"
+                class=" absolute -top-0 -right-0  hover:cursor-ns-resize  rounded-full p-1 text-gray-400 ">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    class="size-5 pointer-events-none">
                     <path fill-rule="evenodd"
-                        d="M2.25 4.5A.75.75 0 0 1 3 3.75h14.25a.75.75 0 0 1 0 1.5H3a.75.75 0 0 1-.75-.75Zm14.47 3.97a.75.75 0 0 1 1.06 0l3.75 3.75a.75.75 0 1 1-1.06 1.06L18 10.81V21a.75.75 0 0 1-1.5 0V10.81l-2.47 2.47a.75.75 0 1 1-1.06-1.06l3.75-3.75ZM2.25 9A.75.75 0 0 1 3 8.25h9.75a.75.75 0 0 1 0 1.5H3A.75.75 0 0 1 2.25 9Zm0 4.5a.75.75 0 0 1 .75-.75h5.25a.75.75 0 0 1 0 1.5H3a.75.75 0 0 1-.75-.75Z"
+                        d="M10.53 3.47a.75.75 0 0 0-1.06 0L6.22 6.72a.75.75 0 0 0 1.06 1.06L10 5.06l2.72 2.72a.75.75 0 1 0 1.06-1.06l-3.25-3.25Zm-4.31 9.81 3.25 3.25a.75.75 0 0 0 1.06 0l3.25-3.25a.75.75 0 1 0-1.06-1.06L10 14.94l-2.72-2.72a.75.75 0 0 0-1.06 1.06Z"
                         clip-rule="evenodd" />
                 </svg>
             </div>

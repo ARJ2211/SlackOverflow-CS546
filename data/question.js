@@ -2,6 +2,7 @@ import { Normalize, Jaccard, Tokens } from "../utils/ragUtils/jaccardNormalizer.
 import { questions } from "../config/mongoCollections.js";
 import { getEmbedding } from "../utils/ragUtils/getEmbeddings.js";
 import * as validator from "../utils/validator.js";
+import { answers } from "../config/mongoCollections.js";
 
 const THRESOLD = 0.9;
 const JACCARD_THRESHOLD = 0.65;
@@ -149,6 +150,34 @@ export const updateQuestion = async (filter, obj) => {
     return updatedObj;
 };
 
+export const updateAnswerCount = async (questionId) => {
+
+    questionId = validator.isValidMongoId(questionId);
+
+    const answersColl = await answers();
+    const questionsColl = await questions();
+
+    const answersList = await answersColl
+        .find({ question_id: questionId })
+        .toArray();
+
+    const answerCount = answersList.length
+
+    const updateInfo = await questionsColl.updateOne(
+        { _id: questionId },
+        { $set: { answer_count: answerCount } }
+    );
+
+    if (updateInfo.modifiedCount === 0) {
+        throw `500 failed to update question ${questionId}`;
+    }
+
+    const updatedQuestion = await questionsColl.findOne({ _id: questionId });
+
+    const result = { "answer_count": updatedQuestion.answer_count }
+
+    return result
+}
 
 export const getQuestionById = async (questionId) => {
     questionId = validator.isValidMongoId(questionId);

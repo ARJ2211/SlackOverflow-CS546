@@ -190,7 +190,7 @@ const setFilterFormData = () => {
 };
 
 const handleQuillSetup = () => {
-    quill = new Quill('#editor', {
+    quill = new Quill('#questionEditor', {
         theme: 'snow',
         modules: {
             toolbar: '#toolbar'
@@ -198,8 +198,8 @@ const handleQuillSetup = () => {
         placeholder: 'Type your question here...'
     });
 
-    const editor = document.getElementById('editor');
-    const handle = document.getElementById("resizeHandle");
+    const editor = document.getElementById('questionEditor');
+    const handle = document.getElementById("questionResizeHandle");
     let valueY, valueH;
     handle.onmousedown = e => {
         valueY = e.clientY;

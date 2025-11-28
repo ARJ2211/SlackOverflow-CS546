@@ -18,7 +18,13 @@ app.use(methodOverride);
 app.use(setSessionLocals);
 app.engine('handlebars', handlebars.engine({
     defaultLayout: 'main',
-    helpers: { eq: (a, b) => a === b, json: context => JSON.stringify(context) }
+    helpers: {
+        eq: (a, b) => a === b,
+        json: obj => JSON.stringify(obj),
+        jsonSafe: (context) => encodeURIComponent(JSON.stringify(context))
+
+
+    }
 }));
 app.set('view engine', 'handlebars');
 
