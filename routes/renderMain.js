@@ -268,6 +268,7 @@ router.get('/question/:id', async (req, res) => {
             path: `/ courses / ${course.course_id} / question`,
             courses: courses,
             question: question,
+            question_id: question._id.toString(),
             course: course,
             selectedCourse: course._id.toString(),
         });
