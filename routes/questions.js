@@ -84,13 +84,37 @@ router
                 await questionsData.updateAnswerCount(question_id);
             }
 
-            return res.status(200).json(newAnswer);
+            return res.status(200).json({ message: "Answer added to the question" });
         } catch (e) {
             e.status = 404
             return handleError(res, e)
         }
 
     });
+
+router
+    .route("/:id/votes")
+    .patch(async (req, res) => {
+        let user_id = req.body.user_id;
+        let question_id = req.params.id;
+
+        try {
+            question_id = validator.isValidMongoId(question_id, "question_id");
+            user_id = validator.isValidMongoId(user_id, "user_id");
+        } catch (e) {
+            e.status = 400
+            return handleError(res, e)
+        }
+
+        try {
+            const updatedVotes = await questionsData.updateUpVotes(question_id, user_id);
+            return res.status(200).json({ message: "Vote recorded successfully" });
+        } catch (e) {
+            e.status = 404
+            return handleError(res, e)
+        }
+
+    })
 
 
 

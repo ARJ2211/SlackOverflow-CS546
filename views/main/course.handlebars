@@ -41,8 +41,8 @@
         {{#each questions}}
 
         <a href="/main/question/{{this._id}}"
-            class="bg-white rounded-3xl shadow-sm py-3 px-6 border border-[#F0BD66] hover:cursor-pointer hover:bg-[#fcfaf6] hover:shadow-md">
-            <div class=" flex items-center justify-between mb-2">
+            class="bg-white rounded-3xl shadow-sm py-2 px-6 border border-[#F0BD66] hover:cursor-pointer hover:bg-[#fcfaf6] hover:shadow-md">
+            <div class=" flex items-center justify-between mb-1">
                 <div class="flex gap-3">
                     {{#each this.labels}}
                     <div key="{{this._id}}" class="border border-[#F0BD66] text-[#F0BD66] text-sm  px-4 rounded-3xl ">
@@ -64,7 +64,7 @@
                 </div>
             </div>
 
-            <div class=" text-lg text-gray-900 mb-2">
+            <div class=" text-sm text-gray-900 mb-1">
                 {{{this.question}}}
             </div>
 
@@ -104,7 +104,7 @@
                         </svg>
 
 
-                        <span>{{#if this.views}}{{this.views}}{{else}}0{{/if}} views</span>
+                        <span>{{#if this.views}}{{this.views.length}}{{else}}0{{/if}} views</span>
 
                     </div>
 

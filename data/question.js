@@ -58,7 +58,7 @@ export const createQuestion = async (question, course_id, user_id, labels = [], 
         accepted_answer_id: null,
         status: "open",
         answer_count: 0,
-        views: 0
+        views: []
     };
 
     const { insertedId } = await questionsColl.insertOne(doc);
@@ -177,6 +177,56 @@ export const updateAnswerCount = async (questionId) => {
     const result = { "answer_count": updatedQuestion.answer_count }
 
     return result
+}
+
+export const updateViews = async (questionId, userId) => {
+
+    questionId = validator.isValidMongoId(questionId);
+    userId = validator.isValidMongoId(userId);
+
+    const questionsColl = await questions();
+
+    const updateInfo = await questionsColl.updateOne(
+        { _id: questionId },
+        { $addToSet: { views: userId } }
+    );
+
+    const updatedQuestion = await questionsColl.findOne({ _id: questionId });
+
+    return { views: updatedQuestion.views }
+}
+
+export const updateUpVotes = async (questionId, userId) => {
+
+    let query;
+
+    questionId = validator.isValidMongoId(questionId)
+    userId = validator.isValidMongoId(userId)
+
+    const questionsColl = await questions()
+
+    const question = await questionsColl.findOne({ _id: questionId })
+
+    if (!question) {
+        throw `Question ${questionId} not found`
+    }
+
+    const hasUpvoted = question.up_votes.map(id => id.toString()).includes(userId.toString())
+
+
+    if (hasUpvoted) {
+        query = { $pull: { up_votes: userId } }
+    } else {
+        query = { $addToSet: { up_votes: userId } }
+    }
+    const updateInfo = await questionsColl.updateOne(
+        { _id: questionId },
+        query
+    );
+
+    const updatedQuestion = await questionsColl.findOne({ _id: questionId })
+
+    return { up_votes: updatedQuestion.up_votes }
 }
 
 export const getQuestionById = async (questionId) => {

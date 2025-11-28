@@ -120,6 +120,7 @@ const handleSaveAnswer = (event) => {
 
     return false
 }
+
 const handleQuestionQuillSetup = () => {
     const questionCards = document.querySelectorAll(".questionContainer")
 
@@ -158,6 +159,44 @@ const handleAnswerQuillSetup = () => {
         answerQuill.setContents(answerDelta);
     });
 
+}
+
+const handleUpdateUpVote = (event) => {
+    event.preventDefault()
+
+    const mainContainer = document.getElementById('mainContainer');
+    const questionContainer = document.getElementById('questionContainer');
+
+    const user = JSON.parse(mainContainer.getAttribute('data-user') || '{}');
+    const question_id = questionContainer.getAttribute('data-question-id') || ''
+
+    fetch(`/questions/${question_id}/votes`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.id })
+    })
+        .then(async (res) => {
+            const responseBody = await res.json()
+            return { status: res.status, body: responseBody }
+        })
+        .then(({ status, body }) => {
+            if (status !== 200) {
+                showToast(body.message || "Unknown error.", "error")
+                return
+            }
+
+            showToast("vote updated successfully!", "success")
+
+            setTimeout(() => {
+                window.location.reload()
+            }, 500)
+        })
+        .catch((err) => {
+            console.error("handleUpdateUpVote error:", err)
+            showToast("Server error. Please try again.", "error")
+        })
+
+    return false
 }
 
 

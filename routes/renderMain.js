@@ -223,7 +223,7 @@ router.get('/question/:id', async (req, res) => {
     let questionId;
     let courseLabels = []
     let answers = []
-
+    let views;
     try {
 
         questionId = validator.isValidMongoId(req.params.id, "req.params.id");
@@ -277,6 +277,11 @@ router.get('/question/:id', async (req, res) => {
             course_name: course.course_name
         }))
 
+        views = await questionsData.updateViews(questionId, userSesData.id)
+
+        const hasUpvoted = question.up_votes.map(id => id.toString()).includes(userSesData.id.toString())
+
+
         return res.render('main/question', {
             layout: 'main',
             title: 'Question Thread',
@@ -287,6 +292,8 @@ router.get('/question/:id', async (req, res) => {
             question_id: question._id.toString(),
             answers: answers,
             course: course,
+            views: views.length,
+            hasUpvoted,
             selectedCourse: course._id.toString(),
         });
     } catch (error) {
