@@ -78,7 +78,9 @@ router
             }
 
         } catch (e) {
-            e.status = 400
+            if (e.status) {
+                e.status = 400
+            }
             return handleError(res, e)
         }
 
@@ -97,7 +99,9 @@ router
             question_id = validator.isValidMongoId(question_id, "question_id");
             user_id = validator.isValidMongoId(user_id, "user_id");
         } catch (e) {
-            e.status = 400
+            if (e.status) {
+                e.status = 400
+            }
             return handleError(res, e)
         }
 
@@ -105,8 +109,9 @@ router
             await questionsData.deleteQuestion(question_id, user_id)
             return res.status(200).json({ message: "Question deleted successfully" })
         } catch (e) {
-            e.status = 404
-            return handleError(res, e)
+            if (e.status) {
+                e.status = 404
+            } return handleError(res, e)
         }
 
     })
@@ -123,7 +128,9 @@ router
             question_id = validator.isValidMongoId(question_id, "question_id");
             user_id = validator.isValidMongoId(user_id, "user_id");
         } catch (e) {
-            e.status = 400
+            if (e.status) {
+                e.status = 400
+            }
             return handleError(res, e)
         }
 
@@ -131,7 +138,9 @@ router
             const updatedVotes = await questionsData.updateUpVotes(question_id, user_id);
             return res.status(200).json({ message: "Vote recorded successfully" });
         } catch (e) {
-            e.status = 404
+            if (e.status) {
+                e.status = 404
+            }
             return handleError(res, e)
         }
 
@@ -147,7 +156,9 @@ router
             question_id = validator.isValidMongoId(question_id, "question_id");
             status = validator.isValidString(status, "status");
         } catch (e) {
-            e.status = 400
+            if (e.status) {
+                e.status = 400
+            }
             return handleError(res, e)
         }
 
@@ -155,7 +166,9 @@ router
             const updatedStatus = await questionsData.updateStatus(question_id, status);
             return res.status(200).json({ message: "Status changed successfully" });
         } catch (e) {
-            e.status = 404
+            if (e.status) {
+                e.status = 404
+            }
             return handleError(res, e)
         }
     })

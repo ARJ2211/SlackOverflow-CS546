@@ -84,6 +84,8 @@
                                 d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
                         </svg>
                     </div>
+
+                    {{#if (eqStr user.id question.user_id)}}
                     <div class="relative">
                         <div onclick="handleQuestionActionsDropdown()" id="openQuestionActionsDropdown"
                             class="hover:cursor-pointer hover:bg-gray-100 rounded-md p-1 w-fit">
@@ -108,7 +110,10 @@
 
                             </ul>
                         </div>
+
                     </div>
+                    {{/if}}
+
                 </div>
             </div>
 
@@ -224,7 +229,10 @@
                         </p>
                         <p class="text-sm text-gray-600 dark:text-gray-400">posted {{this.timeAgo}}</p>
                     </div>
+
                     <div class="relative actionContainer">
+                        {{#if (or (eqStr ../user.id this.user_id) (or (eq ../user.role "professor") ../isTa))}}
+
                         <div onclick="handleActionsDropdown('actionsDropdown-'+'{{ json this._id}}')"
                             id="openActionsDropdown-{{json this._id}}"
                             class="openActionsDropdown hover:cursor-pointer hover:bg-gray-100 rounded-md p-1 w-fit">
@@ -234,11 +242,12 @@
                                     d="M3 10a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM8.5 10a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM15.5 8.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z" />
                             </svg>
                         </div>
+                        {{/if}}
                         <div id="actionsDropdown-{{json this._id}}"
                             class="actionsDropdown z-50 absolute hidden right-0 top-6 bg-white rounded-2xl bg-neutral-primary-medium border border-default-medium rounded-base shadow-lg w-28">
                             <ul class="p-3 text-sm text-body font-medium space-y-1">
-
-                                <li
+                                {{#if (eqStr ../user.id this.user_id)}}
+                                <li onclick="handleUpdateAnswerModal({{json this}}),handleActionsDropdown('actionsDropdown-'+'{{ json this._id}}')"
                                     class=" text-sm font-medium text-heading hover:bg-gray-100 hover:cursor-pointer rounded-md p-1">
                                     Edit
                                 </li>
@@ -246,10 +255,13 @@
                                     class=" text-sm font-medium text-heading hover:bg-gray-100 hover:cursor-pointer rounded-md p-1">
                                     Delete
                                 </li>
+                                {{/if}}
+                                {{#if (or (eq ../user.role "professor") ../isTa)}}
                                 <li
                                     class=" text-sm font-medium text-heading hover:bg-gray-100 hover:cursor-pointer rounded-md p-1">
-                                    Approve
+                                    Accept
                                 </li>
+                                {{/if}}
                             </ul>
                         </div>
                     </div>
@@ -359,7 +371,7 @@
         class="fixed hidden inset-0 bg-black bg-opacity-50 flex items-center justify-center  z-50">
 
         <div class="relative mt-0  ease-out transition-all w-3xl  m-3 sm:mx-auto">
-            <div onclick="handleEditQuestionModal()"
+            <div onclick="handleUpdateQuestionModal()"
                 class="absolute right-0 -top-8 bg-white rounded-md hover:bg-opacity-50 hover:cursor-pointer ">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-6 text-black pointer-event-none hover:text-white ">
@@ -367,13 +379,13 @@
                 </svg>
             </div>
 
-            <div class="bg-white border border-gray-200 rounded-xl shadow-2xs pointer-events-auto">
+            <div class=" rounded-xl shadow-2xs pointer-events-auto">
                 {{!-- editor --}}
                 <form onsubmit="handleUpdateQuestion(event)"
                     class="bg-white relative border border-gray-300 rounded-2xl shadow-md flex flex-col   ">
 
                     <div class="absolute -top-9 left-2 flex items-center  bg-white  rounded-full">
-                        <div id="labelTags" class="flex items-center justify-center p-1 rounded-full gap-2">
+                        <div id="labelTags" class="flex items-center justify-center  rounded-full gap-2">
                             {{!-- label tags --}}
                         </div>
                     </div>
@@ -503,7 +515,109 @@
 
     </div>
 
+    <div id="updateAnswerModal"
+        class="fixed hidden inset-0 bg-black bg-opacity-50 flex items-center justify-center  z-50">
 
+        <div class="relative mt-0  ease-out transition-all w-3xl  m-3 sm:mx-auto">
+            <div onclick="handleUpdateAnswerModal()"
+                class="absolute right-0 -top-8 bg-white rounded-md hover:bg-opacity-50 hover:cursor-pointer ">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="size-6 text-black pointer-event-none hover:text-white ">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                </svg>
+            </div>
+
+            <div class=" rounded-xl shadow-2xs pointer-events-auto">
+                {{!-- editor --}}
+                <form onsubmit="handleUpdateAnswer(event)"
+                    class="bg-white relative border border-gray-300 rounded-2xl shadow-md flex flex-col   ">
+
+                    <div id="updateAnswerEditor" class=" pt-1  rounded-t-2xl resize-none focus:outline-none"></div>
+
+                    <div id="updateAnswerResizeHandle"
+                        class=" absolute -top-0 -right-0  hover:cursor-ns-resize  rounded-full p-1 text-gray-400 ">
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="size-5 pointer-events-none">
+                            <path fill-rule="evenodd"
+                                d="M10.53 3.47a.75.75 0 0 0-1.06 0L6.22 6.72a.75.75 0 0 0 1.06 1.06L10 5.06l2.72 2.72a.75.75 0 1 0 1.06-1.06l-3.25-3.25Zm-4.31 9.81 3.25 3.25a.75.75 0 0 0 1.06 0l3.25-3.25a.75.75 0 1 0-1.06-1.06L10 14.94l-2.72-2.72a.75.75 0 0 0-1.06 1.06Z"
+                                clip-rule="evenodd" />
+                        </svg>
+
+
+                    </div>
+
+                    <div class="rounded-b-2xl flex items-center justify-between  ">
+
+                        <div class="flex items-center ml-2">
+                            <div class=" hover:cursor-pointer h-fit  -mr-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                    class="size-[17px] hover:text-blue-600">
+                                    <path fill-rule="evenodd"
+                                        d="M18.97 3.659a2.25 2.25 0 0 0-3.182 0l-10.94 10.94a3.75 3.75 0 1 0 5.304 5.303l7.693-7.693a.75.75 0 0 1 1.06 1.06l-7.693 7.693a5.25 5.25 0 1 1-7.424-7.424l10.939-10.94a3.75 3.75 0 1 1 5.303 5.304L9.097 18.835l-.008.008-.007.007-.002.002-.003.002A2.25 2.25 0 0 1 5.91 15.66l7.81-7.81a.75.75 0 0 1 1.061 1.06l-7.81 7.81a.75.75 0 0 0 1.054 1.068L18.97 6.84a2.25 2.25 0 0 0 0-3.182Z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </div>
+
+                            <div id="updateAnswerToolbar" class="ql-toolbar  flex items-center gap-2">
+                                <span class="ql-formats">
+                                    <button class="ql-link" title="Insert Link"></button>
+                                    <button class="ql-image" title="Insert Image"></button>
+                                    <button class="ql-video" title="Insert Video"></button>
+                                    <button class="ql-code-block" title="Code Block"></button>
+                                </span>
+                                <select class="ql-font"></select>
+
+                                <select class="ql-size">
+                                    <option value="small"></option>
+                                    <option selected></option>
+                                    <option value="large"></option>
+                                    <option value="huge"></option>
+                                </select>
+
+                                <span class="ql-formats">
+                                    <button class="ql-bold"></button>
+                                    <button class="ql-italic"></button>
+                                    <button class="ql-underline"></button>
+                                    <button class="ql-strike"></button>
+                                </span>
+
+                                <span class="ql-formats">
+                                    <select class="ql-color"></select>
+                                    <select class="ql-background"></select>
+                                </span>
+
+                                <span class="ql-formats">
+                                    <button class="ql-list" value="ordered"></button>
+                                    <button class="ql-list" value="bullet"></button>
+                                    <select class="ql-align"></select>
+                                </span>
+
+                            </div>
+                        </div>
+
+                        <div class="mr-2">
+                            <button type="submit"
+                                class="flex justify-center items-center p-0.5 gap-2 px-2 rounded-full text-white bg-[#F0BD66] hover:bg-[#F0AC66]">
+                                <div>update answer</div>
+
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor"
+                                    class="shrink-0 size-3.5 pointer-events-none ">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                </svg>
+
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script src="/public/js/question.js"></script>

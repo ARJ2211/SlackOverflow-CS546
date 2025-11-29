@@ -20,6 +20,7 @@ app.engine('handlebars', handlebars.engine({
     defaultLayout: 'main',
     helpers: {
         eq: (a, b) => a === b,
+        eqStr: (a, b) => String(a) === String(b),
         or: (a, b) => a || b,
         json: obj => JSON.stringify(obj),
     }
