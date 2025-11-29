@@ -125,11 +125,15 @@ export const updateQuestion = async (filter, obj) => {
     if (obj.hasOwnProperty("question")) {
         var new_question = obj.question;
         var canonical_key = Normalize(obj.question);
-        const existingQuestion = await searchQuestion(obj.question);
+        let existingQuestion = await searchQuestion(obj.question);
+
+        existingQuestion = existingQuestion.filter((question) => question._id.toString() != filter._id.toString())
+
         if (
             existingQuestion.length > 0 &&
             existingQuestion[0].score > THRESOLD
         ) {
+
             throw `ERROR: similar question already exists, ${existingQuestion[0].question}, score: ${existingQuestion[0].score}`;
         }
         var embedding = await getEmbedding(new_question);
@@ -150,21 +154,35 @@ export const updateQuestion = async (filter, obj) => {
     return updatedObj;
 };
 
-export const updateAnswerCount = async (questionId, userId) => {
+export const updateAnswerCount = async (questionId, userId, action = 'add') => {
 
     questionId = validator.isValidMongoId(questionId);
     userId = validator.isValidMongoId(userId);
 
     const questionsColl = await questions();
 
-    const updateInfo = await questionsColl.updateOne(
-        { _id: questionId },
-        { $push: { answer_count: userId } }
-    );
+    const question = await questionsColl.findOne({ _id: questionId })
+    if (!question) {
+        throw "Question not found"
+    }
 
-    const question = await questionsColl.findOne({ _id: questionId });
+    let query;
 
-    return question.answer_count
+    if (action == 'remove') {
+        const index = question.answer_count.map(id => id.toString()).indexOf(userId.toString())
+        if (index !== -1) {
+            question.answer_count.splice(index, 1)
+        }
+        query = { $set: { answer_count: question.answer_count } }
+    } else {
+        query = { $push: { answer_count: userId } }
+    }
+
+    await questionsColl.updateOne({ _id: questionId }, query)
+
+    const updatedQuestion = await questionsColl.findOne({ _id: questionId });
+
+    return updatedQuestion.answer_count
 
 }
 

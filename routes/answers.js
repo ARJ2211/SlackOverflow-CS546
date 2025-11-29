@@ -57,10 +57,13 @@ router
     .delete(async (req, res) => {
         let user_id = req.body.user_id;
         let answer_id = req.params.id;
+        let question_id = req.body.question_id;
+        let action = 'remove'
 
         try {
             answer_id = validator.isValidMongoId(answer_id, "answer_id");
-            user_id = validator.isValidMongoId(user_id, "user_id");
+            user_id = validator.isValidMongoId(user_id, "user_id")
+            question_id = validator.isValidMongoId(question_id, "question_id")
         } catch (e) {
             e.status = 400
             return handleError(res, e)
@@ -68,6 +71,8 @@ router
 
         try {
             await answersData.deleteAnswer(answer_id, user_id)
+            await questionsData.updateAnswerCount(question_id, user_id, action)
+
             return res.status(200).json({ message: "Answer deleted successfully" })
         } catch (e) {
             e.status = 404

@@ -48,6 +48,47 @@ router
 
 router
     .route("/:id")
+    .patch(async (req, res) => {
+        let question_id = req.params.id;
+        let { question, question_delta, question_content, user_id, labels } = req.body;
+
+        try {
+            question_id = validator.isValidMongoId(question_id, "question_id");
+
+            if (question) {
+                question = validator.isValidString(question, "question");
+            }
+
+            if (question_content) {
+                question_content = validator.isValidString(question_content, "question_content");
+            }
+
+            if (question_delta) {
+                question_delta = validator.isValidString(question_delta, "question_delta");
+            }
+
+            if (labels && Array.isArray(labels) && labels.length > 0) {
+                labels.map((label) => {
+                    label = validator.isValidMongoId(label, "label");
+                })
+            }
+
+            if (user_id) {
+                user_id = validator.isValidMongoId(user_id, "user_id");
+            }
+
+        } catch (e) {
+            e.status = 400
+            return handleError(res, e)
+        }
+
+        try {
+            await questionsData.updateQuestion({ _id: question_id }, { question, question_delta, question_content, user_id, labels });
+            return res.status(200).json({ message: "Question updated successfully" });
+        } catch (e) {
+            return handleError(res, e)
+        }
+    })
     .delete(async (req, res) => {
         let user_id = req.body.user_id;
         let question_id = req.params.id;
