@@ -184,20 +184,22 @@ router.route("/:courseId")
         courseData.course_id = validator.isValidCourseId(courseData.course_id);
         courseData.course_description = validator.isValidString(courseData.course_description, "course_description");
     } catch (e) {
-        return res.status(400).send(e);
+        return handleError(res, e);
     }
     try{
-        courseUpdate = await coursesData.updateCourse(
+        const updatedCourse = await coursesData.updateCourse(
         { _id: new ObjectId(courseId) },  
         courseData                         
 );
-        return res.status(200).json(updatedCourse);
+        return res.status(200).json({ 
+            message: "Course was updated!!",
+            course: updatedCourse });
 
     }catch (e){
          if (e.status) {
             return res.status(e.status).send(e.message);
         }
-        return res.status(400).send(e);
+        return handleError(res, e);
     }
 })
 .delete(async (req, res) => {
@@ -205,7 +207,23 @@ router.route("/:courseId")
     try {
         courseId = validator.isValidMongoId(courseId);
     } catch (e) {
-        return res.status(400).send(e);
+        return handleError(res, e);
+    }
+    try{
+        const course = await coursesData.getCourseById(courseId);
+        if (course.enrolled_students && course.enrolled_students.length > 0) {
+                return res.status(400).json({ 
+                    message: "ALL ENROLLED STUDENTS must be removed before deleting course"
+            });
+        }       
+        const deletedCourse = await coursesData.deleteCourse(course.course_id);
+        return res.status(200).json(deletedCourse);
+    }
+    catch (e) {
+        if (e.status) {
+            return res.status(e.status).send(e.message);
+        }
+        return handleError(res, e);
     }
 }
 );
