@@ -313,10 +313,31 @@ export const getQuestionsByCourseIdFiltered = async (courseId, filters) => {
  * @param {*} questionId
  * @returns {Object}
  */
-export const deleteQuestion = async (questionId) => {
-    //TODO: Cascading deletes required.
-    questionId = validator.isValidMongoId(questionId);
+export const deleteQuestion = async (questionId, user_id) => {
+
+    questionId = validator.isValidMongoId(questionId, "question id");
+    user_id = validator.isValidMongoId(user_id, "user id");
+
     const questionsColl = await questions();
+    const answersColl = await answers();
+
+    const question = await questionsColl.findOne({ _id: questionId });
+
+    if (!question) {
+        throw `Question ${questionId} not found`
+    }
+
+    if (question.user_id.toString() !== user_id.toString()) {
+        throw "You are not allowed to delete this question."
+    }
+
+    await answersColl.deleteMany({ question_id: questionId });
+
     const deletedResult = await questionsColl.deleteOne({ _id: questionId });
+
+    if (deletedResult.deletedCount === 0) {
+        throw "Failed to delete question."
+    }
+
     return deletedResult;
 };

@@ -1,6 +1,7 @@
 import usersRoutes from "./users.js";
 import coursesRoutes from "./course.js";
 import questionsRoutes from "./questions.js";
+import answersRoutes from "./answers.js";
 import renderAuthRoutes from "./renderAuth.js";
 import renderMainRoutes from "./renderMain.js";
 import { ensureAuth, redirectIfAuthenticated, noCacheAuth } from "../middleware/auth.js";
@@ -11,6 +12,7 @@ const constructorMethod = (app) => {
     app.use("/users", usersRoutes);
     app.use("/courses", coursesRoutes);
     app.use("/questions", questionsRoutes);
+    app.use("/answers", answersRoutes);
 
     app.get("/", (req, res) => {
         res.redirect('auth/sign-in');

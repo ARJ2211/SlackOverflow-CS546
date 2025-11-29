@@ -166,23 +166,22 @@ export const updateAnswer = async (answerId, updateAnswer) => {
  * @param {string} answerId 
  * @returns {Object} 
  */
-export const deleteAnswer = async (answerId) => {
+export const deleteAnswer = async (answerId, user_id) => {
+
+    answerId = validator.isValidMongoId(answerId);
+    user_id = validator.isValidMongoId(user_id);
+
     const answersColl = await answers();
-    answerId = validator.isValidString(answerId);
 
-    let answerObjectId;
-    try {
-        answerObjectId = new ObjectId(answerId);
-    } catch (e) {
-        throw `ERROR: answerId is not a valid ObjectId`;
-    }
-
-    const existingAnswer = await answersColl.findOne({ _id: answerObjectId });
+    const existingAnswer = await answersColl.findOne({ _id: answerId });
     if (!existingAnswer) {
         throw `answer not found!`;
     }
 
-    const deleteInfo = await answersColl.deleteOne({ _id: answerObjectId });
+    if (existingAnswer.user_id.toString() !== user_id.toString()) {
+        throw "You are not allowed to delete this answer."
+    }
+    const deleteInfo = await answersColl.deleteOne({ _id: answerId });
 
     if (deleteInfo.deletedCount === 0) {
         throw `failed to delete answer!`;

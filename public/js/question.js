@@ -26,9 +26,17 @@ const handleInputFieldQuillSetup = () => {
 const handleOutsideClick = (event) => {
     const actionsDropdown = document.getElementById("actionsDropdown");
     const actionsDropdownBtn = document.getElementById("openActionsDropdown");
-    if (!actionsDropdown.contains(event.target) && event.target !== actionsDropdownBtn) {
+    if (actionsDropdown && !actionsDropdown?.contains(event.target) && event.target !== actionsDropdownBtn) {
         actionsDropdown.classList.add("hidden", "scale-95", "pointer-events-none");
     }
+
+    const questionActionsDropdown = document.getElementById("questionActionsDropdown");
+    const questionActionsDropdownBtn = document.getElementById("openQuestionActionsDropdown");
+    if (questionActionsDropdown && !questionActionsDropdown.contains(event.target) && event.target !== questionActionsDropdownBtn) {
+        questionActionsDropdown.classList.add("hidden", "scale-95", "pointer-events-none");
+    }
+
+
 }
 
 
@@ -44,82 +52,20 @@ const handleActionsDropdown = (event) => {
     }
 };
 
+const handleQuestionActionsDropdown = (event) => {
 
-const handleSaveAnswer = (event) => {
-    event.preventDefault()
-
-    const mainContainer = document.getElementById('mainContainer');
-    const questionContainer = document.getElementById('questionContainer');
-
-    const user = JSON.parse(mainContainer.getAttribute('data-user') || '{}');
-    const question_id = questionContainer.getAttribute('data-question-id') || ''
-
-    const quillContent = answerQuill.root.innerHTML.trim();
-    const quillText = answerQuill.getText().trim();
-
-    if (quillText.length === 0 || quillContent.length === 0 || quillContent === '<p><br></p>') {
-        showToast("Answer content cannot be empty.", "error")
-        return false
+    const questionActionsDropdown = document.getElementById("questionActionsDropdown")
+    if (!questionActionsDropdown) return
+    const isClosed = questionActionsDropdown.classList.contains("hidden", "pointer-events-none")
+    if (isClosed) {
+        questionActionsDropdown.classList.remove("hidden", "scale-95", "pointer-events-none")
+    } else {
+        questionActionsDropdown.classList.add("hidden", "scale-95", "pointer-events-none")
     }
-
-    const quillDelta = answerQuill.getContents()
-
-    const answer = quillText
+};
 
 
-    const button = event.target.querySelector("button[type='submit']")
-    button.disabled = true
-    button.innerText = "Submitting..."
 
-    let body = {}
-
-    body.answer = answer;
-    body.answer_delta = JSON.stringify(quillDelta)
-    body.answer_content = quillContent;
-
-    body.user_id = user.id;
-
-    body.is_accepted = false
-
-    fetch(`/questions/${question_id}/answer`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-    })
-        .then(async (res) => {
-            const responseBody = await res.json()
-            return { status: res.status, body: responseBody }
-        })
-        .then(({ status, body }) => {
-            if (status !== 200) {
-                showToast(body.message || "Unknown error.", "error")
-                button.disabled = false
-                button.innerHTML = `<div>Comment</div>
-                        <svg class="shrink-0 size-3.5 pointer-events-none " xmlns="http://www.w3.org/2000/svg"
-                            width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path
-                                d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
-                        </svg>`
-                return
-            }
-
-            showToast("Answer created successfully!", "success")
-            button.disabled = false
-            button.innerText = "Comment"
-
-            setTimeout(() => {
-                window.location.reload()
-            }, 500)
-        })
-        .catch((err) => {
-            console.error("handleAddAnswer error:", err)
-            showToast("Server error. Please try again.", "error")
-            button.disabled = false
-            button.innerText = "Comment"
-        })
-
-    return false
-}
 
 const handleQuestionQuillSetup = () => {
     const questionCards = document.querySelectorAll(".questionContainer")
@@ -205,6 +151,7 @@ const handleUpdateStatus = (event) => {
     const questionContainer = document.getElementById('questionContainer');
 
     const question_id = questionContainer.getAttribute('data-question-id') || '';
+
     const statusCheckbox = event.target;
     const newStatus = statusCheckbox.checked ? 'open' : 'closed';
 
@@ -239,7 +186,156 @@ const handleUpdateStatus = (event) => {
     return false;
 };
 
+const handleSaveAnswer = (event) => {
+    event.preventDefault()
 
+    const mainContainer = document.getElementById('mainContainer');
+    const questionContainer = document.getElementById('questionContainer');
+
+    const user = JSON.parse(mainContainer.getAttribute('data-user') || '{}');
+    const question_id = questionContainer.getAttribute('data-question-id') || ''
+
+    const quillContent = answerQuill.root.innerHTML.trim();
+    const quillText = answerQuill.getText().trim();
+
+    if (quillText.length === 0 || quillContent.length === 0 || quillContent === '<p><br></p>') {
+        showToast("Answer content cannot be empty.", "error")
+        return false
+    }
+
+    const quillDelta = answerQuill.getContents()
+
+    const answer = quillText
+
+
+    const button = event.target.querySelector("button[type='submit']")
+    button.disabled = true
+    button.innerText = "Submitting..."
+
+    let body = {}
+
+    body.answer = answer;
+    body.answer_delta = JSON.stringify(quillDelta)
+    body.answer_content = quillContent;
+    body.question_id = question_id
+    body.user_id = user.id;
+
+    body.is_accepted = false
+
+    fetch(`/answers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    })
+        .then(async (res) => {
+            const responseBody = await res.json()
+            return { status: res.status, body: responseBody }
+        })
+        .then(({ status, body }) => {
+            if (status !== 200) {
+                showToast(body.message || "Unknown error.", "error")
+                button.disabled = false
+                button.innerHTML = `<div>Comment</div>
+                        <svg class="shrink-0 size-3.5 pointer-events-none " xmlns="http://www.w3.org/2000/svg"
+                            width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path
+                                d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
+                        </svg>`
+                return
+            }
+
+            showToast("Answer created successfully!", "success")
+            button.disabled = false
+            button.innerText = "Comment"
+
+            setTimeout(() => {
+                window.location.reload()
+            }, 500)
+        })
+        .catch((err) => {
+            console.error("handleAddAnswer error:", err)
+            showToast("Server error. Please try again.", "error")
+            button.disabled = false
+            button.innerText = "Comment"
+        })
+
+    return false
+}
+
+const handleDeleteAnswer = (answer_id) => {
+
+    const mainContainer = document.getElementById('mainContainer');
+    const user = JSON.parse(mainContainer.getAttribute('data-user') || '{}');
+
+
+    fetch(`/answers/${answer_id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.id })
+    })
+        .then(async (res) => {
+            const responseBody = await res.json();
+            return { status: res.status, body: responseBody };
+        })
+        .then(({ status, body }) => {
+            if (status !== 200) {
+                showToast(body.message || "Unknown error.", "error");
+                return;
+            }
+
+            showToast("Answer deleted successfully!", "success");
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        })
+        .catch((err) => {
+            console.error("handleDeleteAnswer error:", err);
+            showToast("Server error. Please try again.", "error");
+        });
+
+    return false;
+};
+
+const handleDeleteQuestion = (event) => {
+    event.preventDefault();
+
+    const mainContainer = document.getElementById('mainContainer');
+    const questionContainer = document.getElementById('questionContainer');
+
+    const user = JSON.parse(mainContainer.getAttribute('data-user') || '{}');
+    const question_id = questionContainer.getAttribute('data-question-id') || '';
+    const course_id = questionContainer.getAttribute('data-course-id') || '';
+
+
+    fetch(`/questions/${question_id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.id })
+    })
+        .then(async (res) => {
+            const responseBody = await res.json();
+            return { status: res.status, body: responseBody };
+        })
+        .then(({ status, body }) => {
+            if (status !== 200) {
+                showToast(body.message || "Unknown error.", "error");
+                return;
+            }
+
+            showToast("Question deleted successfully!", "success");
+
+            setTimeout(() => {
+                window.location.href = `/main/courses/${course_id}`;
+            }, 500);
+        })
+        .catch((err) => {
+            console.error("handleDeleteQuestion error:", err);
+            showToast("Server error. Please try again.", "error");
+        });
+
+    return false;
+};
 
 handleInputFieldQuillSetup()
 handleQuestionQuillSetup()

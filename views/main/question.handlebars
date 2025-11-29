@@ -34,8 +34,11 @@
     <!-- Page Content -->
     <div id="questionContainer" data-course-id='{{course._id}}' data-question-id='{{question._id}}'
         class=" flex-1  flex flex-col overflow-y-auto h-[88%] w-full gap-4 ">
+        {{!-- question card--}}
         <div class="bg-white rounded-3xl shadow-sm py-2 px-6 border border-[#F0BD66] ">
+            {{!-- question card header --}}
             <div class=" flex items-center justify-between mb-1">
+                {{!-- labels --}}
                 <div class="flex gap-3">
                     {{#each question.labels}}
                     <div key="{{this._id}}" class="border border-[#F0BD66] text-[#F0BD66] text-sm  px-4 rounded-3xl ">
@@ -43,6 +46,7 @@
                     </div>
                     {{/each}}
                 </div>
+                {{!-- status , bookmark and actions --}}
                 <div class="flex items-center justify-center gap-4">
                     {{#if (or (eq user.role "professor") isTa) }}
                     <div>
@@ -80,23 +84,40 @@
                                 d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
                         </svg>
                     </div>
-                    <div>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                        </svg>
+                    <div class="relative">
+                        <div onclick="handleQuestionActionsDropdown()" id="openQuestionActionsDropdown"
+                            class="hover:cursor-pointer hover:bg-gray-100 rounded-md p-1 w-fit">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="size-6 pointer-events-none">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                            </svg>
+                        </div>
+                        <div id="questionActionsDropdown"
+                            class="z-50 absolute hidden right-0 top-6 bg-white rounded-2xl bg-neutral-primary-medium border border-default-medium rounded-base shadow-lg w-28">
+                            <ul class="p-3 text-sm text-body font-medium space-y-1">
 
+                                <li
+                                    class=" text-sm font-medium text-heading hover:bg-gray-100 hover:cursor-pointer rounded-md p-1">
+                                    Edit
+                                </li>
+                                <li onclick="handleDeleteQuestion(event)"
+                                    class=" text-sm font-medium text-heading hover:bg-gray-100 hover:cursor-pointer rounded-md p-1">
+                                    Delete
+                                </li>
+
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
 
-
+            {{!-- question --}}
             <div class="questionContainer" id="questionDisplay-{{question._id}}"
                 data-question='{{ question.question_delta }}'></div>
 
 
-
+            {{!-- question card footer --}}
             <div class="flex items-center justify-between text-gray-500 text-sm">
                 <div class="flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -184,7 +205,7 @@
         </div>
 
 
-
+        {{!-- answers --}}
         <div class=" py-4 pb-6 divide-y divide-gray-200 flex flex-col ">
 
             {{#if answers.length}}
@@ -220,7 +241,7 @@
                                     class=" text-sm font-medium text-heading hover:bg-gray-100 hover:cursor-pointer rounded-md p-1">
                                     Edit
                                 </li>
-                                <li
+                                <li onclick="handleDeleteAnswer({{json this._id}})"
                                     class=" text-sm font-medium text-heading hover:bg-gray-100 hover:cursor-pointer rounded-md p-1">
                                     Delete
                                 </li>
@@ -249,7 +270,7 @@
         </div>
     </div>
 
-
+    {{!-- answer editor input filed --}}
     <div class="">
         <form onsubmit="handleSaveAnswer(event)"
             class="bg-white relative border border-gray-300 rounded-2xl shadow-md flex flex-col  ">
