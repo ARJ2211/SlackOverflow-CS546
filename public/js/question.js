@@ -31,7 +31,7 @@ const handleOutsideClick = (event) => {
         const actionsDropdown = container.querySelector(".actionsDropdown");
         const actionsDropdownBtn = container.querySelector(".openActionsDropdown");
 
-        if (actionsDropdown && !actionsDropdown.contains(event.target) && !actionsDropdownBtn.contains(event.target)) {
+        if (actionsDropdown && !actionsDropdown.contains(event.target) && (event.target !== actionsDropdownBtn)) {
             actionsDropdown.classList.add("hidden", "scale-95", "pointer-events-none");
         }
     });
@@ -287,6 +287,7 @@ const handleSaveAnswer = (event) => {
 
     const user = JSON.parse(mainContainer.getAttribute('data-user') || '{}');
     const question_id = questionContainer.getAttribute('data-question-id') || ''
+    const question_status = questionContainer.getAttribute('data-question-status') || ''
 
     const quillContent = answerQuill.root.innerHTML.trim();
     const quillText = answerQuill.getText().trim();
@@ -312,7 +313,7 @@ const handleSaveAnswer = (event) => {
     body.answer_content = quillContent;
     body.question_id = question_id
     body.user_id = user.id;
-
+    body.question_status = question_status
     body.is_accepted = false
 
     fetch(`/answers`, {
@@ -603,7 +604,9 @@ const handleUpdateAnswer = (event) => {
 
     const mainContainer = document.getElementById('mainContainer');
     const updateAnswerModal = document.getElementById('updateAnswerModal');
+    const questionContainer = document.getElementById('questionContainer');
 
+    const question_id = questionContainer.getAttribute('data-question-id') || ''
     const user = JSON.parse(mainContainer.getAttribute('data-user') || '{}');
     const answer_id = JSON.parse(updateAnswerModal.getAttribute('data-answer-id')) || ''
 
@@ -617,7 +620,6 @@ const handleUpdateAnswer = (event) => {
 
     const quillDelta = updateAnswerQuill.getContents()
 
-    let isAccepted = null
     const answer = quillText
 
     const button = event.target.querySelector("button[type='submit']")
@@ -631,11 +633,9 @@ const handleUpdateAnswer = (event) => {
         body.answer_delta = JSON.stringify(quillDelta)
         body.answer_content = quillContent;
     }
-    if (isAccepted) {
-        body.is_accepted = isAccepted
-    }
 
-    body.user_id = user.id;
+    body.question_id = question_id
+    body.user_id = user.id
 
 
     fetch(`/answers/${answer_id}`, {
@@ -678,6 +678,77 @@ const handleUpdateAnswer = (event) => {
     return false
 }
 
+const handleAcceptAnswer = (answer_id) => {
+
+    const mainContainer = document.getElementById('mainContainer');
+    const user = JSON.parse(mainContainer.getAttribute('data-user') || '{}');
+
+    const questionContainer = document.getElementById('questionContainer');
+    const question_id = questionContainer.getAttribute('data-question-id') || ''
+
+
+    fetch(`/answers/${answer_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.id, is_accepted: true, question_id })
+    })
+        .then(async (res) => {
+            const responseBody = await res.json()
+            return { status: res.status, body: responseBody }
+        })
+        .then(({ status, body }) => {
+            if (status !== 200) {
+                showToast(body.message || "Unknown error.", "error")
+                return
+            }
+
+            showToast("Answer accepted successfully!", "success")
+
+            setTimeout(() => {
+                window.location.reload()
+            }, 500)
+        })
+        .catch((err) => {
+            console.error("handleAcceptAnswer error:", err)
+            showToast("Server error. Please try again.", "error")
+        })
+
+    return false
+}
+
+const handleRejectAnswer = (answer_id) => {
+
+    const mainContainer = document.getElementById('mainContainer');
+    const user = JSON.parse(mainContainer.getAttribute('data-user') || '{}');
+
+    fetch(`/answers/${answer_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.id, is_accepted: false })
+    })
+        .then(async (res) => {
+            const responseBody = await res.json()
+            return { status: res.status, body: responseBody }
+        })
+        .then(({ status, body }) => {
+            if (status !== 200) {
+                showToast(body.message || "Unknown error.", "error")
+                return
+            }
+
+            showToast("Answer rejected successfully!", "success")
+
+            setTimeout(() => {
+                window.location.reload()
+            }, 500)
+        })
+        .catch((err) => {
+            console.error("handleRejectAnswer error:", err)
+            showToast("Server error. Please try again.", "error")
+        })
+
+    return false
+}
 
 handleInputFieldQuillSetup()
 handleQuestionViewQuillSetup()

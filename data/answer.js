@@ -117,14 +117,13 @@ export const updateAnswer = async (answerId, updateAnswer) => {
 
     }
 
-    if (updateAnswer.is_accepted) {
-        is_accepted = validator.isValidBoolean(updateAnswer.is_accepted, "is_accepted")
+    if (updateAnswer.is_accepted !== undefined && typeof updateAnswer.is_accepted === 'boolean' && updateAnswer.is_accepted != null) {
+        updateAnswer.is_accepted = validator.isValidBoolean(updateAnswer.is_accepted, "is_accepted")
         updateFields.is_accepted = updateAnswer.is_accepted
     }
 
     if (updateAnswer.user_id) {
         updateAnswer.user_id = validator.isValidMongoId(updateAnswer.user_id, "user_id")
-        updateFields.user_id = updateAnswer.user_id
     }
 
     const existingAnswer = await answersColl.findOne({ _id: answerId });
