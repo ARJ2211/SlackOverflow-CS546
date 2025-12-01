@@ -41,7 +41,7 @@ router
         }
     });
 
-router.post("/bookmarks/:id", checkAuth, async (req, res) => {
+router.post("/bookmarks/:id", async (req, res) => {
     const userSesData = req.session.user;
     let questionId;
     let userId;
@@ -64,7 +64,7 @@ router.post("/bookmarks/:id", checkAuth, async (req, res) => {
     }
 });
 
-router.delete("/bookmarks", checkAuth, async (req, res) => {
+router.delete("/bookmarks", async (req, res) => {
     const userSesData = req.session.user;
     let questionId;
     let userId;
