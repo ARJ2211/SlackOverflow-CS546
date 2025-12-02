@@ -187,6 +187,11 @@ router.route("/:courseId")
         return handleError(res, e);
     }
     try{
+        //Edge Case (Does our course exist?):
+        const preExistingCourse = await coursesData.getCourseById(courseId);
+          if (!preExistingCourse) {
+            return res.status(404).json({ message: "Course not found" });
+        }
         const updatedCourse = await coursesData.updateCourse(
         { _id: new ObjectId(courseId) },  
         courseData                         
@@ -211,11 +216,19 @@ router.route("/:courseId")
     }
     try{
         const course = await coursesData.getCourseById(courseId);
+        if (!course) {
+            return res.status(404).json({ message: "Course not found" });
+        }
         if (course.enrolled_students && course.enrolled_students.length > 0) {
                 return res.status(400).json({ 
                     message: "ALL ENROLLED STUDENTS must be removed before deleting course"
             });
         }       
+        if (course.questions && course.questions.length > 0) {
+            return res.status(400).json({ 
+                message: "There should be no questions before deleting the course!!"
+            });
+        }
         const deletedCourse = await coursesData.deleteCourse(course.course_id);
         return res.status(200).json(deletedCourse);
     }
