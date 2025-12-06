@@ -1,15 +1,4 @@
-const handleAddQuestionModal = () => {
-
-    const modal = document.getElementById('addQuestionModal');
-    if (modal) {
-        if (modal.classList.contains('hidden')) {
-            modal.classList.remove('hidden');
-        } else {
-            modal.classList.add('hidden');
-        }
-    }
-}
-
+let quill;
 
 const handleSaveQuestion = (event) => {
     event.preventDefault()
@@ -19,9 +8,20 @@ const handleSaveQuestion = (event) => {
 
     const user = JSON.parse(mainContainer.getAttribute('data-user') || '{}');
     const course_id = courseContainer.getAttribute('data-course-id') || ''
+    const labelNodes = document.querySelectorAll('input[name="label"]:checked')
+    const labels = Array.from(labelNodes).map((item) => item.value)
 
-    const labels = Array.from(event.target.labels.selectedOptions).map((option) => option.value)
-    const question = event.target.question.value.trim()
+    const quillContent = quill.root.innerHTML.trim();
+    const quillText = quill.getText().trim();
+
+    if (quillText.length === 0 || quillContent.length === 0 || quillContent === '<p><br></p>') {
+        showToast("Question content cannot be empty.", "error")
+        return false
+    }
+
+    const quillDelta = quill.getContents()
+
+    const question = quillText
 
 
     const button = event.target.querySelector("button[type='submit']")
@@ -33,6 +33,8 @@ const handleSaveQuestion = (event) => {
     body.labels = labels;
     body.course_id = course_id;
     body.question = question;
+    body.question_delta = JSON.stringify(quillDelta)
+    body.question_content = quillContent;
     body.user_id = user.id;
 
 
@@ -49,13 +51,18 @@ const handleSaveQuestion = (event) => {
             if (status !== 200) {
                 showToast(body.message || "Unknown error.", "error")
                 button.disabled = false
-                button.innerText = "Submit"
+                button.innerHTML = `<div>Ask question</div>
+                        <svg class="shrink-0 size-3.5 pointer-events-none " xmlns="http://www.w3.org/2000/svg"
+                            width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path
+                                d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
+                        </svg>`
                 return
             }
 
             showToast("Question created successfully!", "success")
             button.disabled = false
-            button.innerText = "Submit"
+            button.innerText = "Ask question"
 
             setTimeout(() => {
                 window.location.reload()
@@ -65,7 +72,7 @@ const handleSaveQuestion = (event) => {
             console.error("handleAddQuestion error:", err)
             showToast("Server error. Please try again.", "error")
             button.disabled = false
-            button.innerText = "Send"
+            button.innerText = "Ask question"
         })
 
     return false
@@ -85,10 +92,20 @@ const handleFilterDropdown = (event) => {
 };
 
 const handleOutsideClick = (event) => {
+    const filterDropdown = document.getElementById("filterDropdown")
+
     const filterBtn = document.getElementById("openFilter")
     if (!filterDropdown.contains(event.target) && event.target !== filterBtn) {
         filterDropdown.classList.add("opacity-0", "scale-95", "pointer-events-none")
     }
+
+    const labelsDropdown = document.getElementById("labelsDropdown");
+    const labelsDropdownBtn = document.getElementById("openLabelsDropdown");
+    if (labelsDropdown && !labelsDropdown.contains(event.target) && event.target !== labelsDropdownBtn) {
+        labelsDropdown.classList.add("hidden", "scale-95", "pointer-events-none");
+    }
+
+
 };
 
 const handleApplyFilters = async (event) => {
@@ -172,7 +189,81 @@ const setFilterFormData = () => {
     }
 };
 
-/**
+const handleQuillSetup = () => {
+    quill = new Quill('#questionEditor', {
+        theme: 'snow',
+        modules: {
+            toolbar: '#toolbar'
+        },
+        placeholder: 'Type your question here...'
+    });
+
+    const editor = document.getElementById('questionEditor');
+    const handle = document.getElementById("questionResizeHandle");
+    let valueY, valueH;
+    handle.onmousedown = e => {
+        valueY = e.clientY;
+        valueH = editor.offsetHeight;
+        document.onmousemove = e => {
+            editor.style.height = (valueH + (valueY - e.clientY)) < 32 ? valueH : (valueH + (valueY - e.clientY)) + "px";
+            quill.root.style.minHeight = editor.style.height
+        };
+        document.onmouseup = () => document.onmousemove = null;
+    };
+}
+
+const handleLabelsDropdown = (event) => {
+    const labelsDropdown = document.getElementById("labelsDropdown")
+    if (!labelsDropdown) return
+    const isClosed = labelsDropdown.classList.contains("hidden", "pointer-events-none")
+    if (isClosed) {
+        labelsDropdown.classList.remove("hidden", "scale-95", "pointer-events-none")
+    } else {
+        labelsDropdown.classList.add("hidden", "scale-95", "pointer-events-none")
+    }
+};
+
+const handleLabelsCheckbox = (event) => {
+    const checkedCheckboxes = document.querySelectorAll('input[name="label"]');
+    checkedCheckboxes.forEach(function (checkbox) {
+
+        let labelTagsContainer = document.getElementById("labelTags")
+        if (checkbox.checked) {
+            if (!labelTagsContainer.querySelector(`#label-${checkbox.value}`)) {
+                let label = document.createElement("div")
+                label.id = "label-" + checkbox.value;
+                label.className = " text-sm border border-white font-medium rounded-3xl pl-2 pr-1 text-white bg-[#F0BD66]  flex gap-1 "
+                label.innerHTML = `
+                <span>${checkbox.getAttribute('data-label')}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    class="size-5 hover:text-slate-100 hover:cursor-pointer" onclick="removeLabel(event)">
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z"
+                        clip-rule="evenodd" />
+                </svg>
+                `
+                labelTagsContainer.appendChild(label)
+            }
+        } else {
+            if (labelTagsContainer.querySelector(`#label-${checkbox.value}`)) {
+                labelTagsContainer.removeChild(labelTagsContainer.querySelector(`#label-${checkbox.value}`))
+            }
+        }
+    })
+}
+
+const removeLabel = (event) => {
+    let labelTagsContainer = document.getElementById("labelTags")
+    let labelTag = event.currentTarget.parentElement;
+    let labelId = labelTag.id.replace("label-", "");
+    let checkbox = document.getElementById(labelId);
+    if (checkbox) {
+        checkbox.checked = false;
+    }
+    labelTagsContainer.removeChild(labelTag);
+}
+
+handleQuillSetup()/**
  * Handle toggling bookmark for a question
  * @param {string} questionId - The ID of the question
  * @param {HTMLElement} buttonElement - The button element that triggered the action
@@ -187,7 +278,7 @@ const handleToggleBookmark = async (questionId, buttonElement, event) => {
 
     // Check if currently bookmarked by checking button classes
     const isBookmarked = buttonElement.classList.contains('bg-[#F0BD66]');
-    
+
     // Disable button and show loading state
     const originalButtonHTML = buttonElement.innerHTML;
     buttonElement.disabled = true;
@@ -202,7 +293,7 @@ const handleToggleBookmark = async (questionId, buttonElement, event) => {
     try {
         const method = isBookmarked ? 'DELETE' : 'POST';
         let url, options;
-        
+
         if (method === 'POST') {
             // POST /questions/bookmarks - send question_id in body
             url = '/questions/bookmarks';
@@ -223,7 +314,7 @@ const handleToggleBookmark = async (questionId, buttonElement, event) => {
                 }
             };
         }
-        
+
         const response = await fetch(url, options);
 
         // Check if response is JSON
@@ -273,7 +364,7 @@ const handleToggleBookmark = async (questionId, buttonElement, event) => {
     } catch (error) {
         console.error('Error toggling bookmark:', error);
         showToast(error.message || `Failed to ${isBookmarked ? 'remove' : 'add'} bookmark. Please try again.`, 'error');
-        
+
         // Re-enable button and restore original state
         buttonElement.disabled = false;
         buttonElement.innerHTML = originalButtonHTML;
