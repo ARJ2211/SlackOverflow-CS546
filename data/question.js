@@ -350,15 +350,33 @@ export const getBookmarkedQuestionsByUserId = async (userId) => {
 export const addBookmark = async (questionId, userId) => {
     questionId = validator.isValidMongoId(questionId);
     userId = validator.isValidMongoId(userId);
+    let query;
+
     const questionsColl = await questions();
+
+    const question = await questionsColl.findOne({ _id: questionId })
+
+    if (!question) {
+        throw `Question ${questionId} not found`
+    }
+
+    const hasBookmarked = question.bookmarks.map(id => id.toString()).includes(userId.toString())
+
+
+    if (hasBookmarked) {
+        query = { $pull: { bookmarks: userId } }
+    } else {
+        query = { $addToSet: { bookmarks: userId } }
+    }
+
     const updateResult = await questionsColl.updateOne(
         { _id: questionId },
-        { $addToSet: { bookmarks: userId } }
+        query
     );
-    if (updateResult.matchedCount === 0) {
-        throw "Question not found";
-    }
-    return { success: true, message: "Bookmark added successfully" };
+
+    const updatedQuestion = await questionsColl.findOne({ _id: questionId })
+
+    return updatedQuestion.bookmarks
 };
 
 /**
@@ -371,18 +389,18 @@ export const removeBookmark = async (questionId, userId) => {
     questionId = validator.isValidMongoId(questionId);
     userId = validator.isValidMongoId(userId);
     const questionsColl = await questions();
-        
+
     // Verify that the question exists before removing bookmark
     const question = await questionsColl.findOne({ _id: questionId });
     if (!question) {
         throw "Question not found";
     }
-    
+
     // Check if user has bookmarked this question
     if (!question.bookmarks || !question.bookmarks.some(id => id.toString() === userId.toString())) {
         throw "User has not bookmarked this question";
     }
-    
+
     const updateResult = await questionsColl.updateOne(
         { _id: questionId },
         { $pull: { bookmarks: userId } }

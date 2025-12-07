@@ -100,6 +100,8 @@ router.get('/courses/:id', async (req, res) => {
 
             question.hasAnswered = question.answer_count.some((id) => id.toString() === userSesData.id.toString())
 
+            question.hasBookmarked = question.bookmarks.some(id => id.toString() === userSesData.id.toString());
+
             delete question.embedding
             delete question.canonical_key
             delete question.replies
@@ -200,6 +202,8 @@ router.get('/courses/:id/filters', async (req, res) => {
             question.hasViewed = question.views.some((id) => id.toString() === userSesData.id.toString())
 
             question.hasAnswered = question.answer_count.some((id) => id.toString() === userSesData.id.toString())
+
+            question.hasBookmarked = question.bookmarks.some(id => id.toString() === userSesData.id.toString());
 
             delete question.embedding
             delete question.canonical_key
@@ -306,6 +310,8 @@ router.get('/question/:id', async (req, res) => {
 
         const hasAnswered = question.answer_count.some(id => id.toString() === userSesData.id.toString());
 
+        const hasBookmarked = question.bookmarks.some(id => id.toString() === userSesData.id.toString());
+
         return res.render('main/question', {
             layout: 'main',
             title: 'Question Thread',
@@ -320,6 +326,7 @@ router.get('/question/:id', async (req, res) => {
             hasUpvoted,
             hasViewed,
             hasAnswered,
+            hasBookmarked,
             isTa,
             selectedCourse: course._id.toString(),
         });

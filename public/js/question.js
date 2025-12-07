@@ -750,6 +750,46 @@ const handleRejectAnswer = (answer_id) => {
     return false
 }
 
+const handleToggleBookmark = (event) => {
+    event.preventDefault()
+
+    const mainContainer = document.getElementById('mainContainer');
+    const questionContainer = document.getElementById('questionContainer');
+
+    const user = JSON.parse(mainContainer.getAttribute('data-user') || '{}');
+    const question_id = questionContainer.getAttribute('data-question-id') || ''
+
+    fetch(`/questions/${question_id}/bookmarks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.id })
+    })
+        .then(async (res) => {
+            const responseBody = await res.json()
+            return { status: res.status, body: responseBody }
+        })
+        .then(({ status, body }) => {
+            if (status !== 200) {
+                showToast(body.message || "Unknown error.", "error")
+                return
+            }
+
+            showToast("bookmark updated successfully!", "success")
+
+            setTimeout(() => {
+                window.location.reload()
+            }, 500)
+        })
+        .catch((err) => {
+            console.error("handleToggleBookmark error:", err)
+            showToast("Server error. Please try again." + err, "error")
+        })
+
+    return false
+}
+
+
+
 handleInputFieldQuillSetup()
 handleQuestionViewQuillSetup()
 handleAnswerViewQuillSetup()

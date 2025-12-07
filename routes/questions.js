@@ -172,7 +172,8 @@ router
             return handleError(res, e)
         }
     })
-router.post("/bookmarks/:id", async (req, res) => {
+
+router.post("/:id/bookmarks", async (req, res) => {
     const userSesData = req.session.user;
     let questionId;
     let userId;
