@@ -18,6 +18,11 @@ export const createVectorIndex = async () => {
                     similarity: "euclidean",
                     numDimensions: 1024,
                 },
+                {
+                    // allow using course_id in $vectorSearch.filter
+                    type: "filter",
+                    path: "course",
+                },
             ],
         },
     };
@@ -27,7 +32,7 @@ export const createVectorIndex = async () => {
     } catch {}
 
     console.log("VECTOR DATABASE IS CREATING THE INDEX PLEASE WAIT........");
-    await new Promise((r) => setTimeout(r, 3500)); // allow Atlas to index
+    await new Promise((r) => setTimeout(r, 3500)); // allow Atlas to clean up
 
     await coll.createSearchIndex(index);
 };

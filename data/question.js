@@ -10,6 +10,7 @@ import { answers } from "../config/mongoCollections.js";
 
 const THRESOLD = 0.9;
 const JACCARD_THRESHOLD = 0.65;
+const COMBINED_THRESHOLD = 0.8;
 
 /**
  * Insert a question into the questions collection along with
@@ -33,23 +34,36 @@ export const createQuestion = async (
     const questionsColl = await questions();
 
     const canonical_key = Normalize(question);
-    const exact = await questionsColl.findOne({ canonical_key });
-    if (exact) {
-        throw `ERROR: This question already exists (exact/near-exact match) for question ${exact.question}!`;
-    }
+    /**
+     * Commenting this line out because let it hit
+     * the database and get a score out of it
+     */
+    // const exact = await questionsColl.findOne({ canonical_key });
+    // if (exact) {
+    //     throw `ERROR: This question already exists (exact/near-exact match) for question ${exact.question}!`;
+    // }
 
     let embedding = await getEmbedding(question);
 
     await new Promise((r) => setTimeout(r, 1500)); // allow Atlas to index
-    const prevSimilarQuestions = await searchQuestion(question);
-
+    const prevSimilarQuestions = await searchQuestion(question, course_id);
+    console.log(
+        "Previous questions that are similar: " +
+            JSON.stringify(prevSimilarQuestions)
+    );
     if (prevSimilarQuestions.length !== 0) {
         const best = prevSimilarQuestions[0];
         const jacScore = Jaccard(Tokens(question), Tokens(best.question));
 
         // only block if it's both semantically very close AND has high token overlap
-        if (best.score >= THRESOLD && jacScore >= JACCARD_THRESHOLD) {
-            throw `ERROR: This question already exists with score ${best.score} for question ${best.question}! JACCARD SORE: ${jacScore}`;
+        if (
+            (best.score >= THRESOLD && jacScore >= JACCARD_THRESHOLD) ||
+            best.combined_score >= COMBINED_THRESHOLD
+        ) {
+            const roundedScore = Number(best.score).toFixed(2);
+            const roundedJac = Number(jacScore).toFixed(2);
+
+            throw `ERROR: A similar question already exists (score ${roundedScore}, jaccard ${roundedJac}). Closest match: <strong>${best.question}</strong>`;
         }
     }
 
@@ -79,13 +93,20 @@ export const createQuestion = async (
 };
 
 /**
- * Get the top 5 similar questions that the user has asked
- * @param {*} query
- * @param {*} param1
- * @returns
+ * Get the top 5 similar questions that the user has asked within a course
+ * @param {string} query
+ * @param {string} courseId
+ * @param {{ k?: number, numCandidates?: number }} param2
+ * @returns {Promise<Array>}
  */
-export const searchQuestion = async (query, { k = 5, numCandidates } = {}) => {
-    query = validator.isValidString(query);
+export const searchQuestion = async (
+    query,
+    courseId,
+    { k = 5, numCandidates } = {}
+) => {
+    query = validator.isValidString(query, "query");
+    const courseObjectId = validator.isValidMongoId(courseId, "courseId");
+
     const questionsColl = await questions();
     const queryVector = await getEmbedding(query);
     const indexName = "vector_index";
@@ -99,6 +120,9 @@ export const searchQuestion = async (query, { k = 5, numCandidates } = {}) => {
                 queryVector,
                 numCandidates: candidates,
                 limit: k,
+                filter: {
+                    course: courseObjectId, // assumes field name is `course_id`
+                },
             },
         },
         {
@@ -116,9 +140,13 @@ export const searchQuestion = async (query, { k = 5, numCandidates } = {}) => {
     const qTokens = Tokens(query);
     for (const sq of similarQuestions) {
         sq.jaccard_score = Jaccard(qTokens, Tokens(sq.question));
-        // re-rank scores cuz why not (best of both worlds)
+        // combine vector score + Jaccard
         sq.combined_score = 0.8 * sq.score + 0.2 * sq.jaccard_score;
     }
+
+    // optional: actually re-rank by combined_score
+    similarQuestions.sort((a, b) => b.combined_score - a.combined_score);
+
     return similarQuestions;
 };
 
