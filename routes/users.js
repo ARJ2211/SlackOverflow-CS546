@@ -238,7 +238,30 @@ router.route("/students/:id").patch(async(req,res) => {
         return handleError(res, e);
     }
 
-})
+});
+
+router.route("/students/:id").delete(async (req, res) => {
+     let studentId = req.params.id;
+    let reqBody = req.body;
+    try {
+        studentId = validator.isValidMongoId(studentId);
+    }
+    catch(e){
+        console.log(e);
+        return handleError(res, e);
+    }
+      try {
+        await usersData.deleteUser(studentId);
+        
+        return res.status(200).json({ 
+            message: "Student was deleted!"
+        });
+    } catch (e) {
+        return handleError(res, e);
+    }
+});
+
+
 
 export default router;
 
