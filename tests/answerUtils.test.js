@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import * as answerUtils from "../mongoUtils/answerUtils.js";
+import * as answerUtils from "../data/answer.js";
 import { dbConnection, closeConnection } from "../config/mongoConnection.js";
 
 describe("Answer Utils Tests", () => {
