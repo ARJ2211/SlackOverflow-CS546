@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import bcrypt from "bcrypt";
 import * as validatorPackage from "validator";
 
 /**
@@ -19,7 +20,9 @@ export const isArray = (val) => {
  */
 export const isValidString = (val, variableName) => {
     if (typeof val !== "string") {
-        throw `ERROR:  ${variableName || "provided variable"} == ${val} is not a valid string.`;
+        throw `ERROR:  ${
+            variableName || "provided variable"
+        } == ${val} is not a valid string.`;
     }
     val = val.trim();
     if (val.length === 0) {
@@ -35,7 +38,9 @@ export const isValidString = (val, variableName) => {
  */
 export const isValidNumber = (val, variableName) => {
     if (typeof val !== "number" || !Number.isFinite(val)) {
-        throw `ERROR: ${variableName || "provided variable"} == ${val} is not a valid number.`;
+        throw `ERROR: ${
+            variableName || "provided variable"
+        } == ${val} is not a valid number.`;
     }
     return val;
 };
@@ -98,7 +103,9 @@ export const isValidCourseName = (val, variableName = "course_name") => {
  */
 export const isValidBoolean = (val, variableName) => {
     if (typeof val !== "boolean") {
-        throw `ERROR: ${variableName || "provided variable"} == ${val} is not a valid boolean.`;
+        throw `ERROR: ${
+            variableName || "provided variable"
+        } == ${val} is not a valid boolean.`;
     }
     return val;
 };
@@ -116,7 +123,9 @@ export const isValidMongoId = (val, variableName) => {
     val = isValidString(val, variableName);
 
     if (!ObjectId.isValid(val)) {
-        throw `ERROR: ${variableName || "provided variable"} is not a valid mongo object id`;
+        throw `ERROR: ${
+            variableName || "provided variable"
+        } is not a valid mongo object id`;
     }
     return ObjectId.createFromHexString(val);
 };
@@ -128,7 +137,9 @@ export const isValidMongoId = (val, variableName) => {
 export const isValidEmail = (val, variableName) => {
     val = isValidString(val, variableName);
     if (!validatorPackage.default.isEmail(val)) {
-        throw `ERROR: ${variableName || "provided variable"} == ${val} is not a valid email`;
+        throw `ERROR: ${
+            variableName || "provided variable"
+        } == ${val} is not a valid email`;
     }
     return val;
 };
@@ -145,4 +156,58 @@ export const isValidRole = (val) => {
         throw `ERROR: role does not exist`;
     }
     return val;
+};
+
+/**
+ * Used for hashing the password and returning it.
+ * @returns {String}
+ */
+export const hashPassword = (pwd) => {
+    pwd = isValidString(pwd);
+    const hashedPwd = bcrypt.hashSync(pwd, 16);
+    return hashedPwd;
+};
+
+/**
+ * Used for validating the password string.
+ * We make sure there are no spaces, at least 8 chars,
+ * one uppercase, one number and one special char.
+ * @param {*} val
+ * @returns {String}
+ */
+export const isValidPassword = (val) => {
+    isValidString(val);
+    if (val.length < 8) {
+        throw `ERROR: password is too short.`;
+    }
+    if (/\s/.test(val)) {
+        throw `ERROR: password cannot contain spaces.`;
+    }
+    if (!/[A-Z]/.test(val)) {
+        throw `ERROR: password must contain at least one uppercase character.`;
+    }
+    if (!/[0-9]/.test(val)) {
+        throw `ERROR: password must contain at least one number.`;
+    }
+    if (!/[^A-Za-z0-9]/.test(val)) {
+        throw `ERROR: password must contain at least one special character.`;
+    }
+    const hashedPassword = hashPassword(val);
+    return hashedPassword;
+};
+
+/**
+ * Used for comparing a plain password with a hashed password.
+ * We return true if they match, false otherwise.
+ * @param {*} plainPwd
+ * @param {*} hashedPwd
+ * @returns {Boolean}
+ */
+export const comparePassword = (plainPwd, hashedPwd) => {
+    plainPwd = isValidString(plainPwd);
+    if (typeof hashedPwd !== "string" || hashedPwd.trim().length === 0) {
+        throw `ERROR: invalid hashed password.`;
+    }
+    const match = bcrypt.compareSync(plainPwd, hashedPwd);
+    return match;
 };

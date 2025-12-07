@@ -1,4 +1,8 @@
-import { Normalize, Jaccard, Tokens } from "../utils/ragUtils/jaccardNormalizer.js";
+import {
+    Normalize,
+    Jaccard,
+    Tokens,
+} from "../utils/ragUtils/jaccardNormalizer.js";
 import { questions } from "../config/mongoCollections.js";
 import { getEmbedding } from "../utils/ragUtils/getEmbeddings.js";
 import * as validator from "../utils/validator.js";
@@ -13,7 +17,14 @@ const JACCARD_THRESHOLD = 0.65;
  * @param {*} question
  * @returns {Object}
  */
-export const createQuestion = async (question, course_id, user_id, labels = [], question_content, question_delta) => {
+export const createQuestion = async (
+    question,
+    course_id,
+    user_id,
+    labels = [],
+    question_content,
+    question_delta
+) => {
     course_id = validator.isValidMongoId(course_id);
     question = validator.isValidString(question);
     question_content = validator.isValidString(question_content);
@@ -58,7 +69,7 @@ export const createQuestion = async (question, course_id, user_id, labels = [], 
         accepted_answer_id: null,
         status: "open",
         answer_count: [],
-        views: []
+        views: [],
     };
 
     const { insertedId } = await questionsColl.insertOne(doc);
@@ -127,13 +138,14 @@ export const updateQuestion = async (filter, obj) => {
         var canonical_key = Normalize(obj.question);
         let existingQuestion = await searchQuestion(obj.question);
 
-        existingQuestion = existingQuestion.filter((question) => question._id.toString() != filter._id.toString())
+        existingQuestion = existingQuestion.filter(
+            (question) => question._id.toString() != filter._id.toString()
+        );
 
         if (
             existingQuestion.length > 0 &&
             existingQuestion[0].score > THRESOLD
         ) {
-
             throw `ERROR: similar question already exists, ${existingQuestion[0].question}, score: ${existingQuestion[0].score}`;
         }
         var embedding = await getEmbedding(new_question);
@@ -154,40 +166,39 @@ export const updateQuestion = async (filter, obj) => {
     return updatedObj;
 };
 
-export const updateAnswerCount = async (questionId, userId, action = 'add') => {
-
+export const updateAnswerCount = async (questionId, userId, action = "add") => {
     questionId = validator.isValidMongoId(questionId);
     userId = validator.isValidMongoId(userId);
 
     const questionsColl = await questions();
 
-    const question = await questionsColl.findOne({ _id: questionId })
+    const question = await questionsColl.findOne({ _id: questionId });
     if (!question) {
-        throw "Question not found"
+        throw "Question not found";
     }
 
     let query;
 
-    if (action == 'remove') {
-        const index = question.answer_count.map(id => id.toString()).indexOf(userId.toString())
+    if (action == "remove") {
+        const index = question.answer_count
+            .map((id) => id.toString())
+            .indexOf(userId.toString());
         if (index !== -1) {
-            question.answer_count.splice(index, 1)
+            question.answer_count.splice(index, 1);
         }
-        query = { $set: { answer_count: question.answer_count } }
+        query = { $set: { answer_count: question.answer_count } };
     } else {
-        query = { $push: { answer_count: userId } }
+        query = { $push: { answer_count: userId } };
     }
 
-    await questionsColl.updateOne({ _id: questionId }, query)
+    await questionsColl.updateOne({ _id: questionId }, query);
 
     const updatedQuestion = await questionsColl.findOne({ _id: questionId });
 
-    return updatedQuestion.answer_count
-
-}
+    return updatedQuestion.answer_count;
+};
 
 export const updateViews = async (questionId, userId) => {
-
     questionId = validator.isValidMongoId(questionId);
     userId = validator.isValidMongoId(userId);
 
@@ -200,68 +211,67 @@ export const updateViews = async (questionId, userId) => {
 
     const question = await questionsColl.findOne({ _id: questionId });
 
-    return question.views
-}
+    return question.views;
+};
 
 export const updateUpVotes = async (questionId, userId) => {
-
     let query;
 
-    questionId = validator.isValidMongoId(questionId)
-    userId = validator.isValidMongoId(userId)
+    questionId = validator.isValidMongoId(questionId);
+    userId = validator.isValidMongoId(userId);
 
-    const questionsColl = await questions()
+    const questionsColl = await questions();
 
-    const question = await questionsColl.findOne({ _id: questionId })
+    const question = await questionsColl.findOne({ _id: questionId });
 
     if (!question) {
-        throw `Question ${questionId} not found`
+        throw `Question ${questionId} not found`;
     }
 
-    const hasUpvoted = question.up_votes.map(id => id.toString()).includes(userId.toString())
-
+    const hasUpvoted = question.up_votes
+        .map((id) => id.toString())
+        .includes(userId.toString());
 
     if (hasUpvoted) {
-        query = { $pull: { up_votes: userId } }
+        query = { $pull: { up_votes: userId } };
     } else {
-        query = { $addToSet: { up_votes: userId } }
+        query = { $addToSet: { up_votes: userId } };
     }
     const updateInfo = await questionsColl.updateOne(
         { _id: questionId },
         query
     );
 
-    const updatedQuestion = await questionsColl.findOne({ _id: questionId })
+    const updatedQuestion = await questionsColl.findOne({ _id: questionId });
 
-    return updatedQuestion.up_votes
-}
+    return updatedQuestion.up_votes;
+};
 
 export const updateStatus = async (questionId, status) => {
-    questionId = validator.isValidMongoId(questionId)
-    status = validator.isValidString(status)
+    questionId = validator.isValidMongoId(questionId);
+    status = validator.isValidString(status);
 
-    if (!(status == 'open' || status == 'closed')) {
-        throw `Invalid Status: ${status}`
+    if (!(status == "open" || status == "closed")) {
+        throw `Invalid Status: ${status}`;
     }
 
-    const questionsColl = await questions()
+    const questionsColl = await questions();
 
     const updateInfo = await questionsColl.updateOne(
         { _id: questionId },
         { $set: { status: status } }
-    )
+    );
 
-    const question = await questionsColl.findOne({ _id: questionId })
+    const question = await questionsColl.findOne({ _id: questionId });
 
-    return question.status
-
-}
+    return question.status;
+};
 
 export const getQuestionById = async (questionId) => {
     questionId = validator.isValidMongoId(questionId);
 
     const questionsColl = await questions();
-    const question = await questionsColl.findOne({ _id: questionId })
+    const question = await questionsColl.findOne({ _id: questionId });
 
     return question;
 };
@@ -283,7 +293,6 @@ export const getQuestionsByCourseId = async (courseId) => {
     return questionsArray;
 };
 
-
 export const getQuestionsByCourseIdFiltered = async (courseId, filters) => {
     courseId = validator.isValidMongoId(courseId);
 
@@ -291,14 +300,14 @@ export const getQuestionsByCourseIdFiltered = async (courseId, filters) => {
         question = "",
         status_open = "",
         status_closed = "",
-        labels = []
-    } = filters
+        labels = [],
+    } = filters;
 
     let query = { course: courseId };
 
     if (question.trim() !== "") {
         question = validator.isValidString(question);
-        question = question.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        question = question.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         query.question = { $regex: new RegExp(question, "i") };
     }
 
@@ -324,7 +333,6 @@ export const getQuestionsByCourseIdFiltered = async (courseId, filters) => {
 
     return questionsArray;
 };
-
 
 /**
  * Get all questions bookmarked by a user
@@ -354,19 +362,20 @@ export const addBookmark = async (questionId, userId) => {
 
     const questionsColl = await questions();
 
-    const question = await questionsColl.findOne({ _id: questionId })
+    const question = await questionsColl.findOne({ _id: questionId });
 
     if (!question) {
-        throw `Question ${questionId} not found`
+        throw `Question ${questionId} not found`;
     }
 
-    const hasBookmarked = question.bookmarks.map(id => id.toString()).includes(userId.toString())
-
+    const hasBookmarked = question.bookmarks
+        .map((id) => id.toString())
+        .includes(userId.toString());
 
     if (hasBookmarked) {
-        query = { $pull: { bookmarks: userId } }
+        query = { $pull: { bookmarks: userId } };
     } else {
-        query = { $addToSet: { bookmarks: userId } }
+        query = { $addToSet: { bookmarks: userId } };
     }
 
     const updateResult = await questionsColl.updateOne(
@@ -374,9 +383,9 @@ export const addBookmark = async (questionId, userId) => {
         query
     );
 
-    const updatedQuestion = await questionsColl.findOne({ _id: questionId })
+    const updatedQuestion = await questionsColl.findOne({ _id: questionId });
 
-    return updatedQuestion.bookmarks
+    return updatedQuestion.bookmarks;
 };
 
 /**
@@ -397,7 +406,10 @@ export const removeBookmark = async (questionId, userId) => {
     }
 
     // Check if user has bookmarked this question
-    if (!question.bookmarks || !question.bookmarks.some(id => id.toString() === userId.toString())) {
+    if (
+        !question.bookmarks ||
+        !question.bookmarks.some((id) => id.toString() === userId.toString())
+    ) {
         throw "User has not bookmarked this question";
     }
 
@@ -417,7 +429,6 @@ export const removeBookmark = async (questionId, userId) => {
  * @returns {Object}
  */
 export const deleteQuestion = async (questionId, user_id) => {
-
     questionId = validator.isValidMongoId(questionId, "question id");
     user_id = validator.isValidMongoId(user_id, "user id");
 
@@ -427,11 +438,11 @@ export const deleteQuestion = async (questionId, user_id) => {
     const question = await questionsColl.findOne({ _id: questionId });
 
     if (!question) {
-        throw `Question ${questionId} not found`
+        throw `Question ${questionId} not found`;
     }
 
     if (question.user_id.toString() !== user_id.toString()) {
-        throw "You are not allowed to delete this question."
+        throw "You are not allowed to delete this question.";
     }
 
     await answersColl.deleteMany({ question_id: questionId });
@@ -439,7 +450,7 @@ export const deleteQuestion = async (questionId, user_id) => {
     const deletedResult = await questionsColl.deleteOne({ _id: questionId });
 
     if (deletedResult.deletedCount === 0) {
-        throw "Failed to delete question."
+        throw "Failed to delete question.";
     }
 
     return deletedResult;
