@@ -71,7 +71,7 @@ export const isValidObject = (val) => {
 export const isValidCourseId = (val, variableName = "course_id") => {
     val = isValidString(val, variableName);
 
-    const courseIdRegex = /^[A-Za-z]+\d+$/;
+    const courseIdRegex = /^([A-Z]{2,4})-(\d{3})$/;
     if (!courseIdRegex.test(val)) {
         throw `ERROR: provided courseId contains invalid characters`;
     }
