@@ -30,7 +30,8 @@ export const createQuestion = async (
     question = validator.isValidString(question);
     question_content = validator.isValidString(question_content);
     question_delta = validator.isValidString(question_delta);
-
+    labels = validator.isValidLabels(labels);
+    console.log(labels);
     const questionsColl = await questions();
 
     const canonical_key = Normalize(question);

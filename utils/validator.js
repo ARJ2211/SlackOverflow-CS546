@@ -211,3 +211,15 @@ export const comparePassword = (plainPwd, hashedPwd) => {
     const match = bcrypt.compareSync(plainPwd, hashedPwd);
     return match;
 };
+
+/**
+ * Check to see if the labels array
+ * is valid or not. Cannot be empty
+ * and has to be unique
+ */
+export const isValidLabels = (val) => {
+    if (!Array.isArray(val) || val.length === 0) {
+        throw `ERROR: Incorrect or No Labels provided.`;
+    }
+    return val;
+};
