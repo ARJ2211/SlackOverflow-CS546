@@ -5,6 +5,13 @@
   outline: none !important;
   border: none !important;
 } 
+
+#studentManagementGrid .ag-cell-focus,
+#studentManagementGrid .ag-cell-range-single-cell,
+#studentManagementGrid .ag-cell:focus {
+  outline: none !important;
+  border: none !important;
+} 
  
  :root {
      --primary: #F0BD66;

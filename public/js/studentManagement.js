@@ -13,29 +13,51 @@ coursesData.forEach((c) => {
 const initializeGrid = (gridDiv, students) => {
     console.log(students);
     const columnDefs = [
-        { headerName: "First Name", field: "first_name" },
-        { headerName: "Last Name", field: "last_name" },
-        { headerName: "Email", field: "email" },
-
-        { headerName: "Course Code", field: "course_code" },
-        { headerName: "Course Name", field: "course_name" },
-
-        // renamed column so intent is clear
+        {
+            headerName: "First Name",
+            field: "first_name",
+            headerTooltip: "Student's first name.",
+        },
+        {
+            headerName: "Last Name",
+            field: "last_name",
+            headerTooltip: "Student's last name.",
+        },
+        {
+            headerName: "Email",
+            field: "email",
+            headerTooltip:
+                "Student's email address used for login and invites.",
+        },
+        {
+            headerName: "Course Code",
+            field: "course_code",
+            headerTooltip: "Short course code, e.g. CS-546.",
+        },
+        {
+            headerName: "Course Name",
+            field: "course_name",
+            headerTooltip:
+                "Full name of the course this student is enrolled in.",
+        },
         {
             headerName: "Toggle TA",
             field: "is_ta",
+            headerTooltip:
+                "Click the switch to promote/demote this student as a TA for this course.",
             cellRenderer: roleCellRenderer,
         },
-
         {
             headerName: "Status",
             field: "status",
+            headerTooltip: "Account status of the student (ACTIVE / INACTIVE).",
             cellRenderer: statusCellRenderer,
         },
         {
             headerName: "Action",
             field: "action",
             floatingFilter: false,
+            headerTooltip: "Remove this student from the course.",
             cellRenderer: actionCellRenderer,
         },
     ];
@@ -56,6 +78,8 @@ const initializeGrid = (gridDiv, students) => {
         pagination: true,
         paginationPageSize: 8,
         paginationAutoPageSize: false,
+        tooltipShowDelay: 500,
+        tooltipHideDelay: 2000,
     };
 
     agGrid.createGrid(gridDiv, gridOptions);
