@@ -103,7 +103,6 @@ const statusCellRenderer = (params) => {
     `;
 };
 
-// CLICKABLE ROLE BUTTON, MUCH HIGHER CONTRAST
 const roleCellRenderer = (params) => {
     const data = params.data;
     const isTa = !!data.is_ta;
@@ -112,20 +111,33 @@ const roleCellRenderer = (params) => {
     btn.type = "button";
     btn.title = "Click to toggle between Student and TA";
 
-    // loud, obvious button styles
-    if (isTa) {
-        btn.className =
-            "inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold " +
-            "bg-emerald-600 text-white border border-emerald-600 " +
-            "hover:bg-emerald-500 hover:border-emerald-500 cursor-pointer transition";
-        btn.textContent = "Teaching Assistant ";
-    } else {
-        btn.className =
-            "inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold " +
-            "bg-[#F0BD66] text-black border border-[#F0BD66] " +
-            "hover:bg-[#f7c878] hover:border-[#f7c878] cursor-pointer transition";
-        btn.textContent = "Student";
-    }
+    const baseClasses =
+        "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold " +
+        "shadow-sm border transition focus:outline-none focus:ring-1 focus:ring-offset-1 " +
+        "cursor-pointer";
+
+    const labelText = isTa ? "TA" : "Student";
+    const dotClass = isTa ? "bg-emerald-200" : "bg-amber-700/80";
+    const pillClasses = isTa
+        ? baseClasses +
+          " bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-500 hover:border-emerald-500"
+        : baseClasses +
+          " bg-[#F0BD66] text-black border-[#e2a94f] hover:bg-[#f7c878] hover:border-[#f7c878]";
+
+    btn.className = pillClasses;
+    btn.innerHTML = `
+        <span class="w-2.5 h-2.5 rounded-full ${dotClass}"></span>
+        <span class="text-[11px] tracking-wide whitespace-nowrap">${labelText}</span>
+        <span class="ml-2 flex items-center gap-1 text-[10px] uppercase tracking-wide opacity-80 whitespace-nowrap">
+            <span class="hidden md:inline">Click</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                 fill="currentColor" class="w-3 h-3">
+                <path fill-rule="evenodd"
+                      d="M7.22 4.22a.75.75 0 0 1 1.06 0L12.53 8.47a.75.75 0 0 1 0 1.06L8.28 13.78a.75.75 0 1 1-1.06-1.06L10.69 10 7.22 6.53a.75.75 0 0 1 0-1.06Z"
+                      clip-rule="evenodd" />
+            </svg>
+        </span>
+    `;
 
     btn.addEventListener("click", () => {
         const courseId = courseCodeToId[data.course_code];
@@ -164,20 +176,30 @@ const roleCellRenderer = (params) => {
                 const newIsTa = !!body.is_ta;
                 data.is_ta = newIsTa;
 
-                // update button look + text
-                if (newIsTa) {
-                    btn.className =
-                        "inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold " +
-                        "bg-emerald-600 text-white border border-emerald-600 " +
-                        "hover:bg-emerald-500 hover:border-emerald-500 cursor-pointer transition";
-                    btn.textContent = "Teaching Assistant";
-                } else {
-                    btn.className =
-                        "inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold " +
-                        "bg-[#F0BD66] text-black border border-[#F0BD66] " +
-                        "hover:bg-[#f7c878] hover:border-[#f7c878] cursor-pointer transition";
-                    btn.textContent = "Student";
-                }
+                const newLabelText = newIsTa ? "TA" : "Student";
+                const newDotClass = newIsTa
+                    ? "bg-emerald-200"
+                    : "bg-amber-700/80";
+                const newPillClasses = newIsTa
+                    ? baseClasses +
+                      " bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-500 hover:border-emerald-500"
+                    : baseClasses +
+                      " bg-[#F0BD66] text-black border-[#e2a94f] hover:bg-[#f7c878] hover:border-[#f7c878]";
+
+                btn.className = newPillClasses;
+                btn.innerHTML = `
+                    <span class="w-2.5 h-2.5 rounded-full ${newDotClass}"></span>
+                    <span class="text-[11px] tracking-wide whitespace-nowrap">${newLabelText}</span>
+                    <span class="ml-2 flex items-center gap-1 text-[10px] uppercase tracking-wide opacity-80 whitespace-nowrap">
+                        <span class="hidden md:inline">Click</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                             fill="currentColor" class="w-3 h-3">
+                            <path fill-rule="evenodd"
+                                  d="M7.22 4.22a.75.75 0 0 1 1.06 0L12.53 8.47a.75.75 0 0 1 0 1.06L8.28 13.78a.75.75 0 1 1-1.06-1.06L10.69 10 7.22 6.53a.75.75 0 0 1 0-1.06Z"
+                                  clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                `;
 
                 showToast(
                     newIsTa
