@@ -157,12 +157,8 @@ router
             return res
                 .status(200)
                 .json({ message: "Student enrolled successfully!" });
-            return res
-                .status(200)
-                .json({ message: "Student enrolled successfully!" });
         } catch (e) {
             if (e.status) {
-                return handleError(res, e.message);
                 return handleError(res, e.message);
             }
             return handleError(res, e?.message || e);
