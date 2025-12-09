@@ -261,20 +261,54 @@ const handleQuillSetup = () => {
         placeholder: "Type your question here...",
     });
 
-    const editor = document.getElementById("questionEditor");
+    const wrapper = document.getElementById("questionEditor");
+    if (wrapper) {
+        // smaller default height
+        wrapper.style.height = "120px";
+    }
+
+    // make inner editor scroll instead of growing forever
+    const editorEl = wrapper?.querySelector(".ql-editor");
+    if (editorEl) {
+        editorEl.style.height = "100%";
+        editorEl.style.maxHeight = "100%";
+        editorEl.style.overflowY = "auto";
+        editorEl.style.paddingTop = "8px";
+        editorEl.style.paddingBottom = "8px";
+    }
+
+    // resize handle logic (drag down = bigger, drag up = smaller)
     const handle = document.getElementById("questionResizeHandle");
-    let valueY, valueH;
+    if (!handle || !wrapper) return;
+
+    handle.style.display = "block"; // make sure it shows
+    handle.style.cursor = "ns-resize";
+
+    let startY = 0;
+    let startHeight = 0;
+    const MIN_HEIGHT = 120; // don't let it collapse
+
     handle.onmousedown = (e) => {
-        valueY = e.clientY;
-        valueH = editor.offsetHeight;
-        document.onmousemove = (e) => {
-            editor.style.height =
-                valueH + (valueY - e.clientY) < 32
-                    ? valueH
-                    : valueH + (valueY - e.clientY) + "px";
-            quill.root.style.minHeight = editor.style.height;
+        e.preventDefault();
+        startY = e.clientY;
+        startHeight = wrapper.offsetHeight;
+
+        document.onmousemove = (moveEvent) => {
+            // drag UP -> increase height, drag DOWN -> decrease height
+            const delta = startY - moveEvent.clientY;
+            const newHeight = Math.max(MIN_HEIGHT, startHeight + delta);
+            wrapper.style.height = newHeight + "px";
+
+            if (editorEl) {
+                editorEl.style.height = "100%";
+                editorEl.style.maxHeight = "100%";
+            }
         };
-        document.onmouseup = () => (document.onmousemove = null);
+
+        document.onmouseup = () => {
+            document.onmousemove = null;
+            document.onmouseup = null;
+        };
     };
 };
 
