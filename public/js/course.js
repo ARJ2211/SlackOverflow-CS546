@@ -119,10 +119,16 @@ const handleSaveQuestion = (event) => {
 };
 
 const handleFilterDropdown = (event) => {
+    // don't let this click bubble to the outer onclick (handleOutsideClick)
+    if (event) event.stopPropagation();
+
     setFilterFormData();
+
     const filterDropdown = document.getElementById("filterDropdown");
     if (!filterDropdown) return;
+
     const isClosed = filterDropdown.classList.contains("pointer-events-none");
+
     if (isClosed) {
         filterDropdown.classList.remove(
             "opacity-0",
@@ -140,28 +146,40 @@ const handleFilterDropdown = (event) => {
 
 const handleOutsideClick = (event) => {
     const filterDropdown = document.getElementById("filterDropdown");
-
     const filterBtn = document.getElementById("openFilter");
-    if (!filterDropdown.contains(event.target) && event.target !== filterBtn) {
-        filterDropdown.classList.add(
-            "opacity-0",
-            "scale-95",
-            "pointer-events-none"
-        );
+
+    if (filterDropdown && filterBtn) {
+        const clickedFilterBtn =
+            filterBtn === event.target || filterBtn.contains(event.target);
+        const clickedInsideDropdown = filterDropdown.contains(event.target);
+
+        if (!clickedInsideDropdown && !clickedFilterBtn) {
+            filterDropdown.classList.add(
+                "opacity-0",
+                "scale-95",
+                "pointer-events-none"
+            );
+        }
     }
 
     const labelsDropdown = document.getElementById("labelsDropdown");
     const labelsDropdownBtn = document.getElementById("openLabelsDropdown");
-    if (
-        labelsDropdown &&
-        !labelsDropdown.contains(event.target) &&
-        event.target !== labelsDropdownBtn
-    ) {
-        labelsDropdown.classList.add(
-            "hidden",
-            "scale-95",
-            "pointer-events-none"
+
+    if (labelsDropdown && labelsDropdownBtn) {
+        const clickedLabelsBtn =
+            labelsDropdownBtn === event.target ||
+            labelsDropdownBtn.contains(event.target);
+        const clickedInsideLabelsDropdown = labelsDropdown.contains(
+            event.target
         );
+
+        if (!clickedInsideLabelsDropdown && !clickedLabelsBtn) {
+            labelsDropdown.classList.add(
+                "hidden",
+                "scale-95",
+                "pointer-events-none"
+            );
+        }
     }
 };
 
