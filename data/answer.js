@@ -10,47 +10,27 @@ import * as validator from "../utils/validator.js";
  * @returns {Object}
  */
 
-export const createAnswer = async (questionId, answer, created_by) => {
+export const createAnswer = async (question_id, answer, answer_delta, answer_content, user_id, is_accepted) => {
+
     const answersColl = await answers();
 
-    try {
-        questionId = validator.isValidString(questionId);
-    } catch (e) {
-        throw `questionId: ${e}`;
-    }
+
+    question_id = validator.isValidMongoId(question_id, "question_id");
+    answer = validator.isValidString(answer, "answer");
+    answer_delta = validator.isValidString(answer_delta, "answer_delta");
+    answer_content = validator.isValidString(answer_content, "answer_content");
+    user_id = validator.isValidMongoId(user_id, "user_id");
+    is_accepted = validator.isValidBoolean(is_accepted, "is_accepted");
 
 
-    try {
-        answer = validator.isValidString(answer);
-    } catch (e) {
-        throw `answer: ${e}`;
-    }
-
-    try {
-        created_by = validator.isValidString(created_by);
-    } catch (e) {
-        throw `created_by: ${e}`;
-    }
-
-    let questionObjectId;
-    try {
-        questionObjectId = new ObjectId(questionId);
-    } catch (e) {
-        throw `ERROR: questionId is not a valid ObjectId`;
-    }
-
-    let createdByObjectId;
-
-    try {
-        createdByObjectId = new ObjectId(created_by);
-    } catch (e) {
-        throw `ERROR: created_by is not a valid ObjectId`;
-    }
 
     const answerDoc = {
-        questionId: questionObjectId,
+        question_id,
         answer,
-        created_by: createdByObjectId,
+        answer_delta,
+        answer_content,
+        user_id,
+        is_accepted,
         created_at: new Date(),
     };
 
@@ -100,18 +80,10 @@ export const getAnswerById = async (answerId) => {
  */
 export const getAnswersByQuestionId = async (questionId) => {
     const answersColl = await answers();
-    questionId = validator.isValidString(questionId);
-
-    let questionObjectId;
-    try {
-        questionObjectId = new ObjectId(questionId);
-    } catch (e) {
-        throw `ERROR: questionId is not a valid ObjectId`;
-    }
+    questionId = validator.isValidMongoId(questionId);
 
     const answersList = await answersColl
-        .find({ questionId: questionObjectId })
-        .sort({ created_at: -1 })
+        .find({ question_id: questionId })
         .toArray();
 
     return answersList;
@@ -126,56 +98,47 @@ export const getAnswersByQuestionId = async (questionId) => {
  */
 export const updateAnswer = async (answerId, updateAnswer) => {
     const answersColl = await answers();
-    answerId = validator.isValidString(answerId);
-    updateAnswer = validator.isValidObject(updateAnswer);
-    let answerObjectId;
+    const updateFields = {};
+    answerId = validator.isValidMongoId(answerId, "answerId");
 
-    try {
-        answerObjectId = new ObjectId(answerId);
-    } catch (e) {
-        throw `ERROR: answerId is not a valid ObjectId`;
+    if (updateAnswer.answer) {
+        updateAnswer.answer = validator.isValidString(updateAnswer.answer, "answer")
+        updateFields.answer = updateAnswer.answer
     }
 
-    const existingAnswer = await answersColl.findOne({ _id: answerObjectId });
+    if (updateAnswer.answer_content) {
+        updateAnswer.answer_content = validator.isValidString(updateAnswer.answer_content, "answer_content")
+        updateFields.answer_content = updateAnswer.answer_content
+    }
+
+    if (updateAnswer.answer_delta) {
+        updateAnswer.answer_delta = validator.isValidString(updateAnswer.answer_delta, "answer_delta")
+        updateFields.answer_delta = updateAnswer.answer_delta
+
+    }
+
+    if (updateAnswer.is_accepted !== undefined && typeof updateAnswer.is_accepted === 'boolean' && updateAnswer.is_accepted != null) {
+        updateAnswer.is_accepted = validator.isValidBoolean(updateAnswer.is_accepted, "is_accepted")
+        updateFields.is_accepted = updateAnswer.is_accepted
+    }
+
+    if (updateAnswer.user_id) {
+        updateAnswer.user_id = validator.isValidMongoId(updateAnswer.user_id, "user_id")
+    }
+
+    const existingAnswer = await answersColl.findOne({ _id: answerId });
 
     if (!existingAnswer) {
         throw `answer not found!`;
     }
 
-    const updateFields = {};
-
-    if (updateAnswer.questionId !== undefined) {
-        try {
-            const questionId = validator.isValidString(updateAnswer.questionId);
-            updateFields.questionId = new ObjectId(questionId);
-        } catch (e) {
-            throw `questionId: ${e}`;
-        }
-    }
-
-    if (updateAnswer.answer !== undefined) {
-        try {
-            updateFields.answer = validator.isValidString(updateAnswer.answer);
-        } catch (e) {
-            throw `answer: ${e}`;
-        }
-    }
-
-    if (updateAnswer.created_by !== undefined) {
-        try {
-            const created_by = validator.isValidString(updateAnswer.created_by);
-            updateFields.created_by = new ObjectId(created_by);
-        } catch (e) {
-            throw `created_by: ${e}`;
-        }
-    }
 
     if (Object.keys(updateFields).length === 0) {
         throw `ERROR: no valid fields to update`;
     }
 
     const updateInfo = await answersColl.updateOne(
-        { _id: answerObjectId },
+        { _id: answerId },
         { $set: updateFields }
     );
 
@@ -183,8 +146,8 @@ export const updateAnswer = async (answerId, updateAnswer) => {
         throw `500 failed to update answer!`;
     }
 
-    const updatedAnswer = await answersColl.findOne({ _id: answerObjectId });
-    return updatedAnswer;
+    const updatedAnswer = await answersColl.findOne({ _id: answerId })
+    return updatedAnswer
 };
 
 
@@ -194,23 +157,22 @@ export const updateAnswer = async (answerId, updateAnswer) => {
  * @param {string} answerId 
  * @returns {Object} 
  */
-export const deleteAnswer = async (answerId) => {
+export const deleteAnswer = async (answerId, user_id) => {
+
+    answerId = validator.isValidMongoId(answerId);
+    user_id = validator.isValidMongoId(user_id);
+
     const answersColl = await answers();
-    answerId = validator.isValidString(answerId);
 
-    let answerObjectId;
-    try {
-        answerObjectId = new ObjectId(answerId);
-    } catch (e) {
-        throw `ERROR: answerId is not a valid ObjectId`;
-    }
-
-    const existingAnswer = await answersColl.findOne({ _id: answerObjectId });
+    const existingAnswer = await answersColl.findOne({ _id: answerId });
     if (!existingAnswer) {
         throw `answer not found!`;
     }
 
-    const deleteInfo = await answersColl.deleteOne({ _id: answerObjectId });
+    if (existingAnswer.user_id.toString() !== user_id.toString()) {
+        throw "You are not allowed to delete this answer."
+    }
+    const deleteInfo = await answersColl.deleteOne({ _id: answerId });
 
     if (deleteInfo.deletedCount === 0) {
         throw `failed to delete answer!`;

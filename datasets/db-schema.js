@@ -1,6 +1,8 @@
 // LEAN SCHEMA: 4 collections (users, courses, questions, answers)
 // Labels live on each course; questions store label IDs from course.labels._id.
 
+import { questions } from "../config/mongoCollections";
+
 // =========================
 // users
 // =========================
@@ -57,7 +59,8 @@ const Questions = {
     course: ObjectId, // courses._id
     author_id: ObjectId, // users._id (who asked)
     question: String, // question text
-
+    question_delta: String, // question quill object in delta format
+    question_content: String, // question quill object in html format
     canonical_key: String, // normalized key for dedupe/suggestions
     embedding: [Number], // optional vector for similarity search
 
