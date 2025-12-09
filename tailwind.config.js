@@ -1,1 +1,0 @@
-// This file exists for vscode extension tailwind intellisense

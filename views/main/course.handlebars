@@ -1,43 +1,33 @@
-<div onclick="handleOutsideClick(event)" class="w-full h-full px-6 py-4">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-4 border-b pb-2">
-        <div>
-            <h1 class="text-xl font-semibold text-gray-800">{{title}}
+<div onclick="handleOutsideClick(event)" class="relative w-full h-full flex flex-col justify-between px-6 py-4">
 
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 border-b pb-3">
+        <div>
+            <h1 class="text-xl font-semibold text-gray-800">
+                {{title}}
             </h1>
-            <p class="text-gray-400 text-sm  flex items-center gap-1">
-                <a href="/">
+            <p class="text-gray-400 text-sm flex items-center gap-1 mt-1">
+                <a href="/" class="inline-flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                        class="size-4 hover:text-[#F0BD66] ">
+                        class="size-4 hover:text-[#F0BD66]">
                         <path fill-rule="evenodd"
                             d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z"
                             clip-rule="evenodd" />
                     </svg>
                 </a>
-                {{path}}
+                <span>{{path}}</span>
             </p>
         </div>
+
         <div class="flex gap-2">
             <button onclick="handleFilterDropdown()" id="openFilter"
                 class="bg-[#F0BD66] text-white flex items-center font-medium px-5 py-2 rounded-3xl hover:bg-[#e3aa4e] transition">
-                Filters
-
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-5  ml-2">
+                <span>Filters</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                    class="size-5 pointer-events-none ml-2">
                     <path fill-rule="evenodd"
                         d="M3.792 2.938A49.069 49.069 0 0 1 12 2.25c2.797 0 5.54.236 8.209.688a1.857 1.857 0 0 1 1.541 1.836v1.044a3 3 0 0 1-.879 2.121l-6.182 6.182a1.5 1.5 0 0 0-.439 1.061v2.927a3 3 0 0 1-1.658 2.684l-1.757.878A.75.75 0 0 1 9.75 21v-5.818a1.5 1.5 0 0 0-.44-1.06L3.13 7.938a3 3 0 0 1-.879-2.121V4.774c0-.897.64-1.683 1.542-1.836Z"
                         clip-rule="evenodd" />
-                </svg>
-
-            </button>
-            <button onclick="handleAddQuestionModal()"
-                class="bg-[#F0BD66] text-white flex items-center font-medium px-5 py-2 rounded-3xl hover:bg-[#e3aa4e] transition">
-
-
-                Ask Question
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                    class="size-5 stroke-white stroke-[1] ml-2">
-                    <path
-                        d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
                 </svg>
             </button>
         </div>
@@ -45,213 +35,295 @@
 
     <!-- Page Content -->
     <div id="courseContainer" data-course-id='{{{selectedCourse}}}'
-        class=" flex-1  flex flex-col overflow-y-auto h-[88%] w-full gap-4 ">
+        class="flex-1 flex flex-col overflow-y-auto h-full mb-1 pb-8 w-full gap-3">
         {{#if questions.length}}
         {{#each questions}}
 
-        <div class="bg-white rounded-3xl shadow-sm py-3 px-6 border border-[#F0BD66] hover:bg-[#fcfaf6] hover:shadow-md relative">
-            <div class=" flex items-center justify-between mb-2">
-                <div class="flex gap-3">
+        <a href="/main/question/{{this._id}}"
+            class="bg-white rounded-3xl shadow-sm py-3 px-6 border border-[#F0BD66]/70 hover:border-[#F0BD66] hover:shadow-md hover:-translate-y-[1px] transition cursor-pointer">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex flex-wrap gap-2">
                     {{#each this.labels}}
-                    <div key="{{this._id}}" class="border border-[#F0BD66] text-[#F0BD66] text-sm  px-4 rounded-3xl ">
+                    <div key="{{this._id}}"
+                        class="border border-[#F0BD66] text-[#F0BD66] text-xs px-3 py-0.5 rounded-2xl bg-[#FFF7E8]">
                         {{this.name}}
                     </div>
                     {{/each}}
                 </div>
-                <div class="flex items-center gap-3">
-                    {{#if (eq this.status "open")}}
 
-                    <div class="border border-green-500 text-green-500 text-sm  px-4 rounded-3xl ">
-                        {{this.status}}
+                <div class="flex items-center justify-center gap-4">
+                    <div class="w-20 text-center">
+                        {{#if (eq this.status "open")}}
+                        <div class="border border-green-500 text-green-500 text-xs px-4 py-0.5 rounded-2xl bg-green-50">
+                            open
+                        </div>
+                        {{else}}
+                        <div class="border border-gray-400 text-gray-500 text-xs px-4 py-0.5 rounded-2xl bg-gray-50">
+                            closed
+                        </div>
+                        {{/if}}
                     </div>
-                    {{else}}
-                    <div class="border border-gray-500 text-gray-500 text-sm  px-4 rounded-3xl ">
-                        Closed
+                    <div>
+                        {{#if this.hasBookmarked}}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                            class="size-4 text-[#F0BD66]">
+                            <path fill-rule="evenodd"
+                                d="M6.32 2.577a49.255 49.255 0 0 1 11.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 0 1-1.085.67L12 18.089l-7.165 3.583A.75.75 0 0 1 3.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93Z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        {{else}}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-4 text-gray-400">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+                        </svg>
+                        {{/if}}
                     </div>
-                    {{/if}}
-                                        {{#if this.isBookmarked}}
-                    <button onclick="handleToggleBookmark('{{this._id}}', this, event)" 
-                        class="bg-[#F0BD66] hover:bg-[#e3aa4e] text-white text-sm px-4 py-1.5 rounded-3xl transition flex items-center gap-2"
-                        title="Remove bookmark">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-4">
-                            <path fill-rule="evenodd" d="M6.32 2.577a49.255 49.255 0 0 1 11.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 0 1-1.085.67L12 18.089l-7.165 3.583A.75.75 0 0 1 3.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93Z" clip-rule="evenodd" />
-                        </svg>
-                        Bookmarked
-                    </button>
-                    {{else}}
-                    <button onclick="handleToggleBookmark('{{this._id}}', this, event)" 
-                        class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-4 py-1.5 rounded-3xl transition flex items-center gap-2"
-                        title="Add bookmark">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
-                        </svg>
-                        Bookmark
-                    </button>
-                    {{/if}}
                 </div>
             </div>
 
-            <a href="/main/question/{{this._id}}" class="block">
+            <div class="text-sm text-gray-900 mb-2 line-clamp-3">
+                {{{this.question}}}
+            </div>
 
-                <div class="text-lg font-semibold text-gray-900 mb-2 hover:text-[#F0BD66] transition">
-                    {{this.question}}
+            <div class="flex items-center justify-between text-gray-500 text-xs">
+                <div class="flex items-center gap-2">
+                    {{#if (eqStr this.question.user_id user.id)}}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                        class="size-4 rounded-full text-[#F0BD66]">
+                        <path
+                            d="M10 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.465 14.493a1.23 1.23 0 0 0 .41 1.412A9.957 9.957 0 0 0 10 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 0 0-13.074.003Z" />
+                    </svg>
+                    {{else}}
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="size-4 text-gray-400">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                    </svg>
+                    {{/if}}
+
+                    <span class="font-medium text-gray-700">
+                        {{this.user.first_name}} {{this.user.last_name}}
+                    </span>
+                    <span class="text-gray-400">asked {{this.timeAgo}}</span>
                 </div>
 
-
-                <div class="flex items-center justify-between text-gray-500 text-sm">
-                    <div class="flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-4">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                <div class="flex items-center gap-5">
+                    <div class="flex items-center gap-1.5">
+                        {{#if this.hasAnswered}}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="size-4 text-[#F0BD66]">
+                            <path fill-rule="evenodd"
+                                d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902.848.137 1.705.248 2.57.331v3.443a.75.75 0 0 0 1.28.53l3.58-3.579a.78.78 0 0 1 .527-.224 41.202 41.202 0 0 0 5.183-.5c1.437-.232 2.43-1.49 2.43-2.903V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0 0 10 2Zm0 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM8 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm5 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+                                clip-rule="evenodd" />
                         </svg>
-    
-                        <span class="font-medium">{{this.user.first_name}} {{this.user.last_name}}</span>
-                        <span>asked {{this.timeAgo}}</span>
+                        {{else}}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-4 text-gray-400">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                        </svg>
+                        {{/if}}
+                        <span>{{#if this.answer_count}}{{this.answer_count.length}}{{else}}0{{/if}} answers</span>
                     </div>
-    
-                    <div class="flex items-center gap-6">
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="size-4">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 0 1 1.037-.443 48.282 48.282 0 0 0 5.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
-                            </svg>
-    
-                            <span>{{#if this.answer_count}}{{this.answer_count}}{{else}}0{{/if}} answers</span>
-    
-                        </div>
-    
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="size-4">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                            </svg>
-    
-    
-                            <span>{{#if this.views}}{{this.views}}{{else}}0{{/if}} views</span>
-    
-                        </div>
-    
-                        <div class="flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                stroke="currentColor" class="size-4">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
-                            </svg>
-    
-                            <span>{{#if this.votes}}{{this.votes}}{{else}}0{{/if}} votes</span>
-                        </div>
+
+                    <div class="flex items-center gap-1.5">
+                        {{#if this.hasViewed}}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="size-4 text-[#F0BD66]">
+                            <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+                            <path fill-rule="evenodd"
+                                d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"
+                                clip-rule="evenodd" />
+                        </svg>
+                        {{else}}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-4 text-gray-400">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                        {{/if}}
+                        <span>{{#if this.views}}{{this.views.length}}{{else}}0{{/if}} views</span>
+                    </div>
+
+                    <div class="flex items-center gap-1.5">
+                        {{#if this.hasUpvoted}}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="size-4 text-[#F0BD66]">
+                            <path
+                                d="M1 8.25a1.25 1.25 0 1 1 2.5 0v7.5a1.25 1.25 0 1 1-2.5 0v-7.5ZM11 3V1.7c0-.268.14-.526.395-.607A2 2 0 0 1 14 3c0 .995-.182 1.948-.514 2.826-.204.54.166 1.174.744 1.174h2.52c1.243 0 2.261 1.01 2.146 2.247a23.864 23.864 0 0 1-1.341 5.974C17.153 16.323 16.072 17 14.9 17h-3.192a3 3 0 0 1-1.341-.317l-2.734-1.366A3 3 0 0 0 6.292 15H5V8h.963c.685 0 1.258-.483 1.612-1.068a4.011 4.011 0 0 1 2.166-1.73c.432-.143.853-.386 1.011-.814.16-.432.248-.9.248-1.388Z" />
+                        </svg>
+                        {{else}}
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-4 text-gray-400">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
+                        </svg>
+                        {{/if}}
+                        <span>{{#if this.up_votes}}{{this.up_votes.length}}{{else}}0{{/if}} votes</span>
                     </div>
                 </div>
-            </a>
-        </div>
+            </div>
+        </a>
+
         {{/each}}
         {{else}}
-        <p class="text-gray-400 text-sm ml-2">No questions found!</p>
+        <div class="text-gray-400 w-full h-full flex flex-col justify-center items-center">
+            <img src="/public/images/emptyContent.png" alt="No Questions" class="w-[400px] h-[350px] mb-4">
+        </div>
         {{/if}}
     </div>
 
+    <!-- Ask question -->
+    <div class="mt-3 border-gray-300">
+        <form onsubmit="handleSaveQuestion(event)"
+            class="bg-white relative border border-gray-300 rounded-2xl shadow-md flex flex-col">
 
-
-
-
-    {{!-- Modals --}}
-
-    <div id="addQuestionModal"
-        class="fixed hidden inset-0 bg-black bg-opacity-50 flex items-center justify-center  z-50">
-
-
-        <div class=" mt-0  ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto">
-            <div class="bg-white border border-gray-200 rounded-xl shadow-2xs pointer-events-auto">
-                <form onsubmit="handleSaveQuestion(event)">
-                    <div class="p-4 sm:p-7">
-                        <div class="text-center">
-                            <h3 class="block text-xl sm:text-2xl font-semibold text-gray-800">Ask question</h3>
-                            <div class="max-w-sm mx-auto">
-                                <p class="mt-2 text-sm text-gray-600">
-                                    Please enter your question in the box below. This will be visible to everyone.
-                                </p>
-                            </div>
-
-                        </div>
-
-                        <div class="mt-8 sm:mt-10 ">
-
-                            <div class="mb-3 flex-1">
-                                <label for="labels" class="block mb-2.5 text-sm font-medium text-heading">Labels</label>
-                                <select id="labels" name="labels[]"
-                                    class="py-2.5 sm:py-3 px-4  block w-full border border-gray-200 rounded-lg sm:text-sm focus:outline-none focus:border-yellow-500 focus:ring-yellow-500 disabled:opacity-50 disabled:pointer-events-none "
-                                    multiple>
-                                    <option value="" disabled>Choose labels</option>
-                                    {{#each course.labels}}
-                                    <option value="{{this._id}}">{{this.name}}
-                                    </option>
-                                    {{/each}}
-                                </select>
-                            </div>
-                            <div class="mb-3 flex-1">
-                                <label for="question"
-                                    class="block mb-2.5 text-sm font-medium text-heading">Question</label>
-                                <textarea type="text" id="question" name="question"
-                                    class="py-2.5 sm:py-3 px-4 block w-full border border-gray-200 rounded-lg sm:text-sm  focus:outline-none focus:border-yellow-500 focus:ring-yellow-500 disabled:opacity-50 disabled:pointer-events-none "
-                                    placeholder="NodeJs basics and express" required></textarea>
-                            </div>
-
-                        </div>
-                    </div>
-
-
-                    <div class="flex justify-end items-center gap-x-2 p-4 sm:px-7 border-t border-gray-200">
-                        <button onclick="handleAddQuestionModal()" type="button"
-                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none focus:outline-hidden focus:bg-gray-50"
-                            data-hs-overlay="#hs-notifications">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-transparent bg-[#F0BD66] text-white hover:bg-yellow-500 focus:outline-hidden focus:bg-[#F0AC66] disabled:opacity-50 disabled:pointer-events-none">
-                            Submit
-                        </button>
-                    </div>
-                </form>
-
+            <div class="absolute -top-9 left-2 flex items-center bg-white rounded-full px-2 py-1">
+                <div id="labelTags" class="flex items-center justify-center rounded-full gap-2 text-xs">
+                    {{!-- label tags --}}
+                </div>
             </div>
-        </div>
 
+            <!-- Bigger editor box -->
+            <div id="questionEditor"
+                class="pt-2 px-3 rounded-t-2xl resize-none focus:outline-none min-h-[150px] max-h-[320px] overflow-y-auto text-sm">
+            </div>
+
+            <div id="questionResizeHandle"
+                class="absolute -top-0 -right-0 hover:cursor-ns-resize rounded-full p-1 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                    class="size-5 pointer-events-none">
+                    <path fill-rule="evenodd"
+                        d="M10.53 3.47a.75.75 0 0 0-1.06 0L6.22 6.72a.75.75 0 0 0 1.06 1.06L10 5.06l2.72 2.72a.75.75 0 1 0 1.06-1.06l-3.25-3.25Zm-4.31 9.81 3.25 3.25a.75.75 0 0 0 1.06 0l3.25-3.25a.75.75 0 1 0-1.06-1.06L10 14.94l-2.72-2.72a.75.75 0 0 0-1.06 1.06Z"
+                        clip-rule="evenodd" />
+                </svg>
+            </div>
+
+            <div class="rounded-b-2xl flex items-center justify-between px-2 py-2 border-t bg-gray-50">
+                <div class="flex items-center">
+                    <div class="relative mr-3">
+                        <div onclick="handleLabelsDropdown()" id="openLabelsDropdown"
+                            class="flex items-center justify-center group hover:cursor-pointer px-2 py-1 rounded-full hover:bg-gray-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                class="size-5 group-hover:text-blue-600 pointer-events-none">
+                                <path
+                                    d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
+                            </svg>
+                            <div class="ml-1 text-xs font-medium group-hover:text-blue-600 pointer-events-none">
+                                Labels
+                            </div>
+                        </div>
+
+                        <div id="labelsDropdown"
+                            class="z-10 hidden bottom-8 left-2 absolute bg-white rounded-2xl border shadow-lg w-52">
+                            <ul class="p-4 text-sm text-body font-medium space-y-3 max-h-56 overflow-auto">
+                                {{#each course.labels}}
+                                <li>
+                                    <div class="flex items-center gap-2">
+                                        <input id="{{this._id}}" name="label" onchange="handleLabelsCheckbox(event)"
+                                            type="checkbox" value="{{this._id}}" data-label="{{this.name}}"
+                                            class="accent-[#F0BD66] w-4 h-4 rounded-md">
+                                        <label for="dropdown-checkbox" class="text-sm font-medium text-heading">
+                                            {{this.name}}
+                                        </label>
+                                    </div>
+                                </li>
+                                {{/each}}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="hover:cursor-pointer h-fit -mr-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                            class="size-[17px] hover:text-blue-600">
+                            <path fill-rule="evenodd"
+                                d="M18.97 3.659a2.25 2.25 0 0 0-3.182 0l-10.94 10.94a3.75 3.75 0 1 0 5.304 5.303l7.693-7.693a.75.75 0 0 1 1.06 1.06l-7.693 7.693a5.25 5.25 0 1 1-7.424-7.424l10.939-10.94a3.75 3.75 0 1 1 5.303 5.304L9.097 18.835l-.008.008-.007.007-.002.002-.003.002A2.25 2.25 0 0 1 5.91 15.66l7.81-7.81a.75.75 0 0 1 1.061 1.06l-7.81 7.81a.75.75 0 0 0 1.054 1.068L18.97 6.84a2.25 2.25 0 0 0 0-3.182Z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+
+                    <div id="toolbar" class="ql-toolbar flex items-center gap-2 ml-1">
+                        <span class="ql-formats">
+                            <button class="ql-link" title="Insert Link"></button>
+                            <button class="ql-image" title="Insert Image"></button>
+                            <button class="ql-video" title="Insert Video"></button>
+                            <button class="ql-code-block" title="Code Block"></button>
+                        </span>
+
+                        <select class="ql-font"></select>
+
+                        <select class="ql-size">
+                            <option value="small"></option>
+                            <option selected></option>
+                            <option value="large"></option>
+                            <option value="huge"></option>
+                        </select>
+
+                        <span class="ql-formats">
+                            <button class="ql-bold"></button>
+                            <button class="ql-italic"></button>
+                            <button class="ql-underline"></button>
+                            <button class="ql-strike"></button>
+                        </span>
+
+                        <span class="ql-formats">
+                            <select class="ql-color"></select>
+                            <select class="ql-background"></select>
+                        </span>
+
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered"></button>
+                            <button class="ql-list" value="bullet"></button>
+                            <select class="ql-align"></select>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mr-2">
+                    <button type="submit"
+                        class="flex justify-center items-center p-0.5 gap-2 px-3 py-1.5 rounded-full text-white bg-[#F0BD66] hover:bg-[#F0AC66] text-sm">
+                        <span>Ask question</span>
+                        <svg class="shrink-0 size-3.5 pointer-events-none" xmlns="http://www.w3.org/2000/svg"
+                            width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path
+                                d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
-
-    <form onsubmit="handleApplyFilters(event)" id="filterDropdown" class="absolute right-10 top-20 w-72 bg-white rounded-xl shadow-lg border
-            opacity-0 scale-95 pointer-events-none transition-all duration-200 z-50">
-
+    <!-- Filters dropdown -->
+    <form onsubmit="handleApplyFilters(event)" id="filterDropdown"
+        class="absolute right-10 top-20 w-72 bg-white rounded-xl shadow-lg border opacity-0 scale-95 pointer-events-none transition-all duration-200 z-50">
 
         <div class="flex items-center justify-between p-4 border-b">
             <h3 class="text-lg font-semibold text-gray-800">Filters</h3>
 
-            <div class="flex items-center gap-4 text-[#F0BD66] text-sm font-medium">
+            <div class="flex items-center gap-4 text-[#F0BD66] text-xs font-medium">
                 <button type="submit" class="hover:underline">Save view</button>
                 <button type="reset" onclick="handleClearFilters(event)" class="hover:underline">Clear all</button>
             </div>
         </div>
 
-
-        <div class="p-4">
+        <div class="p-4 space-y-4">
             <input type="text" name="question" placeholder="Search question..."
-                class="w-full px-3 py-2 text-sm border rounded-lg focus:ring focus:ring-[#F0BD66] focus:outline-none  mb-4">
+                class="w-full px-3 py-2 text-sm border rounded-lg focus:ring focus:ring-[#F0BD66] focus:outline-none">
 
-            <div class="">
+            <div>
                 <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
-                    Labels
+                    <span>Labels</span>
                     <span class="text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="size-5">
                             <path fill-rule="evenodd"
                                 d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
                                 clip-rule="evenodd" />
                         </svg>
-
                     </span>
                 </div>
                 <hr class="my-2">
@@ -264,39 +336,38 @@
                     {{/each}}
                 </ul>
             </div>
-            <hr class="my-2">
-            <div class="">
+
+            <div>
                 <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
-                    Asked by
+                    <span>Asked by</span>
                     <span class="text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="size-5">
                             <path fill-rule="evenodd"
                                 d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
                                 clip-rule="evenodd" />
                         </svg>
-
                     </span>
                 </div>
                 <hr class="my-2">
                 <input type="text" name="user_name" placeholder="John Snow"
-                    class="w-full px-3 py-2 text-sm border rounded-lg focus:ring focus:ring-[#F0BD66] focus:outline-none ">
+                    class="w-full px-3 py-2 text-sm border rounded-lg focus:ring focus:ring-[#F0BD66] focus:outline-none">
             </div>
-            <hr class="my-2">
-            <div class="">
+
+            <div>
                 <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
-                    Status
+                    <span>Status</span>
                     <span class="text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="size-5">
                             <path fill-rule="evenodd"
                                 d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
                                 clip-rule="evenodd" />
                         </svg>
-
                     </span>
                 </div>
                 <hr class="my-2">
                 <div class="flex items-center gap-3">
-
                     <label class="relative inline-block w-10 h-5 cursor-pointer">
                         <input type="checkbox" name="status_open" class="peer sr-only">
                         <span
@@ -304,12 +375,10 @@
                         <span
                             class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition"></span>
                     </label>
-
                     <span class="text-sm font-medium text-gray-500">Open</span>
-
                 </div>
-                <div class="flex items-center gap-3 mt-2">
 
+                <div class="flex items-center gap-3 mt-2">
                     <label class="relative inline-block w-10 h-5 cursor-pointer">
                         <input type="checkbox" name="status_closed" class="peer sr-only">
                         <span
@@ -317,18 +386,11 @@
                         <span
                             class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow peer-checked:translate-x-5 transition"></span>
                     </label>
-
                     <span class="text-sm font-medium text-gray-500">Closed</span>
-
                 </div>
             </div>
         </div>
     </form>
 
-
-
-
     <script src="/public/js/course.js"></script>
-
-
 </div>

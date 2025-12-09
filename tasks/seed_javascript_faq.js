@@ -24,7 +24,7 @@ const seedJavaScriptFAQ = async () => {
     if (!creator) throw { status: 400, message: "No professor/admin found" };
 
     const courseName = "Web Programming I";
-    const courseCode = "CS546";
+    const courseCode = "CS-546";
 
     const courseDoc = await createCourse(
         courseName,
@@ -57,7 +57,7 @@ const seedJavaScriptFAQ = async () => {
             try {
                 lineData = validator.isValidString(lineData);
                 questionsList.push(lineData);
-            } catch (_) { }
+            } catch (_) {}
         }
     }
 
@@ -87,7 +87,7 @@ const seedJavaScriptFAQ = async () => {
             const created = await questionUtils.createQuestion(
                 q,
                 courseDoc._id.toString(),
-                creator._id,
+                creator._id
             );
             await qsColl.updateOne(
                 { _id: created._id },

@@ -7,6 +7,7 @@ import { handleError } from "../utils/helperFunctions.js";
 import { getAllStudentsByCourseId } from '../data/students.js';
 import * as usersData from '../data/users.js';
 import moment from "moment";
+import * as answersData from '../data/answer.js';
 
 const router = Router();
 
@@ -92,6 +93,14 @@ router.get('/courses/:id', async (req, res) => {
 
             let tempTimeAgo = moment(question.created_time).fromNow()
             question.timeAgo = tempTimeAgo
+
+            question.hasUpvoted = question.up_votes.some((id) => id.toString() === userSesData.id.toString())
+
+            question.hasViewed = question.views.some((id) => id.toString() === userSesData.id.toString())
+
+            question.hasAnswered = question.answer_count.some((id) => id.toString() === userSesData.id.toString())
+
+            question.hasBookmarked = question.bookmarks.some(id => id.toString() === userSesData.id.toString());
 
             delete question.embedding
             delete question.canonical_key
@@ -188,6 +197,14 @@ router.get('/courses/:id/filters', async (req, res) => {
             question.user = { first_name: tempUser.first_name, last_name: tempUser.last_name }
             question.timeAgo = moment(question.created_time).fromNow()
 
+            question.hasUpvoted = question.up_votes.some((id) => id.toString() === userSesData.id.toString())
+
+            question.hasViewed = question.views.some((id) => id.toString() === userSesData.id.toString())
+
+            question.hasAnswered = question.answer_count.some((id) => id.toString() === userSesData.id.toString())
+
+            question.hasBookmarked = question.bookmarks.some(id => id.toString() === userSesData.id.toString());
+
             delete question.embedding
             delete question.canonical_key
             delete question.replies
@@ -217,8 +234,59 @@ router.get('/question/:id', async (req, res) => {
 
     const userSesData = req.session.user;
     let courses = [];
-
+    let question;
+    let course;
+    let questionId;
+    let courseLabels = []
+    let answers = []
+    let views;
+    let isTa = false
     try {
+
+        questionId = validator.isValidMongoId(req.params.id, "req.params.id");
+
+        question = await questionsData.getQuestionById(questionId);
+        course = await coursesData.getCourseById(question.course);
+        courseLabels = course.labels
+
+
+        if (userSesData.role === "student") {
+            const student = course.enrolled_students.find((student) => student.user_id.toString() === userSesData.id.toString())
+            if (student && student.is_ta) {
+                isTa = student.is_ta
+            }
+        }
+
+        question.labels = question.labels.map(labelId =>
+            courseLabels.find(label => label._id.toString() === labelId.toString())
+        );
+
+        const tempUser = await usersData.getUserById(question.user_id);
+        question.user = {
+            first_name: tempUser.first_name,
+            last_name: tempUser.last_name
+        };
+
+        let tempTimeAgo = moment(question.created_time).fromNow()
+        question.timeAgo = tempTimeAgo
+
+        delete question.embedding
+        delete question.canonical_key
+
+
+        answers = await answersData.getAnswersByQuestionId(questionId)
+
+        for (const answer of answers) {
+            const tempAnswerUser = await usersData.getUserById(answer.user_id);
+            answer.user = {
+                _id: tempAnswerUser._id.toString(),
+                first_name: tempAnswerUser.first_name,
+                last_name: tempAnswerUser.last_name
+            };
+
+            let tempAnswerTimeAgo = moment(answer.created_at).fromNow()
+            answer.timeAgo = tempAnswerTimeAgo
+        }
 
         if (userSesData.role == "professor") {
             const professorId = validator.isValidMongoId(userSesData.id);
@@ -234,12 +302,33 @@ router.get('/question/:id', async (req, res) => {
             course_name: course.course_name
         }))
 
+        views = await questionsData.updateViews(questionId, userSesData.id)
+
+        const hasUpvoted = question.up_votes.some(id => id.toString() === userSesData.id.toString());
+
+        const hasViewed = views.some(id => id.toString() === userSesData.id.toString());
+
+        const hasAnswered = question.answer_count.some(id => id.toString() === userSesData.id.toString());
+
+        const hasBookmarked = question.bookmarks.some(id => id.toString() === userSesData.id.toString());
+
         return res.render('main/question', {
             layout: 'main',
-            title: 'Question Details',
+            title: 'Question Thread',
             page: "Question",
-            path: '/ question',
+            path: `/ courses / ${course.course_id} / question`,
             courses: courses,
+            question: question,
+            question_id: question._id.toString(),
+            answers: answers,
+            course: course,
+            views: views,
+            hasUpvoted,
+            hasViewed,
+            hasAnswered,
+            hasBookmarked,
+            isTa,
+            selectedCourse: course._id.toString(),
         });
     } catch (error) {
         console.error("/main/question/:id Error:", error);
