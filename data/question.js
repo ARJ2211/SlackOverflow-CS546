@@ -160,28 +160,61 @@ export const searchQuestion = async (
  */
 export const updateQuestion = async (filter, obj) => {
     const questionsColl = await questions();
+
     filter = validator.isValidObject(filter);
     obj = validator.isValidObject(obj);
-    if (obj.hasOwnProperty("question")) {
-        var new_question = obj.question;
-        var canonical_key = Normalize(obj.question);
-        let existingQuestion = await searchQuestion(obj.question);
 
-        existingQuestion = existingQuestion.filter(
-            (question) => question._id.toString() != filter._id.toString()
+    // Remove undefined fields so we don't overwrite with undefined
+    for (const key of Object.keys(obj)) {
+        if (obj[key] === undefined) {
+            delete obj[key];
+        }
+    }
+
+    // Get existing question so we know the course and id
+    const existingQuestion = await questionsColl.findOne(filter);
+    if (!existingQuestion) {
+        throw `ERROR: Question not found.`;
+    }
+
+    // If the text of the question is being changed, run duplicate check
+    if (Object.prototype.hasOwnProperty.call(obj, "question")) {
+        const new_question = obj.question;
+        const canonical_key = Normalize(new_question);
+
+        // use the course of the existing question for vector search
+        let similarQuestions = await searchQuestion(
+            new_question,
+            existingQuestion.course.toString()
         );
 
-        if (
-            existingQuestion.length > 0 &&
-            existingQuestion[0].score > THRESOLD
-        ) {
-            throw `ERROR: similar question already exists, ${existingQuestion[0].question}, score: ${existingQuestion[0].score}`;
+        // ignore self
+        similarQuestions = similarQuestions.filter(
+            (q) => q._id.toString() !== existingQuestion._id.toString()
+        );
+
+        if (similarQuestions.length > 0) {
+            const best = similarQuestions[0];
+            const jacScore = Jaccard(
+                Tokens(new_question),
+                Tokens(best.question)
+            );
+            const combinedScore = 0.8 * best.score + 0.2 * jacScore;
+
+            if (
+                (best.score >= THRESOLD && jacScore >= JACCARD_THRESHOLD) ||
+                combinedScore >= COMBINED_THRESHOLD
+            ) {
+                const roundedScore = Number(best.score).toFixed(2);
+                const roundedJac = Number(jacScore).toFixed(2);
+                throw `ERROR: A similar question already exists (score ${roundedScore}, jaccard ${roundedJac}). Closest match: <strong>${best.question}</strong>`;
+            }
         }
-        var embedding = await getEmbedding(new_question);
+
+        const embedding = await getEmbedding(new_question);
         obj = { ...obj, embedding, canonical_key };
     }
 
-    canonical_key;
     const updateObj = {
         $set: {
             ...obj,
@@ -191,7 +224,11 @@ export const updateQuestion = async (filter, obj) => {
     const updatedObj = await questionsColl.findOneAndUpdate(filter, updateObj, {
         returnDocument: "after",
     });
-    if (!updateObj || updatedObj === null) throw `ERROR: document not updated.`;
+
+    if (!updatedObj || updatedObj === null) {
+        throw `ERROR: document not updated.`;
+    }
+
     return updatedObj;
 };
 

@@ -7,12 +7,10 @@ import colors from "ansi-colors";
 import fs from "fs/promises";
 import path from "path";
 import { createCourse, addLabelToCourse } from "../data/course.js";
-import { users, questions } from "../config/mongoCollections.js";
+import { users } from "../config/mongoCollections.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const seedJavaScriptFAQ = async () => {
     const filePath = path.resolve(__dirname, "../datasets/javascript_faq.txt");
@@ -26,13 +24,28 @@ const seedJavaScriptFAQ = async () => {
     const courseName = "Web Programming I";
     const courseCode = "CS-546";
 
-    const courseDoc = await createCourse(
-        courseName,
-        courseCode,
-        "Course Q&A for JavaScript basics",
-        creator._id
-    );
+    // Try to create course; if it already exists, reuse it
+    let courseDoc;
+    try {
+        courseDoc = await createCourse(
+            courseName,
+            courseCode,
+            "Course Q&A for JavaScript basics",
+            creator._id
+        );
+    } catch (e) {
+        // If course already exists, fetch it instead of failing seeding
+        if (e?.status === 409) {
+            const courseColl = await (
+                await import("../config/mongoCollections.js")
+            ).courses();
+            courseDoc = await courseColl.findOne({ course_id: courseCode });
+        } else {
+            throw e;
+        }
+    }
 
+    // Ensure "General" label exists for this course
     const updatedCourse = await addLabelToCourse(
         courseDoc._id.toString(),
         "General"
@@ -46,8 +59,6 @@ const seedJavaScriptFAQ = async () => {
             };
         })();
 
-    const qsColl = await questions();
-
     const questionsList = [];
     for (let line = 0; line < fileData.length; line++) {
         let lineData = fileData[line];
@@ -57,7 +68,9 @@ const seedJavaScriptFAQ = async () => {
             try {
                 lineData = validator.isValidString(lineData);
                 questionsList.push(lineData);
-            } catch (_) {}
+            } catch (_) {
+                // skip invalid lines
+            }
         }
     }
 
@@ -81,25 +94,33 @@ const seedJavaScriptFAQ = async () => {
     bar.start(questionsList.length, 0, { status: "" });
 
     for (const q of questionsList) {
-        // show what we’re trying same line via bar.update
         bar.update({ status: `Trying: ${q.slice(0, 80)}` });
+
         try {
-            const created = await questionUtils.createQuestion(
+            // Minimal Quill-like content/delta for seeded questions
+            const questionContent = `<p>${q}</p>`;
+            const questionDelta = JSON.stringify([{ insert: q + "\n" }]);
+
+            // createQuestion(
+            //   question,
+            //   course_id,
+            //   user_id,
+            //   labels = [],
+            //   question_content,
+            //   question_delta
+            // )
+            await questionUtils.createQuestion(
                 q,
                 courseDoc._id.toString(),
-                creator._id
+                creator._id.toString(),
+                [generalLabel._id.toString()],
+                questionContent,
+                questionDelta
             );
-            await qsColl.updateOne(
-                { _id: created._id },
-                {
-                    $addToSet: { labels: generalLabel._id },
-                    $set: { updated_at: new Date() },
-                }
-            );
+
             confirmCount += 1;
             bar.increment(1, { status: `Inserted: ${q.slice(0, 60)}` });
         } catch (e) {
-            // keep error (with score/jaccard text) on the same line
             const msg = String(e).replace(/\s+/g, " ").slice(0, 120);
             bar.increment(1, { status: `Skipped: ${msg}` });
         }

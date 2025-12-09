@@ -2,7 +2,6 @@ let quill;
 
 const handleSaveQuestion = (event) => {
     event.preventDefault();
-
     const mainContainer = document.getElementById("mainContainer");
     const courseContainer = document.getElementById("courseContainer");
 
