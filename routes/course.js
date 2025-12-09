@@ -22,8 +22,16 @@ router
                 reqBody.course_name
             );
             reqBody.course_id = validator.isValidCourseId(reqBody.course_id);
-            reqBody.course_description = validator.isValidString(reqBody.course_description, "course_description");
-            reqBody.created_by = validator.isValidMongoId(reqBody.created_by, "created_by");
+            reqBody.course_description = validator.isValidString(
+                reqBody.course_description,
+                "course_description"
+            
+            );
+            reqBody.created_by = validator.isValidMongoId(
+                reqBody.created_by,
+                "created_by"
+
+            );
         } catch (e) {
             return handleError(res, e);
         }
@@ -146,100 +154,123 @@ router
                 reqBody.email,
                 reqBody.is_ta
             );
-            return res.status(200).json({ message: "Student enrolled successfully!" });
+            return res
+                .status(200)
+                .json({ message: "Student enrolled successfully!" });
         } catch (e) {
             if (e.status) {
-
-                return handleError(res, e.message)
+                return handleError(res, e.message);
             }
             return handleError(res, e?.message || e);
         }
     });
-
-router.route("/:courseId")
-.get(async (req, res) => {
-    // Get a coruse by the course ID
-    let courseId = req.params.courseId;
-    try {
-        courseId = validator.isValidMongoId(courseId);
-    } catch (e) {
-        return res.status(400).send(e);
-    }
-    try {
-        const courseData = await coursesData.getCourseById(courseId);
-        return res.status(200).send(courseData);
-    } catch (e) {
-        if (e.status) {
-            return res.status(e.status).send(e.message);
+router//removing student from specific course
+    .route("/:courseId/students/:studentId") 
+    .patch(async (req,res) => {
+        let courseId = req.params.courseId;
+        let studentId = req.params.studentId;
+        // Validate IDs
+        try {
+            courseId = validator.isValidMongoId(courseId);
+            studentId = validator.isValidMongoId(studentId);
+        } catch (e) {
+            return handleError(res, e);
         }
-        return res.status(400).send(e);
-    }
-})
-.patch(async (req, res) => {
-    let courseId = req.params.courseId;
-    let courseData = req.body;
-    try {
-        courseId = validator.isValidMongoId(courseId);
-        courseData.course_name = validator.isValidCourseName(courseData.course_name);
-        courseData.course_id = validator.isValidCourseId(courseData.course_id);
-        courseData.course_description = validator.isValidString(courseData.course_description, "course_description");
-    } catch (e) {
-        return handleError(res, e);
-    }
-    try{
-        //Edge Case (Does our course exist?):
-        const preExistingCourse = await coursesData.getCourseById(courseId);
-          if (!preExistingCourse) {
-            return res.status(404).json({ message: "Course not found" });
-        }
-        const updatedCourse = await coursesData.updateCourse(
-        { _id: new ObjectId(courseId) },  
-        courseData                         
-);
-        return res.status(200).json({ 
-            message: "Course was updated!!",
-            course: updatedCourse });
-
-    }catch (e){
-         if (e.status) {
-            return res.status(e.status).send(e.message);
-        }
-        return handleError(res, e);
-    }
-})
-.delete(async (req, res) => {
-    let courseId = req.params.courseId;
-    try {
-        courseId = validator.isValidMongoId(courseId);
-    } catch (e) {
-        return handleError(res, e);
-    }
-    try{
-        const course = await coursesData.getCourseById(courseId);
-        if (!course) {
-            return res.status(404).json({ message: "Course not found" });
-        }
-        if (course.enrolled_students && course.enrolled_students.length > 0) {
-                return res.status(400).json({ 
-                    message: "ALL ENROLLED STUDENTS must be removed before deleting course"
+        try {
+            const updatedCourse = await coursesData.removeStudentFromCourse(
+                courseId,
+                studentId
+            );
+            return res.status(200).json({ 
+                message: "The student was unenrolled from the course!",
+                course: updatedCourse 
             });
-        }       
-        if (course.questions && course.questions.length > 0) {
-            return res.status(400).json({ 
-                message: "There should be no questions before deleting the course!!"
-            });
+        } catch (e) {
+            if (e.status) {
+                return handleError(res, e.message);
+            }
+            return handleError(res, e);
         }
-        const deletedCourse = await coursesData.deleteCourse(course.course_id);
-        return res.status(200).json(deletedCourse);
-    }
-    catch (e) {
-        if (e.status) {
-            return res.status(e.status).send(e.message);
+
+    });
+router
+    .route("/:courseId")
+    .get(async (req, res) => {
+        // Get a course by the Mongo ID
+        let courseId = req.params.courseId;
+        try {
+            courseId = validator.isValidMongoId(courseId);
+        } catch (e) {
+            return handleError(res, e);
         }
-        return handleError(res, e);
-    }
-}
-);
+        try {
+            const courseData = await coursesData.getCourseById(courseId);
+            return res.status(200).json(courseData);
+        } catch (e) {
+            if (e.status) {
+                return handleError(res, e.message);
+            }
+            return handleError(res, e);
+        }
+    })
+    .patch(async (req, res) => {
+        let courseId = req.params.courseId;
+        let courseData = req.body;
+        try {
+            courseId = validator.isValidMongoId(courseId);
+            courseData.course_name = validator.isValidCourseName(courseData.course_name);
+            courseData.course_id = validator.isValidCourseId(courseData.course_id);
+            courseData.course_description = validator.isValidString(courseData.course_description, "course_description");
+        } catch (e) {
+            return handleError(res, e);
+        }
+        try{
+            //Edge Case (Does our course exist?):
+            const preExistingCourse = await coursesData.getCourseById(courseId);
+            if (!preExistingCourse) {
+                return res.status(404).json({ message: "Course not found" });
+            }
+            const updatedCourse = await coursesData.updateCourse(
+            { _id: new ObjectId(courseId) },  
+            courseData                         
+        );
+            return res.status(200).json({ 
+                message: "Course was updated!!",
+                course: updatedCourse });
+
+        }catch (e){
+            if (e.status) {
+                return res.status(e.status).send(e.message);
+            }
+            return handleError(res, e);
+        }
+    })
+    .delete(async (req, res) => {
+        // Delete a course by its course_id (e.g. "CS-546")
+        let courseCode = req.params.courseId;
+        // We are sending the course mongo ID here so we need the
+        // course ID instead :(
+        const courseData = await coursesData.getCourseById(courseCode);
+        courseCode = courseData.course_id;
+        try {
+            courseCode = validator.isValidCourseId(courseCode, "course_id");
+        } catch (e) {
+            console.log(e);
+            return handleError(res, e);
+        }
+
+        try {
+            const result = await coursesData.deleteCourse(courseCode);
+            // result is { deleted: true, course_name, message }
+            return res.status(200).json(result);
+        } catch (e) {
+            // if you later change deleteCourse to throw {status, message}, this will handle it
+            if (e.status) {
+                return handleError(res, e.message);
+            }
+            return handleError(res, e);
+        }
+    });
 
 router.route("/professor/:professorId").get(async (req, res) => {
     // Get all courses taught by professor
