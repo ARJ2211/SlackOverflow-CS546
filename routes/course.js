@@ -332,4 +332,34 @@ router.route("/:courseId/ta/:studentId").patch(async (req, res) => {
     }
 });
 
+// Remove a label from a course
+router.route("/:courseId/labels/:labelId").delete(async (req, res) => {
+    let courseId = req.params.courseId;
+    let labelId = req.params.labelId;
+
+    try {
+        courseId = validator.isValidMongoId(courseId, "courseId");
+        labelId = validator.isValidMongoId(labelId, "labelId");
+    } catch (e) {
+        return handleError(res, e);
+    }
+
+    try {
+        const updatedCourse = await coursesData.removeLabelFromCourse(
+            courseId,
+            labelId
+        );
+
+        return res.status(200).json({
+            message: "Label removed from course",
+            labels: updatedCourse.labels || [],
+        });
+    } catch (e) {
+        if (e.status) {
+            return handleError(res, e.message);
+        }
+        return handleError(res, e);
+    }
+});
+
 export default router;

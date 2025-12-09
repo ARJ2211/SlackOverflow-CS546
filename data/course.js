@@ -508,3 +508,45 @@ export const toggleTaStatus = async (courseId, studentId) => {
 
     return updatedCourse;
 };
+
+export const removeLabelFromCourse = async (courseId, labelId) => {
+    const courseColl = await courses();
+
+    try {
+        courseId = validator.isValidMongoId(courseId);
+        labelId = validator.isValidMongoId(labelId);
+    } catch (e) {
+        throw { status: 400, message: e };
+    }
+
+    // Make sure course exists and label is part of it
+    const existingCourse = await courseColl.findOne({
+        _id: courseId,
+        "labels._id": labelId,
+    });
+
+    if (!existingCourse) {
+        throw {
+            status: 404,
+            message: "Course or label not found",
+        };
+    }
+
+    const updatedCourse = await courseColl.findOneAndUpdate(
+        { _id: courseId },
+        {
+            $pull: { labels: { _id: labelId } },
+            $set: { updated_at: new Date() },
+        },
+        { returnDocument: "after" }
+    );
+
+    if (!updatedCourse || updatedCourse === null) {
+        throw {
+            status: 400,
+            message: "data not updated.",
+        };
+    }
+
+    return updatedCourse;
+};

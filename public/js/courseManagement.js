@@ -1,18 +1,40 @@
 const initializeGrid = (gridDiv, courses) => {
     const columnDefs = [
-        { headerName: "Course Code", field: "course_id" },
-        { headerName: "Course Name", field: "course_name" },
-        { headerName: "Description", field: "course_description", flex: 1 },
+        {
+            headerName: "Course Code",
+            field: "course_id",
+            headerTooltip: "Short unique code for the course, e.g. CS-546.",
+        },
+        {
+            headerName: "Course Name",
+            field: "course_name",
+            headerTooltip: "Full title of the course shown to students.",
+        },
+        {
+            headerName: "Description",
+            field: "course_description",
+            flex: 1,
+            headerTooltip: "A short summary of what the course is about.",
+        },
         {
             headerName: "Labels",
             field: "labels",
             cellRenderer: labelsCellRenderer,
+            headerTooltip:
+                "Topic tags for this course. Use the + icon to add labels and click on a label to remove it.",
+            autoHeight: true,
+            cellStyle: {
+                whiteSpace: "normal",
+                paddingTop: "4px",
+                paddingBottom: "4px",
+            },
         },
         {
             headerName: "Action",
             field: "action",
             floatingFilter: false,
             cellRenderer: actionCellRenderer,
+            headerTooltip: "Edit or delete a course.",
         },
     ];
 
@@ -32,33 +54,137 @@ const initializeGrid = (gridDiv, courses) => {
         pagination: true,
         paginationPageSize: 8,
         paginationAutoPageSize: false,
+        tooltipShowDelay: 500,
+        tooltipHideDelay: 2000,
     };
 
     agGrid.createGrid(gridDiv, gridOptions);
 };
 
+// click handler for labels to delete a label
+const handleCourseLabelClick = async (courseId, labelId, labelName) => {
+    console.log("Label clicked:", {
+        courseId,
+        labelId,
+        labelName,
+    });
+
+    const confirmDelete = confirm(
+        `Are you sure you want to delete the label "${labelName}"?`
+    );
+    if (!confirmDelete) return;
+
+    try {
+        const res = await fetch(`/courses/${courseId}/labels/${labelId}`, {
+            method: "DELETE",
+        });
+
+        const body = await res.json().catch(() => ({}));
+
+        if (res.status !== 200) {
+            showToast(body.message || "Failed to delete label.", "error");
+            return;
+        }
+
+        showToast("Label removed!", "success");
+
+        // reload grid row so labels update instantly
+        setTimeout(() => window.location.reload(), 600);
+    } catch (err) {
+        console.error("Error deleting label:", err);
+        showToast("Server error. Try again.", "error");
+    }
+};
+
 const labelsCellRenderer = (params) => {
     const labels = params.value;
-
-    if (!Array.isArray(labels)) return "";
-    return `<div class=" h-full relative ">
-                ${labels
-                    .map(
-                        (label) =>
-                            `<span  class="bg-[#F0BD66] text-white px-2 py-0.5 rounded-2xl mr-4">${label.name}</span>`
-                    )
-                    .join("")}
-
-                <div title="Add Label" class="absolute  bg-white  right-0 top-0  h-full flex items-center justify-center w-8">
-                    <svg onclick="handleAddLabelModal('${params.data._id}','${
-        params.data.course_name
-    }')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class=" hover:cursor-pointer hover:text-yellow-500 size-6 text-[#F0BD66]  ">
-                    
-
-                        <path fill-rule="evenodd"  d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z" clip-rule="evenodd" />
+    if (!Array.isArray(labels) || labels.length === 0) {
+        return `
+            <div class="flex items-center justify-between h-full">
+                <span class="text-xs text-gray-400 italic">No labels</span>
+                <button
+                    title="Add Label"
+                    class="flex items-center justify-center w-7 h-7 rounded-full bg-white"
+                    onclick="handleAddLabelModal('${params.data._id}','${params.data.course_name}')"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        class="hover:cursor-pointer hover:text-yellow-500 size-5 text-[#F0BD66]"
+                    >
+                        <path
+                            fill-rule="evenodd"
+                            d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z"
+                            clip-rule="evenodd"
+                        />
                     </svg>
-                </div>
-            </div`;
+                </button>
+            </div>
+        `;
+    }
+
+    return `
+    <div class="flex items-start gap-2 h-full">
+        <div class="flex flex-wrap gap-1 max-h-16 overflow-y-auto pr-1">
+            ${labels
+                .map((label) => {
+                    const courseId = params.data._id;
+                    const labelId = label._id || "";
+                    const labelName = label.name || "";
+
+                    return `
+                        <span
+                            class="
+                                bg-[#F0BD66]
+                                text-white
+                                px-2
+                                py-0.5
+                                rounded-2xl
+                                text-xs
+                                cursor-pointer
+                                transition-colors
+                                duration-150
+                                hover:bg-red-100
+                                hover:text-red-700
+                                hover:border
+                                hover:border-red-200
+                            "
+                            onclick="handleCourseLabelClick(
+                                '${courseId}',
+                                '${labelId}',
+                                '${labelName.replace(/'/g, "\\'")}'
+                            )"
+                        >
+                            ${labelName}
+                        </span>
+                    `;
+                })
+                .join("")}
+        </div>
+
+        <button
+            title="Add Label"
+            class="shrink-0 flex items-center justify-center w-7 h-7 rounded-full bg-white"
+            onclick="handleAddLabelModal('${params.data._id}','${
+        params.data.course_name
+    }')"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="hover:cursor-pointer hover:text-yellow-500 size-5 text-[#F0BD66]"
+            >
+                <path
+                    fill-rule="evenodd"
+                    d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 9a.75.75 0 0 0-1.5 0v2.25H9a.75.75 0 0 0 0 1.5h2.25V15a.75.75 0 0 0 1.5 0v-2.25H15a.75.75 0 0 0 0-1.5h-2.25V9Z"
+                    clip-rule="evenodd"
+                />
+            </svg>
+        </button>
+    </div>
+`;
 };
 
 const actionCellRenderer = (params) => {
@@ -93,7 +219,7 @@ const actionCellRenderer = (params) => {
             `Are you sure you want to delete ${data.course_name}?`
         );
         if (!confirmDelete) return;
-        // Call your backend delete API
+
         fetch(`/courses/${data._id}`, {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
@@ -112,10 +238,7 @@ const actionCellRenderer = (params) => {
                 }
 
                 showToast("Course deleted successfully!", "success");
-
-                // Remove from grid after successful delete
                 params.api.applyTransaction({ remove: [data] });
-                // or if you prefer: window.location.reload();
             })
             .catch((err) => {
                 console.error("Delete course error:", err);
