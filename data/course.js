@@ -367,8 +367,8 @@ export const enrollStudentToCourse = async (id, email, is_ta) => {
 };
 
 /**
- * Deletes a course data
- * @param {string} id - Course ID
+ * Deletes a course from database
+ * @param {string} id - Course ID (e.g. "CS-546")
  * @returns {Object} Deletion status
  */
 export const deleteCourse = async (course_id) => {
@@ -379,14 +379,28 @@ export const deleteCourse = async (course_id) => {
     // Check if course exists
     const course = await courseColl.findOne({ course_id: course_id });
     if (!course) {
-        throw "404 course not found";
+        throw { status: 404, message: "Course not found" };
+    }
+    //I also need to see if students are still in the course
+     if (course.enrolled_students && course.enrolled_students.length > 0) {
+        throw { 
+            status: 400, 
+            message: "Course can't be deleted with existing students. Please remove the students first" 
+        };
+    }
+
+    if (course.questions && course.questions.length > 0) {
+        throw { 
+            status: 400, 
+            message: "Course can't be deleted with existing questions!" 
+        };
     }
 
     // Show deletion
     const deletionResult = await courseColl.deleteOne({ course_id: course_id });
 
     if (deletionResult.deletedCount === 0) {
-        throw "500 fail to delete course";
+        throw { status: 500, message: "Failed to delete course" };
     }
 
     return {
@@ -394,4 +408,45 @@ export const deleteCourse = async (course_id) => {
         course_name: course.course_name,
         message: `"${course.course_name}" has been successfully deleted`,
     };
+};
+
+/**
+ * Unenroll student from course's enrolled_students array
+ * @param {ObjectId} courseId - Course MongoDB ID
+ * @param {ObjectId} studentId - Student user MongoDB ID
+ * @returns {Object} Updated course document
+ */
+
+export const removeStudentFromCourse = async (courseId, studentId) => {
+    const courseColl = await courses();
+
+    // Check if course exists
+    const existingCourse = await courseColl.findOne({ _id: courseId });
+    if (!existingCourse) {
+        throw { status: 404, message: "Course NOT found" };
+    }
+
+    //enrolled?
+    const isEnrolled = existingCourse.enrolled_students.some(
+        student => student.user_id.toString() === studentId.toString()
+    );
+    
+    if (!isEnrolled) {
+        throw { status: 404, message: "Student is NOT enrolled in this course" };
+    }
+
+    const updatedCourse = await courseColl.findOneAndUpdate(
+        { _id: courseId },
+        {
+            $pull: {
+                enrolled_students: { user_id: studentId }
+            }
+        },
+        { returnDocument: "after" }
+    );
+
+    if (!updatedCourse || updatedCourse === null) {
+        throw { status: 400, message: "Student couldn't be removed from course" };
+    }
+    return updatedCourse;
 };

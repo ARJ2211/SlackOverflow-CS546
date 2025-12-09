@@ -3,6 +3,7 @@ import { getUserById } from "../data/users.js";
 import * as validator from "../utils/validator.js";
 import { handleError } from "../utils/helperFunctions.js";
 import { Router } from "express";
+import { ObjectId } from "mongodb";
 
 const router = Router();
 
@@ -24,10 +25,12 @@ router
             reqBody.course_description = validator.isValidString(
                 reqBody.course_description,
                 "course_description"
+            
             );
             reqBody.created_by = validator.isValidMongoId(
                 reqBody.created_by,
                 "created_by"
+
             );
         } catch (e) {
             return handleError(res, e);
@@ -161,7 +164,35 @@ router
             return handleError(res, e?.message || e);
         }
     });
+router//removing student from specific course
+    .route("/:courseId/students/:studentId") 
+    .patch(async (req,res) => {
+        let courseId = req.params.courseId;
+        let studentId = req.params.studentId;
+        // Validate IDs
+        try {
+            courseId = validator.isValidMongoId(courseId);
+            studentId = validator.isValidMongoId(studentId);
+        } catch (e) {
+            return handleError(res, e);
+        }
+        try {
+            const updatedCourse = await coursesData.removeStudentFromCourse(
+                courseId,
+                studentId
+            );
+            return res.status(200).json({ 
+                message: "The student was unenrolled from the course!",
+                course: updatedCourse 
+            });
+        } catch (e) {
+            if (e.status) {
+                return handleError(res, e.message);
+            }
+            return handleError(res, e);
+        }
 
+    });
 router
     .route("/:courseId")
     .get(async (req, res) => {
@@ -178,6 +209,38 @@ router
         } catch (e) {
             if (e.status) {
                 return handleError(res, e.message);
+            }
+            return handleError(res, e);
+        }
+    })
+    .patch(async (req, res) => {
+        let courseId = req.params.courseId;
+        let courseData = req.body;
+        try {
+            courseId = validator.isValidMongoId(courseId);
+            courseData.course_name = validator.isValidCourseName(courseData.course_name);
+            courseData.course_id = validator.isValidCourseId(courseData.course_id);
+            courseData.course_description = validator.isValidString(courseData.course_description, "course_description");
+        } catch (e) {
+            return handleError(res, e);
+        }
+        try{
+            //Edge Case (Does our course exist?):
+            const preExistingCourse = await coursesData.getCourseById(courseId);
+            if (!preExistingCourse) {
+                return res.status(404).json({ message: "Course not found" });
+            }
+            const updatedCourse = await coursesData.updateCourse(
+            { _id: new ObjectId(courseId) },  
+            courseData                         
+        );
+            return res.status(200).json({ 
+                message: "Course was updated!!",
+                course: updatedCourse });
+
+        }catch (e){
+            if (e.status) {
+                return res.status(e.status).send(e.message);
             }
             return handleError(res, e);
         }
