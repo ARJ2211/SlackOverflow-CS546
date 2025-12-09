@@ -136,6 +136,8 @@ const labelsCellRenderer = (params) => {
                     return `
                         <span
                             class="
+                                inline-flex
+                                items-center
                                 bg-[#F0BD66]
                                 text-white
                                 px-2
@@ -150,13 +152,26 @@ const labelsCellRenderer = (params) => {
                                 hover:border
                                 hover:border-red-200
                             "
+                            title="Click to remove label"
                             onclick="handleCourseLabelClick(
                                 '${courseId}',
                                 '${labelId}',
                                 '${labelName.replace(/'/g, "\\'")}'
                             )"
                         >
-                            ${labelName}
+                            <span class="mr-1">${labelName}</span>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                                class="w-3 h-3 pointer-events-none"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM8.28 7.22a.75.75 0 0 0-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 1 0 1.06 1.06L10 11.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L11.06 10l1.72-1.72a.75.75 0 0 0-1.06-1.06L10 8.94 8.28 7.22Z"
+                                    clip-rule="evenodd"
+                                />
+                            </svg>
                         </span>
                     `;
                 })
