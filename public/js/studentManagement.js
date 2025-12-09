@@ -1,3 +1,15 @@
+const gridDiv = document.querySelector("#studentManagementGrid");
+const studentsData = JSON.parse(gridDiv.getAttribute("data-students") || "[]");
+const coursesData = JSON.parse(gridDiv.getAttribute("data-courses") || "[]");
+
+// build a map: course_code -> course _id
+const courseCodeToId = {};
+coursesData.forEach((c) => {
+    if (c.course_id && c._id) {
+        courseCodeToId[c.course_id] = c._id;
+    }
+});
+
 const initializeGrid = (gridDiv, students) => {
     console.log(students);
     const columnDefs = [
@@ -7,8 +19,10 @@ const initializeGrid = (gridDiv, students) => {
 
         { headerName: "Course Code", field: "course_code" },
         { headerName: "Course Name", field: "course_name" },
+
+        // renamed column so intent is clear
         {
-            headerName: "Role",
+            headerName: "Toggle TA",
             field: "is_ta",
             cellRenderer: roleCellRenderer,
         },
@@ -55,31 +69,29 @@ const statusCellRenderer = (params) => {
     }
 };
 
-// build a map: course_code -> course _id
-const gridDiv = document.querySelector("#studentManagementGrid");
-const studentsData = JSON.parse(gridDiv.getAttribute("data-students") || "[]");
-const coursesData = JSON.parse(gridDiv.getAttribute("data-courses") || "[]");
-
-const courseCodeToId = {};
-coursesData.forEach((c) => {
-    if (c.course_id && c._id) {
-        courseCodeToId[c.course_id] = c._id;
-    }
-});
-
+// CLICKABLE ROLE BUTTON, MUCH HIGHER CONTRAST
 const roleCellRenderer = (params) => {
     const data = params.data;
     const isTa = !!data.is_ta;
 
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className =
-        "px-3 py-1 rounded-2xl text-xs font-medium " +
-        (isTa
-            ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/40"
-            : "bg-slate-500/10 text-slate-200 border border-slate-500/40");
+    btn.title = "Click to toggle between Student and TA";
 
-    btn.textContent = isTa ? "Teaching Assistant" : "Student";
+    // loud, obvious button styles
+    if (isTa) {
+        btn.className =
+            "inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold " +
+            "bg-emerald-600 text-white border border-emerald-600 " +
+            "hover:bg-emerald-500 hover:border-emerald-500 cursor-pointer transition";
+        btn.textContent = "Teaching Assistant ";
+    } else {
+        btn.className =
+            "inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold " +
+            "bg-[#F0BD66] text-black border border-[#F0BD66] " +
+            "hover:bg-[#f7c878] hover:border-[#f7c878] cursor-pointer transition";
+        btn.textContent = "Student";
+    }
 
     btn.addEventListener("click", () => {
         const courseId = courseCodeToId[data.course_code];
@@ -95,7 +107,6 @@ const roleCellRenderer = (params) => {
             return;
         }
 
-        // Optional: disable while request is in flight
         btn.disabled = true;
 
         fetch(`/courses/${courseId}/ta/${studentId}`, {
@@ -117,16 +128,22 @@ const roleCellRenderer = (params) => {
                 }
 
                 const newIsTa = !!body.is_ta;
-                // update row data
                 data.is_ta = newIsTa;
 
-                // update button appearance
-                btn.className =
-                    "px-3 py-1 rounded-2xl text-xs font-medium " +
-                    (newIsTa
-                        ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/40"
-                        : "bg-slate-500/10 text-slate-200 border border-slate-500/40");
-                btn.textContent = newIsTa ? "Teaching Assistant" : "Student";
+                // update button look + text
+                if (newIsTa) {
+                    btn.className =
+                        "inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold " +
+                        "bg-emerald-600 text-white border border-emerald-600 " +
+                        "hover:bg-emerald-500 hover:border-emerald-500 cursor-pointer transition";
+                    btn.textContent = "Teaching Assistant";
+                } else {
+                    btn.className =
+                        "inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-semibold " +
+                        "bg-[#F0BD66] text-black border border-[#F0BD66] " +
+                        "hover:bg-[#f7c878] hover:border-[#f7c878] cursor-pointer transition";
+                    btn.textContent = "Student";
+                }
 
                 showToast(
                     newIsTa
@@ -150,21 +167,6 @@ const roleCellRenderer = (params) => {
 const actionCellRenderer = (params) => {
     const container = document.createElement("div");
     container.className = "flex items-center justify-center h-full gap-2";
-
-    const editBtn = document.createElement("div");
-    editBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="text-[#f0bd66] size-5 hover:cursor-pointer hover:text-[#e3aa4e] transition">
-            <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
-            <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
-        </svg>
-    `;
-
-    editBtn.addEventListener("click", () => {
-        const data = params.data;
-        console.log("Edit clicked for", data);
-        alert(`Edit ${data.email}`);
-        // your edit logic here
-    });
 
     const deleteBtn = document.createElement("div");
     deleteBtn.innerHTML = `
@@ -212,8 +214,6 @@ const actionCellRenderer = (params) => {
                 }
 
                 showToast("Student removed from course.", "success");
-
-                // remove row from grid on success
                 params.api.applyTransaction({ remove: [data] });
             })
             .catch((err) => {
@@ -222,10 +222,7 @@ const actionCellRenderer = (params) => {
             });
     });
 
-    // if you want edit later, keep this line
-    // container.appendChild(editBtn);
     container.appendChild(deleteBtn);
-
     return container;
 };
 
