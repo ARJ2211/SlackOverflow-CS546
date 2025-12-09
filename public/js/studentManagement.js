@@ -7,7 +7,11 @@ const initializeGrid = (gridDiv, students) => {
 
         { headerName: "Course Code", field: "course_code" },
         { headerName: "Course Name", field: "course_name" },
-        { headerName: "Role", field: "is_ta", editable: true },
+        {
+            headerName: "Role",
+            field: "is_ta",
+            cellRenderer: roleCellRenderer,
+        },
 
         {
             headerName: "Status",
@@ -62,6 +66,86 @@ coursesData.forEach((c) => {
         courseCodeToId[c.course_id] = c._id;
     }
 });
+
+const roleCellRenderer = (params) => {
+    const data = params.data;
+    const isTa = !!data.is_ta;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className =
+        "px-3 py-1 rounded-2xl text-xs font-medium " +
+        (isTa
+            ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/40"
+            : "bg-slate-500/10 text-slate-200 border border-slate-500/40");
+
+    btn.textContent = isTa ? "Teaching Assistant" : "Student";
+
+    btn.addEventListener("click", () => {
+        const courseId = courseCodeToId[data.course_code];
+        const studentId = data._id;
+
+        if (!courseId || !studentId) {
+            console.error("Missing courseId or studentId for TA toggle", {
+                courseId,
+                studentId,
+                data,
+            });
+            showToast("Could not resolve course or student id.", "error");
+            return;
+        }
+
+        // Optional: disable while request is in flight
+        btn.disabled = true;
+
+        fetch(`/courses/${courseId}/ta/${studentId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+        })
+            .then(async (res) => {
+                const body = await res.json().catch(() => ({}));
+                return { status: res.status, body };
+            })
+            .then(({ status, body }) => {
+                if (status !== 200) {
+                    showToast(
+                        body.message || "Failed to toggle TA status.",
+                        "error"
+                    );
+                    btn.disabled = false;
+                    return;
+                }
+
+                const newIsTa = !!body.is_ta;
+                // update row data
+                data.is_ta = newIsTa;
+
+                // update button appearance
+                btn.className =
+                    "px-3 py-1 rounded-2xl text-xs font-medium " +
+                    (newIsTa
+                        ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/40"
+                        : "bg-slate-500/10 text-slate-200 border border-slate-500/40");
+                btn.textContent = newIsTa ? "Teaching Assistant" : "Student";
+
+                showToast(
+                    newIsTa
+                        ? "Student is now a Teaching Assistant."
+                        : "Student is now a regular student.",
+                    "success"
+                );
+
+                btn.disabled = false;
+            })
+            .catch((err) => {
+                console.error("Toggle TA error:", err);
+                showToast("Server error. Please try again.", "error");
+                btn.disabled = false;
+            });
+    });
+
+    return btn;
+};
 
 const actionCellRenderer = (params) => {
     const container = document.createElement("div");

@@ -293,4 +293,43 @@ router.route("/professor/:professorId").get(async (req, res) => {
     return res.status(200).json(professorCourses);
 });
 
+// Toggle between student and TA
+router.route("/:courseId/ta/:studentId").patch(async (req, res) => {
+    let courseId = req.params.courseId;
+    let studentId = req.params.studentId;
+
+    try {
+        courseId = validator.isValidMongoId(courseId, "courseId");
+        studentId = validator.isValidMongoId(studentId, "studentId");
+    } catch (e) {
+        return res.status(400).json({ message: e });
+    }
+
+    try {
+        const updatedCourse = await coursesData.toggleTaStatus(
+            courseId,
+            studentId
+        );
+
+        // find the student in the updated course to get the current is_ta
+        const student = updatedCourse.enrolled_students.find(
+            (s) => s.user_id.toString() === studentId.toString()
+        );
+
+        if (!student) {
+            return res
+                .status(500)
+                .json({ message: "Student not found after update" });
+        }
+
+        return res.status(200).json({ is_ta: student.is_ta });
+    } catch (e) {
+        if (e.status) {
+            return res.status(e.status).json({ message: e.message });
+        }
+        console.error("toggleTaStatus error:", e);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+});
+
 export default router;

@@ -456,3 +456,55 @@ export const removeStudentFromCourse = async (courseId, studentId) => {
     }
     return updatedCourse;
 };
+
+/**
+ * Toggle TA status of a student inside a course
+ * @param {ObjectId} courseId - Course MongoDB ID
+ * @param {ObjectId} studentId - Student user MongoDB ID
+ * @returns {Object} Updated course document
+ */
+export const toggleTaStatus = async (courseId, studentId) => {
+    const courseColl = await courses();
+
+    // Check if course exists
+    const course = await courseColl.findOne({ _id: courseId });
+    if (!course) {
+        throw { status: 404, message: "Course NOT found" };
+    }
+
+    // Find the student inside enrolled_students
+    const idx = course.enrolled_students.findIndex(
+        (s) => s.user_id.toString() === studentId.toString()
+    );
+
+    if (idx === -1) {
+        throw {
+            status: 404,
+            message: "Student NOT enrolled in this course",
+        };
+    }
+
+    // Flip the is_ta value
+    const current = course.enrolled_students[idx].is_ta;
+    const newValue = !current;
+
+    // Update the DB
+    const updatedCourse = await courseColl.findOneAndUpdate(
+        { _id: courseId, "enrolled_students.user_id": studentId },
+        {
+            $set: {
+                "enrolled_students.$.is_ta": newValue,
+            },
+        },
+        { returnDocument: "after" }
+    );
+
+    if (!updatedCourse) {
+        throw {
+            status: 400,
+            message: "Failed to update TA status",
+        };
+    }
+
+    return updatedCourse;
+};
