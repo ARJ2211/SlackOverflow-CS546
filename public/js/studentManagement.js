@@ -51,9 +51,21 @@ const statusCellRenderer = (params) => {
     }
 };
 
+// build a map: course_code -> course _id
+const gridDiv = document.querySelector("#studentManagementGrid");
+const studentsData = JSON.parse(gridDiv.getAttribute("data-students") || "[]");
+const coursesData = JSON.parse(gridDiv.getAttribute("data-courses") || "[]");
+
+const courseCodeToId = {};
+coursesData.forEach((c) => {
+    if (c.course_id && c._id) {
+        courseCodeToId[c.course_id] = c._id;
+    }
+});
+
 const actionCellRenderer = (params) => {
     const container = document.createElement("div");
-    container.className = "flex items-center justify-center bg- h-full gap-2";
+    container.className = "flex items-center justify-center h-full gap-2";
 
     const editBtn = document.createElement("div");
     editBtn.innerHTML = `
@@ -66,27 +78,67 @@ const actionCellRenderer = (params) => {
     editBtn.addEventListener("click", () => {
         const data = params.data;
         console.log("Edit clicked for", data);
-        alert(`Edit ${data.course_name}`);
-        // Your edit logic here
+        alert(`Edit ${data.email}`);
+        // your edit logic here
     });
 
     const deleteBtn = document.createElement("div");
     deleteBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="text-[#f0bd66] size-5 hover:cursor-pointer hover:text-red-500 transition'">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="text-[#f0bd66] size-5 hover:cursor-pointer hover:text-red-500 transition">
             <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd"/>
         </svg>
     `;
 
     deleteBtn.addEventListener("click", () => {
         const data = params.data;
+
         const confirmDelete = confirm(
-            `Are you sure you want to delete ${data.course_name}?`
+            `Are you sure you want to remove ${data.email} from ${data.course_code}?`
         );
-        if (confirmDelete) {
-            params.api.applyTransaction({ remove: [data] });
+        if (!confirmDelete) return;
+
+        const courseId = courseCodeToId[data.course_code];
+        const studentId = data._id;
+
+        if (!courseId || !studentId) {
+            console.error("Missing courseId or studentId", {
+                courseId,
+                studentId,
+                data,
+            });
+            showToast("Could not resolve course or student id.", "error");
+            return;
         }
+
+        fetch(`/courses/${courseId}/students/${studentId}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+        })
+            .then(async (res) => {
+                const body = await res.json().catch(() => ({}));
+                return { status: res.status, body };
+            })
+            .then(({ status, body }) => {
+                if (status !== 200) {
+                    showToast(
+                        body.message || "Failed to remove student from course.",
+                        "error"
+                    );
+                    return;
+                }
+
+                showToast("Student removed from course.", "success");
+
+                // remove row from grid on success
+                params.api.applyTransaction({ remove: [data] });
+            })
+            .catch((err) => {
+                console.error("Delete student error:", err);
+                showToast("Server error. Please try again.", "error");
+            });
     });
 
+    // if you want edit later, keep this line
     // container.appendChild(editBtn);
     container.appendChild(deleteBtn);
 
@@ -109,7 +161,6 @@ const handleSaveStudent = (event) => {
 
     const email = event.target.email.value.trim();
     const is_ta = event.target.is_ta.value.trim() === "true";
-
     const courseUuid = event.target.courseUuid.value.trim();
 
     const button = event.target.querySelector("button[type='submit']");
@@ -151,6 +202,4 @@ const handleSaveStudent = (event) => {
     return false;
 };
 
-const gridDiv = document.querySelector("#studentManagementGrid");
-const studentsData = JSON.parse(gridDiv.getAttribute("data-students") || "[]");
 initializeGrid(gridDiv, studentsData);

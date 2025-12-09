@@ -10,7 +10,6 @@ import {
     noCacheAuth,
 } from "../middleware/auth.js";
 import { static as staticDir } from "express";
-import path from "path";
 
 const constructorMethod = (app) => {
     app.use("/users", usersRoutes);

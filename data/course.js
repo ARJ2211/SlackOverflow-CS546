@@ -382,17 +382,18 @@ export const deleteCourse = async (course_id) => {
         throw { status: 404, message: "Course not found" };
     }
     //I also need to see if students are still in the course
-     if (course.enrolled_students && course.enrolled_students.length > 0) {
-        throw { 
-            status: 400, 
-            message: "Course can't be deleted with existing students. Please remove the students first" 
+    if (course.enrolled_students && course.enrolled_students.length > 0) {
+        throw {
+            status: 400,
+            message:
+                "Course can't be deleted with existing students. Please remove the students first",
         };
     }
 
     if (course.questions && course.questions.length > 0) {
-        throw { 
-            status: 400, 
-            message: "Course can't be deleted with existing questions!" 
+        throw {
+            status: 400,
+            message: "Course can't be deleted with existing questions!",
         };
     }
 
@@ -416,7 +417,6 @@ export const deleteCourse = async (course_id) => {
  * @param {ObjectId} studentId - Student user MongoDB ID
  * @returns {Object} Updated course document
  */
-
 export const removeStudentFromCourse = async (courseId, studentId) => {
     const courseColl = await courses();
 
@@ -428,25 +428,31 @@ export const removeStudentFromCourse = async (courseId, studentId) => {
 
     //enrolled?
     const isEnrolled = existingCourse.enrolled_students.some(
-        student => student.user_id.toString() === studentId.toString()
+        (student) => student.user_id.toString() === studentId.toString()
     );
-    
+
     if (!isEnrolled) {
-        throw { status: 404, message: "Student is NOT enrolled in this course" };
+        throw {
+            status: 404,
+            message: "Student is NOT enrolled in this course",
+        };
     }
 
     const updatedCourse = await courseColl.findOneAndUpdate(
         { _id: courseId },
         {
             $pull: {
-                enrolled_students: { user_id: studentId }
-            }
+                enrolled_students: { user_id: studentId },
+            },
         },
         { returnDocument: "after" }
     );
 
     if (!updatedCourse || updatedCourse === null) {
-        throw { status: 400, message: "Student couldn't be removed from course" };
+        throw {
+            status: 400,
+            message: "Student couldn't be removed from course",
+        };
     }
     return updatedCourse;
 };
