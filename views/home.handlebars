@@ -42,9 +42,17 @@
             </div>
 
             <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 leading-tight tracking-tight">
-              One place for all your<br class="hidden md:block">
-              course questions.
-            </h1>
+  One place for all your 
+  <span class="relative inline-block">
+    <span class="px-2 py-1 bg-gradient-to-r from-[#F0BD66] to-[#FBBF24] text-transparent bg-clip-text">
+      AI powered
+    </span>
+    <span class="absolute inset-0 -z-10 blur-xl bg-[#F0BD66]/30 rounded-lg"></span>
+  </span>
+  <br class="hidden md:block">
+  course questions.
+</h1>
+
 
             <p class="text-gray-600 text-lg md:text-xl max-w-2xl leading-relaxed">
               SlackOverflow is a centralized Q&A board for each course where students ask focused questions,
@@ -469,21 +477,39 @@
 
     <!-- FOOTER -->
     <footer class="bg-white border-t border-gray-200">
-      <div class="max-w-7xl mx-auto px-6 lg:px-8 py-12">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div class="flex items-center gap-3">
-            <div class="h-8 w-8 rounded-xl bg-[#F0BD66] flex items-center justify-center text-white text-sm font-semibold">
-              S
-            </div>
-            <span class="text-sm text-gray-600">© 2024 SlackOverflow. All rights reserved.</span>
-          </div>
-          <div class="flex gap-6 text-sm text-gray-600">
-            <a href="#" class="hover:text-gray-900 transition-colors">Privacy</a>
-            <a href="#" class="hover:text-gray-900 transition-colors">Terms</a>
-            <a href="#" class="hover:text-gray-900 transition-colors">Contact</a>
-          </div>
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-xl bg-[#F0BD66] flex items-center justify-center text-white text-sm font-semibold">
+          S
         </div>
+        <span class="text-sm text-gray-600">© 2024 SlackOverflow. All rights reserved.</span>
       </div>
-    </footer>
+      <div class="flex gap-6 text-sm text-gray-600">
+        <a href="https://github.com/ARJ2211/SlackOverflow-CS546"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 hover:text-gray-900 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg"
+               viewBox="0 0 24 24"
+               fill="currentColor"
+               class="w-5 h-5">
+            <path fill-rule="evenodd"
+                  d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483
+                     0-.237-.009-.866-.013-1.7-2.782.605-3.369-1.342-3.369-1.342-.454-1.157-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608
+                     1.004.071 1.532 1.032 1.532 1.032.892 1.53 2.341 1.088 2.91.833.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951
+                     0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844
+                     c.85.004 1.705.115 2.504.337 1.909-1.296 2.748-1.026 2.748-1.026.546 1.378.202 2.397.1 2.65.64.7 1.028 1.595 1.028 2.688
+                     0 3.848-2.339 4.695-4.566 4.943.359.31.678.923.678 1.861 0 1.343-.012 2.425-.012 2.754
+                     0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.523 2 12 2Z"
+                  clip-rule="evenodd" />
+          </svg>
+          <span>View on GitHub</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
 
   </div>

@@ -86,11 +86,21 @@ const initializeGrid = (gridDiv, students) => {
 };
 
 const statusCellRenderer = (params) => {
-    if (params.value == "inactive") {
-        return `<div class="text-red-600">${params.value}</div>`;
-    } else {
-        return `<div class="text-green-600">${params.value}</div>`;
-    }
+    const isInactive = params.value === "inactive";
+
+    const base =
+        "px-2 py-0.5 rounded-full text-xs font-medium capitalize inline-block";
+
+    return `
+        <span class="${
+            isInactive
+                ? base + " bg-red-500/10 text-red-400 border border-red-500/30"
+                : base +
+                  " bg-emerald-500/10 text-emerald-300 border border-emerald-500/30"
+        }">
+            ${params.value}
+        </span>
+    `;
 };
 
 // CLICKABLE ROLE BUTTON, MUCH HIGHER CONTRAST
