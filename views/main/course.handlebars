@@ -20,11 +20,8 @@
         </div>
 
         <div class="flex gap-2">
-            <button
-                onclick="handleFilterDropdown(event)"
-                id="openFilter"
-                class="bg-[#F0BD66] text-white flex items-center font-medium px-5 py-2 rounded-3xl hover:bg-[#e3aa4e] transition"
-            >
+            <button onclick="handleFilterDropdown(event)" id="openFilter"
+                class="bg-[#F0BD66] text-white flex items-center font-medium px-5 py-2 rounded-3xl hover:bg-[#e3aa4e] transition">
                 <span>Filters</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                     class="size-5 pointer-events-none ml-2">
@@ -38,7 +35,7 @@
 
     <!-- Page Content -->
     <div id="courseContainer" data-course-id='{{{selectedCourse}}}'
-    class="flex-1 flex flex-col overflow-y-auto h-full mb-1 pb-8 w-full gap-3 pt-2">
+        class="flex-1 flex flex-col overflow-y-auto h-full mb-1 pb-8 w-full gap-3 pt-2">
 
         {{#if questions.length}}
         {{#each questions}}
@@ -193,7 +190,7 @@
 
             <!-- Bigger editor box -->
             <div id="questionEditor"
-                class="pt-2 px-3 rounded-t-2xl resize-none focus:outline-none min-h-[150px] max-h-[320px] overflow-y-auto text-sm">
+                class="pt-2  rounded-t-2xl resize-none focus:outline-none min-h-[150px] max-h-[320px] overflow-y-auto text-sm">
             </div>
 
             <div id="questionResizeHandle"
@@ -290,8 +287,8 @@
                     <button type="submit"
                         class="flex justify-center items-center p-0.5 gap-2 px-3 py-1.5 rounded-full text-white bg-[#F0BD66] hover:bg-[#F0AC66] text-sm">
                         <span>Ask question</span>
-                        <svg class="shrink-0 size-3.5 pointer-events-none" xmlns="http://www.w3.org/2000/svg"
-                            width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <svg class="shrink-0 size-3.5 pointer-events-none" xmlns="http://www.w3.org/2000/svg" width="16"
+                            height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path
                                 d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z" />
                         </svg>
@@ -322,8 +319,7 @@
                 <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
                     <span>Labels</span>
                     <span class="text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                            class="size-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
                             <path fill-rule="evenodd"
                                 d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
                                 clip-rule="evenodd" />
@@ -345,8 +341,7 @@
                 <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
                     <span>Asked by</span>
                     <span class="text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                            class="size-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
                             <path fill-rule="evenodd"
                                 d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
                                 clip-rule="evenodd" />
@@ -362,8 +357,7 @@
                 <div class="text-sm font-medium text-gray-800 flex justify-between items-center">
                     <span>Status</span>
                     <span class="text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                            class="size-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="size-5">
                             <path fill-rule="evenodd"
                                 d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
                                 clip-rule="evenodd" />
