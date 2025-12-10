@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { courses, users } from "../config/mongoCollections.js";
+import { courses, users, questions } from "../config/mongoCollections.js";
 import randomName from "@scaleway/random-name";
 import { createUser, sendSaveOTP, getUserById } from "./users.js";
 import * as validator from "../utils/validator.js";
@@ -511,18 +511,22 @@ export const toggleTaStatus = async (courseId, studentId) => {
 
 export const removeLabelFromCourse = async (courseId, labelId) => {
     const courseColl = await courses();
+    const questionsColl = await questions();
+
+    let courseObjectId;
+    let labelObjectId;
 
     try {
-        courseId = validator.isValidMongoId(courseId);
-        labelId = validator.isValidMongoId(labelId);
+        courseObjectId = validator.isValidMongoId(courseId);
+        labelObjectId = validator.isValidMongoId(labelId);
     } catch (e) {
         throw { status: 400, message: e };
     }
 
-    // Make sure course exists and label is part of it
+    // 0. Make sure course exists and has this label at all
     const existingCourse = await courseColl.findOne({
-        _id: courseId,
-        "labels._id": labelId,
+        _id: courseObjectId,
+        "labels._id": labelObjectId,
     });
 
     if (!existingCourse) {
@@ -532,10 +536,50 @@ export const removeLabelFromCourse = async (courseId, labelId) => {
         };
     }
 
+    // 1. Find all questions within that course
+    const allQuestions = await questionsColl
+        .find({ course: courseObjectId })
+        .project({ question: 1, labels: 1 })
+        .toArray();
+
+    // 2–3. Iterate, check labels and collect blocking questions
+    const blockingQuestions = [];
+    let totalUsing = 0;
+
+    for (const q of allQuestions) {
+        if (!Array.isArray(q.labels) || q.labels.length === 0) continue;
+
+        // does this question use the label at all?
+        const usesLabel = q.labels.some(
+            (id) => id.toString() === labelObjectId.toString()
+        );
+        if (!usesLabel) continue;
+
+        totalUsing++;
+
+        // is it the ONLY label on this question?
+        if (q.labels.length === 1) {
+            blockingQuestions.push(q);
+        }
+    }
+
+    if (blockingQuestions.length > 0) {
+        const example = blockingQuestions[0]?.question || "";
+        throw {
+            status: 400,
+            message:
+                `Cannot remove this label. It is the only label on ` +
+                `${blockingQuestions.length} question(s), and is used on ` +
+                `${totalUsing} question(s) in this course.` +
+                (example ? ` Example: "${example}"` : ""),
+        };
+    }
+
+    // Safe to remove the label from the course
     const updatedCourse = await courseColl.findOneAndUpdate(
-        { _id: courseId },
+        { _id: courseObjectId },
         {
-            $pull: { labels: { _id: labelId } },
+            $pull: { labels: { _id: labelObjectId } },
             $set: { updated_at: new Date() },
         },
         { returnDocument: "after" }
