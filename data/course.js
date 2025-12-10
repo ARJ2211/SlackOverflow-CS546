@@ -509,6 +509,14 @@ export const toggleTaStatus = async (courseId, studentId) => {
     return updatedCourse;
 };
 
+/**
+ * Used for removing a label from a course
+ * this will not allow it to remove if this
+ * is the only label on some quietsion in that course
+ * @param {ObjectId} courseId
+ * @param {ObjectId} labelId
+ * @returns
+ */
 export const removeLabelFromCourse = async (courseId, labelId) => {
     const courseColl = await courses();
     const questionsColl = await questions();
@@ -575,7 +583,18 @@ export const removeLabelFromCourse = async (courseId, labelId) => {
         };
     }
 
-    // Safe to remove the label from the course
+    // 4. Safe to remove: first pull the label from all questions in this course
+    await questionsColl.updateMany(
+        {
+            course: courseObjectId,
+            labels: labelObjectId,
+        },
+        {
+            $pull: { labels: labelObjectId },
+        }
+    );
+
+    // 5. Then remove the label from the course itself
     const updatedCourse = await courseColl.findOneAndUpdate(
         { _id: courseObjectId },
         {

@@ -273,38 +273,31 @@ const setFilterFormData = () => {
 const handleQuillSetup = () => {
     quill = new Quill("#questionEditor", {
         theme: "snow",
-        modules: {
-            toolbar: "#toolbar",
-        },
+        modules: { toolbar: "#toolbar" },
         placeholder: "Type your question here...",
     });
 
     const wrapper = document.getElementById("questionEditor");
-    if (wrapper) {
-        // smaller default height
-        wrapper.style.height = "120px";
-    }
+    if (!wrapper) return;
 
-    // make inner editor scroll instead of growing forever
-    const editorEl = wrapper?.querySelector(".ql-editor");
+    wrapper.style.height = "60px";
+
+    const editorEl = wrapper.querySelector(".ql-editor");
     if (editorEl) {
         editorEl.style.height = "100%";
         editorEl.style.maxHeight = "100%";
         editorEl.style.overflowY = "auto";
-        editorEl.style.paddingTop = "8px";
-        editorEl.style.paddingBottom = "8px";
     }
 
-    // resize handle logic (drag down = bigger, drag up = smaller)
     const handle = document.getElementById("questionResizeHandle");
-    if (!handle || !wrapper) return;
+    if (!handle) return;
 
-    handle.style.display = "block"; // make sure it shows
     handle.style.cursor = "ns-resize";
 
     let startY = 0;
     let startHeight = 0;
-    const MIN_HEIGHT = 120; // don't let it collapse
+    const MIN_HEIGHT = 60;
+    const MAX_HEIGHT = 320; // optional cap
 
     handle.onmousedown = (e) => {
         e.preventDefault();
@@ -312,9 +305,12 @@ const handleQuillSetup = () => {
         startHeight = wrapper.offsetHeight;
 
         document.onmousemove = (moveEvent) => {
-            // drag UP -> increase height, drag DOWN -> decrease height
-            const delta = startY - moveEvent.clientY;
-            const newHeight = Math.max(MIN_HEIGHT, startHeight + delta);
+            const delta = startY - moveEvent.clientY; // drag up -> bigger, down -> smaller
+            let newHeight = startHeight + delta;
+
+            if (newHeight < MIN_HEIGHT) newHeight = MIN_HEIGHT;
+            if (newHeight > MAX_HEIGHT) newHeight = MAX_HEIGHT;
+
             wrapper.style.height = newHeight + "px";
 
             if (editorEl) {
