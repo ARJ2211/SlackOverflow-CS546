@@ -197,4 +197,77 @@ router.route("/verify-otp").post(async (req, res) => {
     }
 });
 
+router.route("/students/:id").patch(async(req,res) => {
+    let studentId = req.params.id;
+    let reqBody = req.body;
+    try {
+        studentId = validator.isValidMongoId(studentId);
+        if (reqBody.role){
+            reqBody.role = validator.isValidString(reqBody.role);
+            if (reqBody.role !== 'student' && reqBody.role !== 'ta') {
+                throw new Error("the role MUST be eithr a student OR ta");
+            }
+        }
+
+        if (reqBody.status){
+            reqBody.status = validator.isValidString(reqBody.status);
+            if (reqBody.status !== 'active' && reqBody.status !== 'inactive'){
+                throw new Error("the status MUST be either active OR inactive")
+            }
+        }
+        if (!reqBody.role && !reqBody.status) {
+                throw new Error("Must be values used to update all of the fields")    
+        }
+    }
+    catch(e){
+        console.log(e);
+        return handleError(res, e);
+    }
+    try{
+        //filter & obj are params of updateUser();
+        const filter = { _id: studentId };
+        const obj = {};
+        if (reqBody.role){ 
+            obj.role = reqBody.role;}
+        if (reqBody.status) {
+            obj.status = reqBody.status;
+        }
+        const updatedUser = await usersData.updateUser(filter, obj);
+        return res.status(200).json({ 
+            message: "Updated the student successfully!!"
+        });
+    }
+    catch (e) {
+        if (e.status) {
+            return handleError(res, e.message);
+        }
+        return handleError(res, e);
+    }
+
+});
+
+router.route("/students/:id").delete(async (req, res) => {
+     let studentId = req.params.id;
+    let reqBody = req.body;
+    try {
+        studentId = validator.isValidMongoId(studentId);
+    }
+    catch(e){
+        console.log(e);
+        return handleError(res, e);
+    }
+      try {
+        await usersData.deleteUser(studentId);
+        
+        return res.status(200).json({ 
+            message: "Student was deleted!"
+        });
+    } catch (e) {
+        return handleError(res, e);
+    }
+});
+
+
+
 export default router;
+
