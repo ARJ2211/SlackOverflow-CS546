@@ -125,18 +125,16 @@ const renderAllAnalytics = (payload) => {
             const tr = document.createElement("tr");
             tr.className = "hover:bg-gray-50";
             tr.innerHTML = `
-                <td class="py-2.5 px-4">
-                    <div class="flex flex-col">
-                        <span class="text-xs font-medium text-gray-900">${ta.name}</span>
-                        <span class="text-[11px] text-gray-500">${ta.email}</span>
-                    </div>
-                </td>
-                <td class="py-2.5 px-4 text-xs">${ta.courseCount}</td>
-                <td class="py-2.5 px-4 text-xs">${ta.answeredCount}</td>
-                <td class="py-2.5 px-4 text-xs">${ta.unansweredQueue}</td>
-                <td class="py-2.5 px-4 text-xs">${ta.avgResponseTime}</td>
-                <td class="py-2.5 px-4 text-xs text-gray-500">${ta.lastActive}</td>
-            `;
+            <td class="py-2.5 px-4">
+                <div class="flex flex-col">
+                    <span class="text-xs font-medium text-gray-900">${ta.name}</span>
+                    <span class="text-[11px] text-gray-500">${ta.email}</span>
+                </div>
+            </td>
+            <td class="py-2.5 px-4 text-xs">${ta.answeredCount}</td>
+            <td class="py-2.5 px-4 text-xs">${ta.avgResponseTime}</td>
+            <td class="py-2.5 px-4 text-xs text-gray-500">${ta.lastActive}</td>
+        `;
             taBody.appendChild(tr);
         });
     }
@@ -185,18 +183,17 @@ const renderAllAnalytics = (payload) => {
             const tr = document.createElement("tr");
             tr.className = "hover:bg-gray-50";
             tr.innerHTML = `
-                <td class="py-2.5 px-4">
-                    <div class="flex flex-col">
-                        <span class="text-xs font-medium text-gray-900">${s.name}</span>
-                        <span class="text-[11px] text-gray-500">${s.email}</span>
-                    </div>
-                </td>
-                <td class="py-2.5 px-4 text-xs">${s.course_id}</td>
-                <td class="py-2.5 px-4 text-xs">${s.questionsAsked}</td>
-                <td class="py-2.5 px-4 text-xs">${s.answeredCount}</td>
-                <td class="py-2.5 px-4 text-xs">${s.unansweredCount}</td>
-                <td class="py-2.5 px-4 text-xs text-gray-500">${s.lastQuestion}</td>
-            `;
+            <td class="py-2.5 px-4">
+                <div class="flex flex-col">
+                    <span class="text-xs font-medium text-gray-900">${s.name}</span>
+                    <span class="text-[11px] text-gray-500">${s.email}</span>
+                </div>
+            </td>
+            <td class="py-2.5 px-4 text-xs">${s.course_id}</td>
+            <td class="py-2.5 px-4 text-xs">${s.questionsAsked}</td>
+            <td class="py-2.5 px-4 text-xs">${s.answeredCount}</td>
+            <td class="py-2.5 px-4 text-xs text-gray-500">${s.lastQuestion}</td>
+        `;
             studentBody.appendChild(tr);
         });
     }

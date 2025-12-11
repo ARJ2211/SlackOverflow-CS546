@@ -477,10 +477,14 @@ router.get("/analytics", async (req, res) => {
     }
 });
 
+/**
+ * Build a dummy analytics payload that only includes fields
+ * actually used by the frontend.
+ */
 const buildDummyAnalyticsPayload = (courses, courseId, range) => {
     const courseCount = courses.length;
 
-    // Summary Analytics
+    // Summary analytics
     const analytics = {
         totalTaCount: 6,
         taActiveCourses: courseCount,
@@ -504,65 +508,53 @@ const buildDummyAnalyticsPayload = (courses, courseId, range) => {
                 : null,
     };
 
-    // TA Analytics Table (6 TAs)
+    // TA analytics table
     const taAnalytics = [
         {
             name: "Jane Doe",
             email: "jane.doe@stevens.edu",
-            courseCount: courseCount,
             answeredCount: 122,
-            unansweredQueue: 4,
             avgResponseTime: "39m",
             lastActive: "5 minutes ago",
         },
         {
             name: "Alex Lee",
             email: "alex.lee@stevens.edu",
-            courseCount: Math.max(1, courseCount - 1),
             answeredCount: 96,
-            unansweredQueue: 6,
             avgResponseTime: "1h 7m",
             lastActive: "24 minutes ago",
         },
         {
             name: "Priya Sharma",
             email: "priya.sharma@stevens.edu",
-            courseCount: Math.max(1, courseCount - 2),
             answeredCount: 81,
-            unansweredQueue: 5,
             avgResponseTime: "1h 44m",
             lastActive: "1 hour ago",
         },
         {
             name: "Michael Green",
             email: "m.green@stevens.edu",
-            courseCount: 2,
             answeredCount: 64,
-            unansweredQueue: 2,
             avgResponseTime: "52m",
             lastActive: "3 hours ago",
         },
         {
             name: "Sara Kim",
             email: "sara.kim@stevens.edu",
-            courseCount: 1,
             answeredCount: 47,
-            unansweredQueue: 1,
             avgResponseTime: "28m",
             lastActive: "12 minutes ago",
         },
         {
             name: "David Xu",
             email: "d.xu@stevens.edu",
-            courseCount: 3,
             answeredCount: 103,
-            unansweredQueue: 3,
             avgResponseTime: "1h 21m",
             lastActive: "8 minutes ago",
         },
     ];
 
-    // TA Activity Per Course (expanded)
+    // TA activity per course
     const taActivityByCourse = courses.map((c, idx) => {
         const base = 40 + idx * 15; // total questions
         return {
@@ -604,131 +596,111 @@ const buildDummyAnalyticsPayload = (courses, courseId, range) => {
         };
     });
 
-    // Student Activity (12 large entries)
+    // Student activity
+    const firstCourseId = courses[0]?.course_id;
+    const secondCourseId = courses[1]?.course_id || firstCourseId;
+    const thirdCourseId = courses[2]?.course_id || firstCourseId;
+
     const studentActivity = [
         {
             name: "Rohan Patel",
             email: "rp99@stevens.edu",
-            course_id: courses[0]?.course_id,
-            course_name: courses[0]?.course_name,
+            course_id: firstCourseId,
             questionsAsked: 14,
             answeredCount: 12,
-            unansweredCount: 2,
             lastQuestion: "1 day ago",
         },
         {
             name: "Emily Zhang",
             email: "ezhang@stevens.edu",
-            course_id: courses[1]?.course_id || courses[0]?.course_id,
-            course_name: courses[1]?.course_name || courses[0]?.course_name,
+            course_id: secondCourseId,
             questionsAsked: 11,
             answeredCount: 10,
-            unansweredCount: 1,
             lastQuestion: "6 hours ago",
         },
         {
             name: "Matthew Blake",
             email: "mblake@stevens.edu",
-            course_id: courses[2]?.course_id || courses[0]?.course_id,
-            course_name: courses[2]?.course_name || courses[0]?.course_name,
+            course_id: thirdCourseId,
             questionsAsked: 9,
             answeredCount: 7,
-            unansweredCount: 2,
             lastQuestion: "3 days ago",
         },
         {
             name: "Jia Chen",
             email: "jchen@stevens.edu",
+            course_id: firstCourseId,
             questionsAsked: 8,
             answeredCount: 8,
-            unansweredCount: 0,
-            course_id: courses[0]?.course_id,
-            course_name: courses[0]?.course_name,
             lastQuestion: "4 hours ago",
         },
         {
             name: "Samir Gupta",
             email: "sgupta@stevens.edu",
+            course_id: secondCourseId,
             questionsAsked: 7,
             answeredCount: 5,
-            unansweredCount: 2,
-            course_id: courses[1]?.course_id,
-            course_name: courses[1]?.course_name,
             lastQuestion: "2 days ago",
         },
         {
             name: "Ava Thompson",
             email: "athompson@stevens.edu",
+            course_id: thirdCourseId,
             questionsAsked: 7,
             answeredCount: 6,
-            unansweredCount: 1,
-            course_id: courses[2]?.course_id || courses[0]?.course_id,
-            course_name: courses[2]?.course_name || courses[0]?.course_name,
             lastQuestion: "5 hours ago",
         },
         {
             name: "Ryan Lee",
             email: "rlee23@stevens.edu",
+            course_id: firstCourseId,
             questionsAsked: 6,
             answeredCount: 6,
-            unansweredCount: 0,
-            course_id: courses[0]?.course_id,
-            course_name: courses[0]?.course_name,
             lastQuestion: "1 hour ago",
         },
         {
             name: "Nina Ahmed",
             email: "nahmed@stevens.edu",
+            course_id: secondCourseId,
             questionsAsked: 6,
             answeredCount: 4,
-            unansweredCount: 2,
-            course_id: courses[1]?.course_id,
-            course_name: courses[1]?.course_name,
             lastQuestion: "3 hours ago",
         },
         {
             name: "Omar Suliman",
             email: "osuliman@stevens.edu",
+            course_id: thirdCourseId,
             questionsAsked: 5,
             answeredCount: 4,
-            unansweredCount: 1,
-            course_id: courses[2]?.course_id || courses[0]?.course_id,
-            course_name: courses[2]?.course_name || courses[0]?.course_name,
             lastQuestion: "2 days ago",
         },
         {
             name: "Chloe Rivera",
             email: "crivera@stevens.edu",
+            course_id: firstCourseId,
             questionsAsked: 5,
             answeredCount: 5,
-            unansweredCount: 0,
-            course_id: courses[0]?.course_id,
-            course_name: courses[0]?.course_name,
             lastQuestion: "7 hours ago",
         },
         {
             name: "Leo Martinez",
             email: "leo.m@stevens.edu",
+            course_id: secondCourseId,
             questionsAsked: 4,
             answeredCount: 3,
-            unansweredCount: 1,
-            course_id: courses[1]?.course_id,
-            course_name: courses[1]?.course_name,
             lastQuestion: "5 days ago",
         },
         {
             name: "Hannah Wells",
             email: "hwells@stevens.edu",
+            course_id: secondCourseId,
             questionsAsked: 4,
             answeredCount: 4,
-            unansweredCount: 0,
-            course_id: courses[1]?.course_id,
-            course_name: courses[1]?.course_name,
             lastQuestion: "9 hours ago",
         },
     ];
 
-    // Trending Labels (expanded)
+    // Trending labels
     const trendingLabels = [
         { name: "assignment 1", count: 26, colorClass: "bg-emerald-400" },
         { name: "mongodb", count: 21, colorClass: "bg-blue-400" },

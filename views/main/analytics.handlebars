@@ -165,34 +165,34 @@
         <!-- TA analytics + Per-course activity -->
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-3 mb-3">
           <!-- TA Analytics Table -->
-          <div class="xl:col-span-2 rounded-2xl border border-gray-200 bg-[#F9FAFF] shadow-sm flex flex-col">
-            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-              <div>
-                <p class="text-sm font-semibold text-gray-900">TA analytics</p>
-                <p class="text-xs text-gray-500">Performance across all enrolled courses.</p>
-              </div>
-              <span class="text-[11px] text-gray-500">All TA activity</span>
-            </div>
-            <div class="overflow-x-auto h-64 overflow-y-auto">
-              <table class="min-w-full text-left text-xs text-gray-700">
-                <thead class="bg-white border-b border-gray-200 text-[11px] uppercase text-gray-500 sticky top-0">
-                  <tr>
-                    <th class="py-2.5 px-4 bg-white">TA</th>
-                    <th class="py-2.5 px-4 bg-white">Courses</th>
-                    <th class="py-2.5 px-4 bg-white">Questions answered</th>
-                    <th class="py-2.5 px-4 bg-white">Unanswered in queue</th>
-                    <th class="py-2.5 px-4 bg-white">Avg response time</th>
-                    <th class="py-2.5 px-4 bg-white">Last active</th>
-                  </tr>
-                </thead>
-                <tbody id="taAnalyticsTableBody" class="divide-y divide-gray-100 bg-white">
-                  <tr class="hover:bg-gray-50">
-                    <td class="py-2.5 px-4">Loading...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+<div class="xl:col-span-2 rounded-2xl border border-gray-200 bg-[#F9FAFF] shadow-sm flex flex-col">
+  <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+    <div>
+      <p class="text-sm font-semibold text-gray-900">TA analytics</p>
+      <p class="text-xs text-gray-500">Performance for this course in the selected time range.</p>
+    </div>
+    <span class="text-[11px] text-gray-500">All TA activity</span>
+  </div>
+
+  <div class="overflow-x-auto h-64 overflow-y-auto">
+    <table class="min-w-full text-left text-xs text-gray-700">
+      <thead class="bg-white border-b border-gray-200 text-[11px] uppercase text-gray-500 sticky top-0">
+        <tr>
+          <th class="py-2.5 px-4 bg-white">TA</th>
+          <th class="py-2.5 px-4 bg-white">Questions answered</th>
+          <th class="py-2.5 px-4 bg-white">Avg response time</th>
+          <th class="py-2.5 px-4 bg-white">Last active</th>
+        </tr>
+      </thead>
+      <tbody id="taAnalyticsTableBody" class="divide-y divide-gray-100 bg-white">
+        <tr class="hover:bg-gray-50">
+          <td class="py-2.5 px-4">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
 
           <!-- TA Activity by Course -->
           <div class="rounded-2xl border border-gray-200 bg-white shadow-sm flex flex-col">
@@ -207,53 +207,53 @@
         </div>
 
         <!-- Student activity + Trending labels -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          <!-- Student Activity -->
-          <div class="lg:col-span-2 rounded-2xl border border-gray-200 bg-white shadow-sm flex flex-col">
-            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-              <div>
-                <p class="text-sm font-semibold text-gray-900">Student activity</p>
-                <p class="text-xs text-gray-500">Students asking the most questions.</p>
-              </div>
-              <span class="text-[11px] text-gray-500">Top 10 students</span>
-            </div>
-            <div class="overflow-x-auto h-48 overflow-y-auto">
-              <table class="min-w-full text-left text-xs text-gray-700">
-                <thead class="bg-[#F9FAFB] border-b border-gray-200 text-[11px] uppercase text-gray-500 sticky top-0">
-                  <tr>
-                    <th class="py-2.5 px-4 bg-[#F9FAFB]">Student</th>
-                    <th class="py-2.5 px-4 bg-[#F9FAFB]">Course</th>
-                    <th class="py-2.5 px-4 bg-[#F9FAFB]">Questions asked</th>
-                    <th class="py-2.5 px-4 bg-[#F9FAFB]">Answered</th>
-                    <th class="py-2.5 px-4 bg-[#F9FAFB]">Unanswered</th>
-                    <th class="py-2.5 px-4 bg-[#F9FAFB]">Last question</th>
-                  </tr>
-                </thead>
-                <tbody id="studentActivityTableBody" class="divide-y divide-gray-100 bg-white">
-                  <tr class="hover:bg-gray-50">
-                    <td class="py-2.5 px-4">Loading...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+  <!-- Student Activity -->
+  <div class="lg:col-span-2 rounded-2xl border border-gray-200 bg-white shadow-sm flex flex-col">
+    <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+      <div>
+        <p class="text-sm font-semibold text-gray-900">Student activity</p>
+        <p class="text-xs text-gray-500">Students asking the most questions.</p>
+      </div>
+      <span class="text-[11px] text-gray-500">Top 10 students</span>
+    </div>
+    <div class="overflow-x-auto h-48 overflow-y-auto">
+      <table class="min-w-full text-left text-xs text-gray-700">
+        <thead class="bg-[#F9FAFB] border-b border-gray-200 text-[11px] uppercase text-gray-500 sticky top-0">
+          <tr>
+            <th class="py-2.5 px-4 bg-[#F9FAFB]">Student</th>
+            <th class="py-2.5 px-4 bg-[#F9FAFB]">Course</th>
+            <th class="py-2.5 px-4 bg-[#F9FAFB]">Questions asked</th>
+            <th class="py-2.5 px-4 bg-[#F9FAFB]">Answered</th>
+            <th class="py-2.5 px-4 bg-[#F9FAFB]">Last question</th>
+          </tr>
+        </thead>
+        <tbody id="studentActivityTableBody" class="divide-y divide-gray-100 bg-white">
+          <tr class="hover:bg-gray-50">
+            <td class="py-2.5 px-4">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
-          <!-- Trending Labels -->
-          <div class="rounded-2xl border border-gray-200 bg-[#FDFBF6] shadow-sm flex flex-col">
-            <div class="px-4 py-3 border-b border-amber-100">
-              <p class="text-sm font-semibold text-gray-900">Trending labels</p>
-              <p class="text-xs text-gray-500">Topics with the most activity.</p>
-            </div>
-            <div id="trendingLabelsCloud" class="p-3 flex flex-wrap gap-1.5 h-40 overflow-y-auto">
-              <p class="text-xs text-gray-500">Loading...</p>
-            </div>
-            <div class="mt-auto px-4 py-2 border-t border-amber-100">
-              <p class="text-[11px] text-gray-500">
-                Based on label usage in the selected time range.
-              </p>
-            </div>
-          </div>
-        </div>
+  <!-- Trending Labels -->
+  <div class="rounded-2xl border border-gray-200 bg-[#FDFBF6] shadow-sm flex flex-col">
+    <div class="px-4 py-3 border-b border-amber-100">
+      <p class="text-sm font-semibold text-gray-900">Trending labels</p>
+      <p class="text-xs text-gray-500">Topics with the most activity.</p>
+    </div>
+    <div id="trendingLabelsCloud" class="p-3 flex flex-wrap gap-1.5 h-40 overflow-y-auto">
+      <p class="text-xs text-gray-500">Loading...</p>
+    </div>
+    <div class="mt-auto px-4 py-2 border-t border-amber-100">
+      <p class="text-[11px] text-gray-500">
+        Based on label usage in the selected time range.
+      </p>
+    </div>
+  </div>
+</div>
+
       </div>
     </div>
   </div>
