@@ -83,7 +83,9 @@
             </div>
             <div class="ml-6 flex-1">
                 <p class="text-sm text-gray-500">Role</p>
-                <p class="text-base text-gray-800 font-medium capitalize">{{user.role}}</p>
+                <p class="text-base text-gray-800 font-medium capitalize">{{user.role}} {{#if taCourses}}(TA) {{/if}}
+                </p>
+                <p class="text-sm text-gray-400">{{#if taCourses}} TA Courses: {{taCourses}} {{/if}}</p>
             </div>
         </div>
 

@@ -496,7 +496,18 @@ router.get("/profile", async (req, res) => {
             _id: course._id.toString(),
             course_id: course.course_id,
             course_name: course.course_name,
+            enrolled_students: course.enrolled_students.filter((student) => student.user_id.toString() === userSesData.id.toString())
         }));
+
+        let taCourses = '';
+        for (const course of courses) {
+            for (let student of course.enrolled_students) {
+                if (student.is_ta === true) {
+                    taCourses += `${course.course_id}, `
+                }
+            }
+        }
+
 
         return res.render("main/profile", {
             layout: "main",
@@ -504,6 +515,7 @@ router.get("/profile", async (req, res) => {
             page: "Profile",
             path: "/ profile",
             courses: courses,
+            taCourses
         });
     } catch (error) {
         console.error("/main/profile Error:", error);
