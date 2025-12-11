@@ -4,6 +4,8 @@ import questionsRoutes from "./questions.js";
 import answersRoutes from "./answers.js";
 import renderAuthRoutes from "./renderAuth.js";
 import renderMainRoutes from "./renderMain.js";
+import analyticsRoutes from "./analytics.js";
+
 import {
     ensureAuth,
     redirectIfAuthenticated,
@@ -16,6 +18,7 @@ const constructorMethod = (app) => {
     app.use("/courses", coursesRoutes);
     app.use("/questions", questionsRoutes);
     app.use("/answers", answersRoutes);
+    app.use("/analytics", analyticsRoutes);
 
     app.use("/auth", redirectIfAuthenticated, noCacheAuth, renderAuthRoutes);
     app.use("/main", ensureAuth, noCacheAuth, renderMainRoutes);

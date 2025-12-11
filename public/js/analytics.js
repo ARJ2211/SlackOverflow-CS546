@@ -5,7 +5,7 @@ const fetchAnalyticsData = async (courseId, range) => {
         console.log("[Analytics] Fetching data for", { courseId, range });
 
         const res = await fetch(
-            `/main/analytics/data?courseId=${encodeURIComponent(
+            `/analytics/data?courseId=${encodeURIComponent(
                 courseId
             )}&range=${encodeURIComponent(range)}`
         );

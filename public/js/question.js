@@ -768,8 +768,7 @@ const handleAcceptAnswer = (answer_id) => {
     const user = JSON.parse(mainContainer.getAttribute("data-user") || "{}");
 
     const questionContainer = document.getElementById("questionContainer");
-    const question_id =
-        questionContainer.getAttribute("data-question-id") || "";
+    const question_id = questionContainer.getAttribute("data-question-id") || "";
 
     fetch(`/answers/${answer_id}`, {
         method: "PATCH",
@@ -808,10 +807,14 @@ const handleRejectAnswer = (answer_id) => {
     const mainContainer = document.getElementById("mainContainer");
     const user = JSON.parse(mainContainer.getAttribute("data-user") || "{}");
 
+    const questionContainer = document.getElementById("questionContainer");
+    const question_id = questionContainer.getAttribute("data-question-id") || "";
+
+
     fetch(`/answers/${answer_id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: user.id, is_accepted: false }),
+        body: JSON.stringify({ user_id: user.id, question_id, is_accepted: false }),
     })
         .then(async (res) => {
             const responseBody = await res.json();

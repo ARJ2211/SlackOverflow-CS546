@@ -50,7 +50,7 @@ export const createQuestion = async (
     const prevSimilarQuestions = await searchQuestion(question, course_id);
     console.log(
         "Previous questions that are similar: " +
-            JSON.stringify(prevSimilarQuestions)
+        JSON.stringify(prevSimilarQuestions)
     );
     if (prevSimilarQuestions.length !== 0) {
         const best = prevSimilarQuestions[0];
@@ -81,7 +81,7 @@ export const createQuestion = async (
         labels: labels,
         up_votes: [],
         bookmarks: [],
-        accepted_answer_id: null,
+        accepted_answer_id: [],
         status: "open",
         answer_count: [],
         views: [],
@@ -331,6 +331,30 @@ export const updateStatus = async (questionId, status) => {
     const question = await questionsColl.findOne({ _id: questionId });
 
     return question.status;
+};
+
+export const updateAcceptedAnswerId = async (questionId, answer_id, is_accepted) => {
+
+    questionId = validator.isValidMongoId(questionId);
+    answer_id = validator.isValidMongoId(answer_id);
+    is_accepted = validator.isValidBoolean(is_accepted, "is_accepted")
+    const questionsColl = await questions();
+
+    let query;
+
+    if (!is_accepted) {
+        query = { $pull: { accepted_answer_id: answer_id } };
+    } else {
+        query = { $addToSet: { accepted_answer_id: answer_id } };
+    }
+    const updateInfo = await questionsColl.updateOne(
+        { _id: questionId },
+        query
+    );
+
+    const question = await questionsColl.findOne({ _id: questionId });
+
+    return question.accepted_answer_id;
 };
 
 export const getQuestionById = async (questionId) => {
