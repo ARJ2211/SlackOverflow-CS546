@@ -129,20 +129,22 @@ const getAnalyticsData = async (professorId, courseId, range) => {
             ? Math.round(totalMinutesPerCourse / closedQuestionsPerCourse.length)
             : 0;
 
-        avgPerCourse.push({ course_id: course._id, value: totalAvgMinutesPerCourse })
+        avgPerCourse.push({ _id: course._id, course_id: course.course_id, value: totalAvgMinutesPerCourse })
     }
 
     avgPerCourse.sort((a, b) => a.value - b.value)
 
     const courseAvg = avgPerCourse.find(course => {
         if (!course.course_id) return false;
-        return course.course_id.equals(courseId);
+        return course._id.equals(courseId);
     });
 
     let avgResponseTime = courseAvg ? formatTime(courseAvg.value) : ''
 
     let fastestCourseResult = avgPerCourse[0]
+    fastestCourseResult.value = formatTime(fastestCourseResult.value)
     let slowestCourseResult = avgPerCourse[avgPerCourse.length - 1]
+    slowestCourseResult.value = formatTime(slowestCourseResult.value)
 
     // Summary analytics
     const analytics = {
