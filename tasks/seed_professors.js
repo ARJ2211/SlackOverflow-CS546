@@ -49,7 +49,7 @@ const seedProfessors = async () => {
 
         // silence console.log while the bar is active to avoid new lines
         const originalLog = console.log;
-        console.log = () => { };
+        console.log = () => {};
 
         try {
             for (const elem of professorsData) {
@@ -70,15 +70,15 @@ const seedProfessors = async () => {
                 });
             }
 
-            await usersUtils.createUser(
-                "Dr.",
-                "Aayush",
-                "aayushrj22@gmail.com",
-                "professor"
-            );
+            // await usersUtils.createUser(
+            //     "Dr.",
+            //     "Aayush",
+            //     "aayushrj22@gmail.com",
+            //     "professor"
+            // );
 
-            //  increment for the manual user
-            progressBar.increment(1, { name: "Dr. Aayush" });
+            // //  increment for the manual user
+            // progressBar.increment(1, { name: "Dr. Aayush" });
 
             await usersUtils.createUser(
                 "Swapnil",
@@ -89,7 +89,6 @@ const seedProfessors = async () => {
 
             // final increment for the manual user
             progressBar.increment(1, { name: "Swapnil Jadhav" });
-
         } finally {
             // stop/clear the bar line and restore logging
             progressBar.stop();
