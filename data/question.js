@@ -50,7 +50,7 @@ export const createQuestion = async (
     const prevSimilarQuestions = await searchQuestion(question, course_id);
     console.log(
         "Previous questions that are similar: " +
-        JSON.stringify(prevSimilarQuestions)
+            JSON.stringify(prevSimilarQuestions)
     );
     if (prevSimilarQuestions.length !== 0) {
         const best = prevSimilarQuestions[0];
@@ -333,11 +333,14 @@ export const updateStatus = async (questionId, status) => {
     return question.status;
 };
 
-export const updateAcceptedAnswerId = async (questionId, answer_id, is_accepted) => {
-
+export const updateAcceptedAnswerId = async (
+    questionId,
+    answer_id,
+    is_accepted
+) => {
     questionId = validator.isValidMongoId(questionId);
     answer_id = validator.isValidMongoId(answer_id);
-    is_accepted = validator.isValidBoolean(is_accepted, "is_accepted")
+    is_accepted = validator.isValidBoolean(is_accepted, "is_accepted");
     const questionsColl = await questions();
 
     let query;
@@ -393,26 +396,34 @@ export const getQuestionsByCourseIdFiltered = async (courseId, filters) => {
         labels = [],
     } = filters;
 
-    let query = { course: courseId };
+    const query = { course: courseId };
 
+    // TEXT SEARCH (AND)
     if (question.trim() !== "") {
         question = validator.isValidString(question);
         question = question.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         query.question = { $regex: new RegExp(question, "i") };
     }
 
+    // STATUS (open / closed)
     if (status_open && !status_closed) {
         query.status = "open";
     } else if (!status_open && status_closed) {
         query.status = "closed";
     }
+    // if both toggles on or both off → no status filter
 
+    // LABELS (OR)
     if (labels && labels.length > 0) {
-        labels = labels.map((id) => {
-            return validator.isValidMongoId(id, "query.labels");
+        const inValues = [];
+
+        labels.forEach((id) => {
+            const objId = validator.isValidMongoId(id, "query.labels"); // ObjectId
+            inValues.push(objId); // match if stored as ObjectId
+            inValues.push(objId.toString()); // match if stored as string
         });
 
-        query["labels"] = { $all: labels };
+        query.labels = { $in: inValues };
     }
 
     const questionsColl = await questions();
