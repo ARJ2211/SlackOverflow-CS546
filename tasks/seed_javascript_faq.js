@@ -1,4 +1,3 @@
-// seeds/seed_js_faq.js
 import * as questionUtils from "../data/question.js";
 import * as validator from "../utils/validator.js";
 import { fileURLToPath } from "url";
@@ -8,48 +7,184 @@ import fs from "fs/promises";
 import path from "path";
 import { createCourse, addLabelToCourse } from "../data/course.js";
 import { users } from "../config/mongoCollections.js";
+import prompt from "prompt";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const seedJavaScriptFAQ = async () => {
-    const filePath = path.resolve(__dirname, "../datasets/javascript_faq.txt");
-    console.log(filePath);
-    const fileData = (await fs.readFile(filePath, "utf-8")).split("\n");
+const filePath = path.resolve(__dirname, "../datasets/javascript_faq.txt");
 
+// tiny helper to use prompt with async/await
+const promptGet = (schema) =>
+    new Promise((resolve, reject) => {
+        prompt.get(schema, (err, result) => {
+            if (err) return reject(err);
+            resolve(result);
+        });
+    });
+
+const getOrCreateProfessor = async () => {
+    const { email } = await promptGet({
+        properties: {
+            email: {
+                description: "Professor email",
+                required: true,
+                message: "Email is required",
+            },
+        },
+    });
+
+    const normalizedEmail = String(email).trim().toLowerCase();
     const usersColl = await users();
-    const creator = await usersColl.findOne({ email: "aayushrj22@gmail.com" });
-    if (!creator) throw { status: 400, message: "No professor/admin found" };
 
-    const courseName = "Web Programming I";
-    const courseCode = "CS-546";
+    let creator = await usersColl.findOne({ email: normalizedEmail });
 
-    // Try to create course; if it already exists, reuse it
+    if (creator) {
+        console.log(`Found existing professor with email: ${normalizedEmail}`);
+        return creator;
+    }
+
+    console.log(
+        `No user found with email ${normalizedEmail}. Creating a new professor user for testing...`
+    );
+
+    const { firstName, lastName } = await promptGet({
+        properties: {
+            firstName: {
+                description: "First name",
+                required: true,
+                message: "First name is required",
+            },
+            lastName: {
+                description: "Last name",
+                required: true,
+                message: "Last name is required",
+            },
+        },
+    });
+
+    const firstNameValidated = validator.isValidString(firstName, "first name");
+    const lastNameValidated = validator.isValidString(lastName, "last name");
+    const validatedEmail = validator.isValidEmail
+        ? validator.isValidEmail(normalizedEmail)
+        : normalizedEmail;
+
+    // adjust shape to your real users schema
+    const newUser = {
+        first_name: firstNameValidated,
+        last_name: lastNameValidated,
+        email: validatedEmail,
+        role: "professor",
+        status: "ACTIVE",
+        is_professor: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+    };
+
+    const insertResult = await usersColl.insertOne(newUser);
+    creator = { ...newUser, _id: insertResult.insertedId };
+
+    console.log(
+        `Created test professor user with id: ${creator._id.toString()}`
+    );
+
+    return creator;
+};
+
+const getCourseMetaFromCLI = async () => {
+    while (true) {
+        const { courseName, courseCode, courseDescription } = await promptGet({
+            properties: {
+                courseName: {
+                    description: "Course name (e.g., Web Programming I)",
+                    required: true,
+                },
+                courseCode: {
+                    description: "Course code (e.g., CS-546)",
+                    required: true,
+                },
+                courseDescription: {
+                    description: "Course description",
+                    required: true,
+                },
+            },
+        });
+
+        try {
+            const validatedCourseName = validator.isValidString(
+                courseName,
+                "course name"
+            );
+            const validatedCourseCode = validator.isValidCourseId(
+                courseCode,
+                "course code"
+            );
+            const validatedCourseDescription = validator.isValidString(
+                courseDescription,
+                "course description"
+            );
+
+            // return ONLY after validation passes
+            return {
+                courseName: validatedCourseName,
+                courseCode: validatedCourseCode,
+                courseDescription: validatedCourseDescription,
+            };
+        } catch (e) {
+            console.log("\n" + colors.red(String(e)) + "\n");
+            console.log("Please enter the course information again.\n");
+        }
+    }
+};
+
+const ensureCourseForProfessor = async (
+    creator,
+    { courseName, courseCode, courseDescription }
+) => {
     let courseDoc;
     try {
         courseDoc = await createCourse(
             courseName,
             courseCode,
-            "Course Q&A for JavaScript basics",
+            courseDescription,
             creator._id
         );
+        console.log(
+            `Created course '${courseName}' (${courseCode}) for ${creator.email}`
+        );
     } catch (e) {
-        // If course already exists, fetch it instead of failing seeding
         if (e?.status === 409) {
             const courseColl = await (
                 await import("../config/mongoCollections.js")
             ).courses();
             courseDoc = await courseColl.findOne({ course_id: courseCode });
+            if (!courseDoc) {
+                throw {
+                    status: 400,
+                    message: `Course with code ${courseCode} exists error-wise but could not be fetched`,
+                };
+            }
+            console.log(
+                `Reusing existing course '${courseDoc.course_name}' (${courseCode})`
+            );
         } else {
             throw e;
         }
     }
+
+    return courseDoc;
+};
+
+const seedFaqFileForCourse = async (creator, courseDoc) => {
+    console.log(`Reading FAQ from: ${filePath}`);
+    const fileData = (await fs.readFile(filePath, "utf-8")).split("\n");
 
     // Ensure "General" label exists for this course
     const updatedCourse = await addLabelToCourse(
         courseDoc._id.toString(),
         "General"
     );
+
     const generalLabel =
         updatedCourse.labels?.find((l) => /^general$/i.test(l.name || "")) ||
         (() => {
@@ -58,6 +193,10 @@ const seedJavaScriptFAQ = async () => {
                 message: "Failed to create/find 'General' label",
             };
         })();
+
+    // if your label structure is different, adjust here:
+    const generalLabelId =
+        generalLabel._id?.toString?.() ?? generalLabel.id ?? generalLabel;
 
     const questionsList = [];
     for (let line = 0; line < fileData.length; line++) {
@@ -97,23 +236,14 @@ const seedJavaScriptFAQ = async () => {
         bar.update({ status: `Trying: ${q.slice(0, 80)}` });
 
         try {
-            // Minimal Quill-like content/delta for seeded questions
             const questionContent = `<p>${q}</p>`;
             const questionDelta = JSON.stringify([{ insert: q + "\n" }]);
 
-            // createQuestion(
-            //   question,
-            //   course_id,
-            //   user_id,
-            //   labels = [],
-            //   question_content,
-            //   question_delta
-            // )
             await questionUtils.createQuestion(
                 q,
                 courseDoc._id.toString(),
                 creator._id.toString(),
-                [generalLabel._id.toString()],
+                [generalLabelId],
                 questionContent,
                 questionDelta
             );
@@ -128,6 +258,38 @@ const seedJavaScriptFAQ = async () => {
 
     bar.stop();
     return confirmCount;
+};
+
+const seedJavaScriptFAQ = async () => {
+    // high-level explanation for whoever runs this
+    console.log("\nSeeding JavaScript FAQ questions for SlackOverflow.");
+    console.log(
+        "You will be asked for a professor email and course details so we can attach the FAQ to a real course and professor."
+    );
+    console.log(
+        "Important: the professor email MUST be a valid email address that can receive OTP verification emails during sign-up.\n"
+    );
+    console.log(
+        "Flow:\n" +
+            "  1) Professor email: we will reuse an existing professor if found, or create a test professor.\n" +
+            "  2) Course name, course code (e.g., CS-546), and description: the FAQ will be linked to this course.\n"
+    );
+
+    // config prompt UI
+    prompt.message = "";
+    prompt.delimiter = "";
+    prompt.start();
+
+    try {
+        const creator = await getOrCreateProfessor();
+        const courseMeta = await getCourseMetaFromCLI();
+        const courseDoc = await ensureCourseForProfessor(creator, courseMeta);
+
+        const inserted = await seedFaqFileForCourse(creator, courseDoc);
+        return inserted;
+    } finally {
+        prompt.stop();
+    }
 };
 
 export default seedJavaScriptFAQ;

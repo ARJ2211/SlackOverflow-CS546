@@ -71,9 +71,13 @@ export const isValidObject = (val) => {
 export const isValidCourseId = (val, variableName = "course_id") => {
     val = isValidString(val, variableName);
 
+    // Example: CS-546 or CSE-501 etc
     const courseIdRegex = /^([A-Z]{2,4})-(\d{3})$/;
+
     if (!courseIdRegex.test(val)) {
-        throw `ERROR: provided courseId contains invalid characters`;
+        throw `Invalid course ID. Use format ABC-123 where:
+        • ABC is 2–4 capital letters
+        • 123 is a number between 100 and 999`;
     }
 
     return val.toUpperCase();

@@ -3,33 +3,25 @@ import {
     questions as questionsCollection,
     users as usersCollection,
     courses as coursesCollection,
-} from "../config/mongoCollections.js ";
-
+} from "../config/mongoCollections.js";
 import moment from "moment";
 import * as validator from "../utils/validator.js";
 import { ObjectId } from "mongodb";
 
-
 const getAnalyticsData = async (professorId, courseId, range) => {
-
-
     validator.isValidMongoId(professorId);
-    validator.isValidString(range)
+    validator.isValidString(range);
 
     let rangeStart;
-
     if (range) {
         const match = /^(\d+)d$/.exec(range.trim());
-
         if (match) {
             const days = parseInt(match[1], 10);
-
             if (!isNaN(days) && days > 0) {
                 rangeStart = moment().subtract(days, "days").toDate();
             }
         }
     }
-
 
     const coursesColl = await coursesCollection();
     const questionsColl = await questionsCollection();
@@ -41,10 +33,10 @@ const getAnalyticsData = async (professorId, courseId, range) => {
         .toArray();
 
     let courses;
-    let currentCourse
+    let currentCourse;
 
-    if (courseId === 'all') {
-        courses = professorCourses
+    if (courseId === "all") {
+        courses = professorCourses;
         return {
             success: true,
             courseId,
@@ -53,35 +45,44 @@ const getAnalyticsData = async (professorId, courseId, range) => {
             taAnalytics: [],
             taActivityByCourse: [],
             studentActivity: [],
-            trendingLabels: []
+            trendingLabels: [],
         };
     } else {
         courseId = validator.isValidMongoId(courseId);
-        courses = professorCourses.filter((course) => course._id.equals(courseId));
-        currentCourse = professorCourses.filter((course) => course._id.equals(courseId))[0];
+        courses = professorCourses.filter((course) =>
+            course._id.equals(courseId)
+        );
+        currentCourse = professorCourses.filter((course) =>
+            course._id.equals(courseId)
+        )[0];
     }
 
     const courseCount = courses.length;
 
-
-
     const totalTaCount = courses.reduce((total, course) => {
-        const tasInCourse = course.enrolled_students?.filter(student => student.is_ta === true).length || 0;
+        const tasInCourse =
+            course.enrolled_students?.filter(
+                (student) => student.is_ta === true
+            ).length || 0;
         return total + tasInCourse;
-    }, 0)
+    }, 0);
 
     const totalStudentCount = courses.reduce((total, course) => {
-        const studentsInCourse = course.enrolled_students?.filter(student => student.is_ta === false).length || 0;
+        const studentsInCourse =
+            course.enrolled_students?.filter(
+                (student) => student.is_ta === false
+            ).length || 0;
         return total + studentsInCourse;
-    }, 0)
-
+    }, 0);
 
     const totalQuestionQuery = { course: courseId };
     if (rangeStart) {
         totalQuestionQuery.created_time = { $gte: rangeStart };
     }
 
-    const totalQuestionCount = await questionsColl.countDocuments(totalQuestionQuery);
+    const totalQuestionCount = await questionsColl.countDocuments(
+        totalQuestionQuery
+    );
 
     const unansweredQuery = { course: courseId, status: "open" };
     if (rangeStart) {
@@ -89,184 +90,262 @@ const getAnalyticsData = async (professorId, courseId, range) => {
     }
 
     const unansweredCount = await questionsColl.countDocuments(unansweredQuery);
-    const unansweredPercent = totalQuestionCount > 0
-        ? ((unansweredCount / totalQuestionCount) * 100).toFixed(2)
-        : 0;
+    const unansweredPercent =
+        totalQuestionCount > 0
+            ? ((unansweredCount / totalQuestionCount) * 100).toFixed(2)
+            : "0.00";
 
     const formatTime = (totalMinutes) => {
+        if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) {
+            return "0h 0m";
+        }
         const hours = Math.floor(totalMinutes / 60);
         const minutes = Math.round(totalMinutes % 60);
         return `${hours}h ${minutes}m`;
     };
 
-    let avgPerCourse = []
+    let avgPerCourse = [];
 
     for (const course of professorCourses) {
-
         const closedQuery = { course: course._id, status: "closed" };
         if (rangeStart) {
             closedQuery.created_time = { $gte: rangeStart };
         }
 
-        const closedQuestionsPerCourse = await questionsColl.find(closedQuery).toArray();
+        const closedQuestionsPerCourse = await questionsColl
+            .find(closedQuery)
+            .toArray();
+
         let totalMinutesPerCourse = 0;
+        let answeredCountForAvg = 0;
 
         for (const question of closedQuestionsPerCourse) {
+            if (
+                !question.accepted_answer_id ||
+                question.accepted_answer_id.length === 0
+            ) {
+                continue;
+            }
 
-            if (question.status == "open") continue
+            const acceptedAnswerId = question.accepted_answer_id[0];
+            if (!acceptedAnswerId) continue;
 
-            if (question.accepted_answer_id == null || question.accepted_answer_id.length <= 0) continue
+            const answer = await answersColl.findOne({
+                _id:
+                    typeof acceptedAnswerId === "string"
+                        ? new ObjectId(acceptedAnswerId)
+                        : acceptedAnswerId,
+            });
 
-            const answer = await answersColl.findOne({ _id: question.accepted_answer_id[0] })
+            if (!answer) continue;
 
-            if (answer) {
-                const diffMs = new Date(answer.created_at) - new Date(question.created_time)
-                totalMinutesPerCourse += diffMs / 1000 / 60
+            const diffMs =
+                new Date(answer.created_at) - new Date(question.created_time);
+            const minutes = diffMs / 1000 / 60;
+            if (minutes > 0 && Number.isFinite(minutes)) {
+                totalMinutesPerCourse += minutes;
+                answeredCountForAvg++;
             }
         }
 
-        const totalAvgMinutesPerCourse = closedQuestionsPerCourse.length > 0
-            ? Math.round(totalMinutesPerCourse / closedQuestionsPerCourse.length)
-            : 0;
+        const totalAvgMinutesPerCourse =
+            answeredCountForAvg > 0
+                ? Math.round(totalMinutesPerCourse / answeredCountForAvg)
+                : 0;
 
-        avgPerCourse.push({ _id: course._id, course_id: course.course_id, value: totalAvgMinutesPerCourse })
-    }
-
-    avgPerCourse.sort((a, b) => a.value - b.value)
-
-    const courseAvg = avgPerCourse.find(course => {
-        if (!course.course_id) return false;
-        return course._id.equals(courseId);
-    });
-
-    let avgResponseTime = courseAvg ? formatTime(courseAvg.value) : ''
-
-    let fastestCourseResult = avgPerCourse[0]
-    fastestCourseResult.value = formatTime(fastestCourseResult.value)
-    let slowestCourseResult = avgPerCourse[avgPerCourse.length - 1]
-    slowestCourseResult.value = formatTime(slowestCourseResult.value)
-
-    // Summary analytics
-    const analytics = {
-        totalTaCount: totalTaCount,
-        taActiveCourses: courseCount,
-        totalStudentCount: totalStudentCount,
-        totalQuestionCount: totalQuestionCount,
-        unansweredCount: unansweredCount,
-        unansweredPercent: unansweredPercent,
-        avgResponseTime: avgResponseTime,
-        fastestCourse: fastestCourseResult,
-        slowestCourse: slowestCourseResult
-    };
-
-    let taAnalytics = []
-
-    let courseQuestions = []
-    let questionMap = {}
-    let questionIds = []
-
-    if (currentCourse) {
-        const courseQuestionQuery = { course: currentCourse._id }
-        if (rangeStart) {
-            courseQuestionQuery.created_time = { $gte: rangeStart }
-        }
-
-        courseQuestions = await questionsColl.find(courseQuestionQuery).project({ _id: 1, created_time: 1, user_id: 1, labels: 1 }).toArray()
-
-        questionMap = {};
-        questionIds = courseQuestions.map(question => {
-            questionMap[question._id.toString()] = question
-            return question._id
+        avgPerCourse.push({
+            _id: course._id,
+            course_id: course.course_id,
+            value: totalAvgMinutesPerCourse,
         });
     }
 
+    avgPerCourse = avgPerCourse.filter((c) => Number.isFinite(c.value));
+
+    avgPerCourse.sort((a, b) => a.value - b.value);
+
+    let courseAvg = null;
+    if (avgPerCourse.length > 0) {
+        courseAvg = avgPerCourse.find((course) => course._id.equals(courseId));
+    }
+
+    let avgResponseTime = "0h 0m";
+    if (courseAvg && Number.isFinite(courseAvg.value) && courseAvg.value > 0) {
+        avgResponseTime = formatTime(courseAvg.value);
+    }
+
+    let fastestCourseResult = null;
+    let slowestCourseResult = null;
+
+    if (avgPerCourse.length > 0) {
+        const fastest = avgPerCourse[0];
+        const slowest = avgPerCourse[avgPerCourse.length - 1];
+
+        fastestCourseResult = {
+            _id: fastest._id,
+            course_id: fastest.course_id,
+            value: formatTime(fastest.value),
+        };
+
+        slowestCourseResult = {
+            _id: slowest._id,
+            course_id: slowest.course_id,
+            value: formatTime(slowest.value),
+        };
+    }
+
+    const analytics = {
+        totalTaCount,
+        taActiveCourses: courseCount,
+        totalStudentCount,
+        totalQuestionCount,
+        unansweredCount,
+        unansweredPercent,
+        avgResponseTime,
+        fastestCourse: fastestCourseResult,
+        slowestCourse: slowestCourseResult,
+    };
+
+    let taAnalytics = [];
+    let courseQuestions = [];
+    let questionMap = {};
+    let questionIds = [];
 
     if (currentCourse) {
-        const tas = currentCourse.enrolled_students?.filter(student => student.is_ta === true) || [];
+        const courseQuestionQuery = { course: currentCourse._id };
+        if (rangeStart) {
+            courseQuestionQuery.created_time = { $gte: rangeStart };
+        }
+
+        courseQuestions = await questionsColl
+            .find(courseQuestionQuery)
+            .project({ _id: 1, created_time: 1, user_id: 1, labels: 1 })
+            .toArray();
+
+        questionMap = {};
+        questionIds = courseQuestions.map((question) => {
+            questionMap[question._id.toString()] = question;
+            return question._id;
+        });
+    }
+
+    if (currentCourse) {
+        const tas =
+            currentCourse.enrolled_students?.filter(
+                (student) => student.is_ta === true
+            ) || [];
 
         for (const ta of tas) {
             const taUser = await usersColl.findOne({ _id: ta.user_id });
+            if (!taUser) continue;
 
             const taAnswerQuery = {
                 user_id: ta.user_id,
-                question_id: { $in: questionIds }
+                question_id: { $in: questionIds },
             };
 
             if (rangeStart) {
                 taAnswerQuery.created_at = { $gte: rangeStart };
             }
 
-            const taAnswers = await answersColl.find(taAnswerQuery).sort({ created_at: -1 }).toArray();
+            const taAnswers = await answersColl
+                .find(taAnswerQuery)
+                .sort({ created_at: 1 })
+                .toArray();
 
-            const answeredCount = taAnswers.length;
-
-            let totalMinutes = 0
-            let count = 0
+            const answeredQuestionIds = new Set();
+            let totalMinutes = 0;
 
             for (const answer of taAnswers) {
-                const question = questionMap[answer.question_id.toString()];
+                const qid = answer.question_id?.toString();
+                if (!qid || answeredQuestionIds.has(qid)) continue;
 
+                const question = questionMap[qid];
                 if (!question) continue;
 
-                const diffMs = new Date(answer.created_at) - new Date(question.created_time);
+                const diffMs =
+                    new Date(answer.created_at) -
+                    new Date(question.created_time);
                 const minutes = diffMs / 1000 / 60;
 
-                if (minutes > 0) {
+                if (minutes > 0 && Number.isFinite(minutes)) {
                     totalMinutes += minutes;
-                    count++;
+                    answeredQuestionIds.add(qid);
                 }
             }
-            const avgMinutes = count > 0 ? Math.round(totalMinutes / count) : 0;
-            const avgResponseTime = formatTime(avgMinutes);
+
+            const answeredCount = answeredQuestionIds.size;
+            const avgMinutes =
+                answeredCount > 0
+                    ? Math.round(totalMinutes / answeredCount)
+                    : 0;
+            const taAvgResponseTime = formatTime(avgMinutes);
 
             let lastActive = "No activity";
             if (taAnswers.length > 0) {
-                lastActive = moment(taAnswers[0].created_at).fromNow();
+                const last = taAnswers[taAnswers.length - 1].created_at;
+                lastActive = moment(last).fromNow();
             }
 
             taAnalytics.push({
                 name: `${taUser.first_name} ${taUser.last_name}`,
                 email: taUser.email,
                 answeredCount,
-                avgResponseTime,
-                lastActive
+                avgResponseTime: taAvgResponseTime,
+                lastActive,
             });
         }
+
         taAnalytics.sort((a, b) => b.answeredCount - a.answeredCount);
     }
-
-
 
     let taActivityByCourse = [];
 
     if (currentCourse) {
-
         const totalQuestions = questionIds.length;
 
-        const tas = currentCourse.enrolled_students?.filter(student => student.is_ta === true) || [];
+        const tas =
+            currentCourse.enrolled_students?.filter(
+                (student) => student.is_ta === true
+            ) || [];
 
         let tasActivity = [];
 
         for (const ta of tas) {
             const taUser = await usersColl.findOne({ _id: ta.user_id });
+            if (!taUser) continue;
 
             const taActivityAnswerQuery = {
                 user_id: ta.user_id,
-                question_id: { $in: questionIds }
+                question_id: { $in: questionIds },
             };
 
             if (rangeStart) {
                 taActivityAnswerQuery.created_at = { $gte: rangeStart };
             }
 
-            const answerCount = await answersColl.countDocuments(taActivityAnswerQuery);
+            const taActivityAnswers = await answersColl
+                .find(taActivityAnswerQuery)
+                .project({ question_id: 1 })
+                .toArray();
 
-            const answersPercent = totalQuestions > 0 ? ((answerCount / totalQuestions) * 100).toFixed(2) : "0";
+            const answeredQuestionIds = new Set(
+                taActivityAnswers
+                    .map((a) => a.question_id && a.question_id.toString())
+                    .filter(Boolean)
+            );
+
+            const answerCount = answeredQuestionIds.size;
+
+            const answersPercent =
+                totalQuestions > 0
+                    ? ((answerCount / totalQuestions) * 100).toFixed(2)
+                    : "0.00";
 
             tasActivity.push({
                 name: `${taUser.first_name} ${taUser.last_name}`,
                 answerCount,
-                answersPercent: answersPercent
+                answersPercent,
             });
         }
 
@@ -274,40 +353,65 @@ const getAnalyticsData = async (professorId, courseId, range) => {
             course_id: currentCourse.course_id,
             course_name: currentCourse.course_name,
             totalQuestions,
-            tas: tasActivity
+            tas: tasActivity,
         });
-
     }
 
-
-    let studentActivity = []
+    let studentActivity = [];
 
     if (currentCourse) {
-
-        const students = currentCourse.enrolled_students?.filter(student => student.is_ta === false) || []
+        const students =
+            currentCourse.enrolled_students?.filter(
+                (student) => student.is_ta === false
+            ) || [];
 
         for (const student of students) {
-            const studentUser = await usersColl.findOne({ _id: student.user_id })
+            const studentUser = await usersColl.findOne({
+                _id: student.user_id,
+            });
+            if (!studentUser) continue;
 
-            if (!studentUser) continue
-            const studentQuestions = courseQuestions.filter(question => question.user_id.toString() === student.user_id.toString())
-            const questionsAsked = studentQuestions.length
+            const studentQuestions = courseQuestions.filter(
+                (question) =>
+                    question.user_id.toString() === student.user_id.toString()
+            );
+
+            const questionsAsked = studentQuestions.length;
 
             const studentAnswerQuery = {
                 user_id: student.user_id,
-                question_id: { $in: questionIds }
+                question_id: { $in: questionIds },
             };
 
             if (rangeStart) {
                 studentAnswerQuery.created_at = { $gte: rangeStart };
             }
 
-            const answeredCount = await answersColl.countDocuments(studentAnswerQuery)
+            const studentAnswers = await answersColl
+                .find(studentAnswerQuery)
+                .project({ question_id: 1 })
+                .toArray();
 
-            let lastQuestion = "No questions"
+            const answeredQuestionIds = new Set(
+                studentAnswers
+                    .map((a) => a.question_id && a.question_id.toString())
+                    .filter(Boolean)
+            );
 
+            const answeredCount = answeredQuestionIds.size;
+
+            let lastQuestion = "No questions";
             if (studentQuestions.length > 0) {
-                lastQuestion = moment(studentQuestions[0].created_time).fromNow()
+                let latest = studentQuestions[0].created_time;
+                for (const q of studentQuestions) {
+                    if (
+                        q.created_time &&
+                        new Date(q.created_time) > new Date(latest)
+                    ) {
+                        latest = q.created_time;
+                    }
+                }
+                lastQuestion = moment(latest).fromNow();
             }
 
             studentActivity.push({
@@ -316,37 +420,32 @@ const getAnalyticsData = async (professorId, courseId, range) => {
                 course_id: currentCourse.course_id,
                 questionsAsked,
                 answeredCount,
-                lastQuestion
+                lastQuestion,
             });
         }
 
         studentActivity.sort((a, b) => b.questionsAsked - a.questionsAsked);
-
     }
 
-
-    let trendingLabels = []
+    let trendingLabels = [];
 
     if (currentCourse) {
-
-        const labelMap = {}
+        const labelMap = {};
         for (const label of currentCourse.labels || []) {
-            labelMap[label._id.toString()] = label.name
+            labelMap[label._id.toString()] = label.name;
         }
 
-        const labelCountMap = {}
+        const labelCountMap = {};
 
         for (const question of courseQuestions) {
-            if (!question.labels || !Array.isArray(question.labels)) continue
+            if (!question.labels || !Array.isArray(question.labels)) continue;
 
             for (const labelId of question.labels) {
-                const id = labelId.toString()
-
+                const id = labelId.toString();
                 if (!labelCountMap[id]) {
-                    labelCountMap[id] = 1
-                }
-                else {
-                    labelCountMap[id]++
+                    labelCountMap[id] = 1;
+                } else {
+                    labelCountMap[id]++;
                 }
             }
         }
@@ -354,21 +453,28 @@ const getAnalyticsData = async (professorId, courseId, range) => {
         let labelArray = Object.entries(labelCountMap).map(([id, count]) => ({
             id,
             name: labelMap[id] || "Unknown",
-            count
-        }))
+            count,
+        }));
 
-        labelArray.sort((a, b) => b.count - a.count)
+        labelArray.sort((a, b) => b.count - a.count);
 
         const colors = [
-            "bg-emerald-400", "bg-blue-400", "bg-indigo-400", "bg-violet-400",
-            "bg-rose-400", "bg-amber-400", "bg-teal-400", "bg-orange-400",
-            "bg-red-400", "bg-lime-500"
-        ]
+            "bg-emerald-400",
+            "bg-blue-400",
+            "bg-indigo-400",
+            "bg-violet-400",
+            "bg-rose-400",
+            "bg-amber-400",
+            "bg-teal-400",
+            "bg-orange-400",
+            "bg-red-400",
+            "bg-lime-500",
+        ];
 
         trendingLabels = labelArray.map((item, index) => ({
             name: item.name,
             count: item.count,
-            colorClass: colors[index % colors.length]
+            colorClass: colors[index % colors.length],
         }));
     }
 
@@ -382,6 +488,6 @@ const getAnalyticsData = async (professorId, courseId, range) => {
         studentActivity,
         trendingLabels,
     };
-}
+};
 
-export { getAnalyticsData }
+export { getAnalyticsData };

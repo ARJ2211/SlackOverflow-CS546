@@ -18,6 +18,7 @@ const fetchAnalyticsData = async (courseId, range) => {
 
         const json = await res.json();
         console.log("[Analytics] Fetch success:", json);
+        console.log(json);
         return json;
     } catch (err) {
         console.error("[Analytics] fetch error:", err);
@@ -54,6 +55,8 @@ const setupUnansweredButton = (courseId) => {
 
 // ---- Rendering helpers --------------------------------------------
 
+// ---- Rendering helpers --------------------------------------------
+
 const renderAllAnalytics = (payload) => {
     const analyticsContainer = document.getElementById("analyticsContainer");
 
@@ -86,133 +89,170 @@ const renderAllAnalytics = (payload) => {
     const unansweredPercentEl = document.getElementById("unansweredPercent");
     const unansweredBarEl = document.getElementById("unansweredBar");
     const avgResponseTimeEl = document.getElementById("avgResponseTime");
-    const fastestCourseEl = document.getElementById("fastestCourse");
-    const slowestCourseEl = document.getElementById("slowestCourse");
 
-    if (
-        totalTaCountEl &&
-        taActiveCoursesEl &&
-        totalStudentCountEl &&
-        totalQuestionCountEl &&
-        unansweredCountEl &&
-        unansweredPercentEl &&
-        unansweredBarEl &&
-        avgResponseTimeEl &&
-        fastestCourseEl &&
-        slowestCourseEl
-    ) {
+    if (totalTaCountEl) {
         totalTaCountEl.textContent = analytics.totalTaCount;
+    }
+    if (taActiveCoursesEl) {
         taActiveCoursesEl.textContent = `Across ${analytics.taActiveCourses} courses`;
+    }
+    if (totalStudentCountEl) {
         totalStudentCountEl.textContent = analytics.totalStudentCount;
+    }
+    if (totalQuestionCountEl) {
         totalQuestionCountEl.textContent = analytics.totalQuestionCount;
+    }
+    if (unansweredCountEl) {
         unansweredCountEl.textContent = analytics.unansweredCount;
+    }
+    if (unansweredPercentEl) {
         unansweredPercentEl.textContent = `${analytics.unansweredPercent}% of all questions`;
+    }
+    if (unansweredBarEl) {
         unansweredBarEl.style.width = `${analytics.unansweredPercent}%`;
+    }
+    if (avgResponseTimeEl) {
         avgResponseTimeEl.textContent = analytics.avgResponseTime;
-        fastestCourseEl.textContent = analytics.fastestCourse
-            ? `Fastest course: ${analytics.fastestCourse.course_id} · ${analytics.fastestCourse.value}`
-            : "Fastest course: —";
-        slowestCourseEl.textContent = analytics.slowestCourse
-            ? `Slowest course: ${analytics.slowestCourse.course_id} · ${analytics.slowestCourse.value}`
-            : "Slowest course: —";
     }
 
     // TA analytics table
     const taBody = document.getElementById("taAnalyticsTableBody");
     if (taBody) {
         taBody.innerHTML = "";
-        taAnalytics.forEach((ta) => {
-            const tr = document.createElement("tr");
-            tr.className = "hover:bg-gray-50";
-            tr.innerHTML = `
-            <td class="py-2.5 px-4">
-                <div class="flex flex-col">
-                    <span class="text-xs font-medium text-gray-900">${ta.name}</span>
-                    <span class="text-[11px] text-gray-500">${ta.email}</span>
-                </div>
-            </td>
-            <td class="py-2.5 px-4 text-xs">${ta.answeredCount}</td>
-            <td class="py-2.5 px-4 text-xs">${ta.avgResponseTime}</td>
-            <td class="py-2.5 px-4 text-xs text-gray-500">${ta.lastActive}</td>
-        `;
-            taBody.appendChild(tr);
-        });
+
+        if (!taAnalytics || !taAnalytics.length) {
+            taBody.innerHTML = `
+                <tr class="hover:bg-gray-50">
+                    <td class="py-2.5 px-4 text-xs text-gray-500" colspan="4">
+                        No TA activity in this range.
+                    </td>
+                </tr>
+            `;
+        } else {
+            taAnalytics.forEach((ta) => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="py-2.5 px-4">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-900">${ta.name}</span>
+                            <span class="text-[11px] text-gray-500">${ta.email}</span>
+                        </div>
+                    </td>
+                    <td class="py-2.5 px-4 text-xs">${ta.answeredCount}</td>
+                    <td class="py-2.5 px-4 text-xs">${ta.avgResponseTime}</td>
+                    <td class="py-2.5 px-4 text-xs text-gray-500">${ta.lastActive}</td>
+                `;
+                taBody.appendChild(tr);
+            });
+        }
     }
 
     // TA activity per course
     const taCourseList = document.getElementById("taActivityPerCourseList");
     if (taCourseList) {
         taCourseList.innerHTML = "";
-        taActivityByCourse.forEach((course) => {
-            const wrapper = document.createElement("div");
-            wrapper.className =
-                "rounded-xl border border-gray-200 bg-[#F9FAFB] p-3";
-            wrapper.innerHTML = `
-                <div class="flex items-center justify-between mb-2">
-                    <div>
-                        <p class="text-xs font-semibold text-gray-900">${course.course_id}</p>
-                        <p class="text-[11px] text-gray-500">${course.course_name}</p>
-                    </div>
-                    <p class="text-[11px] text-gray-500">${course.totalQuestions} questions</p>
-                </div>
+
+        if (!taActivityByCourse || !taActivityByCourse.length) {
+            taCourseList.innerHTML = `
+                <p class="text-xs text-gray-500">No TA activity for this course.</p>
             `;
-            const list = document.createElement("div");
-            list.className = "space-y-2 mt-2";
-            course.tas.forEach((ta) => {
-                const row = document.createElement("div");
-                row.className = "flex items-center gap-2";
-                row.innerHTML = `
-                    <span class="text-[11px] text-gray-700 w-24 truncate">${ta.name}</span>
-                    <div class="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
-                        <div class="h-full bg-[#F0BD66]" style="width: ${ta.answersPercent}%;"></div>
+        } else {
+            taActivityByCourse.forEach((course) => {
+                const wrapper = document.createElement("div");
+                wrapper.className =
+                    "rounded-xl border border-gray-200 bg-[#F9FAFB] p-3";
+                wrapper.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <p class="text-xs font-semibold text-gray-900">${course.course_id}</p>
+                            <p class="text-[11px] text-gray-500">${course.course_name}</p>
+                        </div>
+                        <p class="text-[11px] text-gray-500">${course.totalQuestions} questions</p>
                     </div>
-                    <span class="text-[11px] text-gray-500 w-8 text-right">${ta.answerCount}</span>
                 `;
-                list.appendChild(row);
+                const list = document.createElement("div");
+                list.className = "space-y-2 mt-2";
+
+                course.tas.forEach((ta) => {
+                    const row = document.createElement("div");
+                    row.className = "flex items-center gap-2";
+                    row.innerHTML = `
+                        <span class="text-[11px] text-gray-700 w-24 truncate">${ta.name}</span>
+                        <div class="flex-1 h-1.5 rounded-full bg-gray-200 overflow-hidden">
+                            <div class="h-full bg-[#F0BD66]" style="width: ${ta.answersPercent}%;"></div>
+                        </div>
+                        <span class="text-[11px] text-gray-500 w-8 text-right">${ta.answerCount}</span>
+                    `;
+                    list.appendChild(row);
+                });
+
+                wrapper.appendChild(list);
+                taCourseList.appendChild(wrapper);
             });
-            wrapper.appendChild(list);
-            taCourseList.appendChild(wrapper);
-        });
+        }
     }
 
     // Student activity
     const studentBody = document.getElementById("studentActivityTableBody");
     if (studentBody) {
         studentBody.innerHTML = "";
-        studentActivity.forEach((s) => {
-            const tr = document.createElement("tr");
-            tr.className = "hover:bg-gray-50";
-            tr.innerHTML = `
-            <td class="py-2.5 px-4">
-                <div class="flex flex-col">
-                    <span class="text-xs font-medium text-gray-900">${s.name}</span>
-                    <span class="text-[11px] text-gray-500">${s.email}</span>
-                </div>
-            </td>
-            <td class="py-2.5 px-4 text-xs">${s.course_id}</td>
-            <td class="py-2.5 px-4 text-xs">${s.questionsAsked}</td>
-            <td class="py-2.5 px-4 text-xs">${s.answeredCount}</td>
-            <td class="py-2.5 px-4 text-xs text-gray-500">${s.lastQuestion}</td>
-        `;
-            studentBody.appendChild(tr);
-        });
+
+        if (!studentActivity || !studentActivity.length) {
+            studentBody.innerHTML = `
+                <tr class="hover:bg-gray-50">
+                    <td class="py-2.5 px-4 text-xs text-gray-500" colspan="5">
+                        No student questions in this range.
+                    </td>
+                </tr>
+            `;
+        } else {
+            studentActivity.forEach((s) => {
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="py-2.5 px-4">
+                        <div class="flex flex-col">
+                            <span class="text-xs font-medium text-gray-900">${s.name}</span>
+                            <span class="text-[11px] text-gray-500">${s.email}</span>
+                        </div>
+                    </td>
+                    <td class="py-2.5 px-4 text-xs">${s.course_id}</td>
+                    <td class="py-2.5 px-4 text-xs">${s.questionsAsked}</td>
+                    <td class="py-2.5 px-4 text-xs">${s.answeredCount}</td>
+                    <td class="py-2.5 px-4 text-xs text-gray-500">${s.lastQuestion}</td>
+                `;
+                studentBody.appendChild(tr);
+            });
+        }
     }
 
     // Trending labels
     const labelsCloud = document.getElementById("trendingLabelsCloud");
     if (labelsCloud) {
         labelsCloud.innerHTML = "";
-        trendingLabels.forEach((label) => {
-            const span = document.createElement("span");
-            span.className =
-                "inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1 text-[11px] text-gray-800 shadow-sm";
-            span.innerHTML = `
-                <span class="h-1.5 w-1.5 rounded-full ${label.colorClass}"></span>
-                ${label.name}
-                <span class="text-[10px] text-gray-500 ml-1">· ${label.count}</span>
+
+        if (!trendingLabels || !trendingLabels.length) {
+            labelsCloud.innerHTML = `
+                <p class="text-xs text-gray-500">No labels used in this range.</p>
             `;
-            labelsCloud.appendChild(span);
-        });
+        } else {
+            trendingLabels.forEach((label) => {
+                const chip = document.createElement("div");
+                chip.className =
+                    "inline-flex items-center gap-1.5 px-3 py-1.5 " +
+                    "rounded-full border border-amber-300 bg-white " +
+                    "shadow-sm text-xs text-gray-800";
+
+                chip.innerHTML = `
+                    <span class="h-1.5 w-1.5 rounded-full ${label.colorClass}"></span>
+                    <span class="font-medium">${label.name}</span>
+                    <span class="text-[10px] text-gray-500">· ${label.count}</span>
+                `;
+
+                labelsCloud.appendChild(chip);
+            });
+        }
     }
 };
 

@@ -12,7 +12,6 @@ import { getAnalyticsData } from "../data/analytics.js";
 
 const router = Router();
 
-
 router.get("/data", async (req, res) => {
     const userSesData = req.session.user;
 
@@ -29,15 +28,10 @@ router.get("/data", async (req, res) => {
         let range = req.query.range || "30d";
 
         if (courseId !== "all") {
-            courseId = validator.isValidMongoId(courseId)
+            courseId = validator.isValidMongoId(courseId);
         }
 
-        const payload = await getAnalyticsData(
-            professorId,
-            courseId,
-            range
-        );
-
+        const payload = await getAnalyticsData(professorId, courseId, range);
         return res.json(payload);
     } catch (error) {
         console.error("/main/analytics/data Error:", error);
@@ -47,6 +41,5 @@ router.get("/data", async (req, res) => {
         });
     }
 });
-
 
 export default router;
