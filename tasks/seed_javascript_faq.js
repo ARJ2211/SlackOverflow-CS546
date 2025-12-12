@@ -8,6 +8,7 @@ import path from "path";
 import { createCourse, addLabelToCourse } from "../data/course.js";
 import { users } from "../config/mongoCollections.js";
 import prompt from "prompt";
+import { createUser } from "../data/users.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,19 +70,11 @@ const getOrCreateProfessor = async () => {
         ? validator.isValidEmail(normalizedEmail)
         : normalizedEmail;
 
-    // adjust shape to your real users schema
-    const newUser = {
-        first_name: firstNameValidated,
-        last_name: lastNameValidated,
-        email: validatedEmail,
-        role: "professor",
-        status: "ACTIVE",
-        is_professor: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    };
-
-    const insertResult = await usersColl.insertOne(newUser);
+    const insertResult = createUser(
+        firstNameValidated,
+        lastNameValidated,
+        validatedEmail
+    );
     creator = { ...newUser, _id: insertResult.insertedId };
 
     console.log(
