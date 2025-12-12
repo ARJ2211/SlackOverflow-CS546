@@ -38,7 +38,10 @@ const getOrCreateProfessor = async () => {
     const normalizedEmail = String(email).trim().toLowerCase();
     const usersColl = await users();
 
-    let creator = await usersColl.findOne({ email: normalizedEmail });
+    // Case-insensitive lookup so it matches how createUser checks for duplicates
+    let creator = await usersColl.findOne({
+        email: new RegExp(`^${normalizedEmail}$`, "i"),
+    });
 
     if (creator) {
         console.log(`Found existing professor with email: ${normalizedEmail}`);
@@ -70,19 +73,19 @@ const getOrCreateProfessor = async () => {
         ? validator.isValidEmail(normalizedEmail)
         : normalizedEmail;
 
-    const insertResult = await createUser(
+    // Use your data-layer helper correctly: it returns the full user doc
+    const newUser = await createUser(
         firstNameValidated,
         lastNameValidated,
         validatedEmail,
         "professor"
     );
-    creator = { ...newUser, _id: insertResult.insertedId };
 
     console.log(
-        `Created test professor user with id: ${creator._id.toString()}`
+        `Created test professor user with id: ${newUser._id.toString()}`
     );
 
-    return creator;
+    return newUser;
 };
 
 const getCourseMetaFromCLI = async () => {
