@@ -70,10 +70,11 @@ const getOrCreateProfessor = async () => {
         ? validator.isValidEmail(normalizedEmail)
         : normalizedEmail;
 
-    const insertResult = createUser(
+    const insertResult = await createUser(
         firstNameValidated,
         lastNameValidated,
-        validatedEmail
+        validatedEmail,
+        "professor"
     );
     creator = { ...newUser, _id: insertResult.insertedId };
 
