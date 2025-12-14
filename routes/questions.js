@@ -34,7 +34,7 @@ router.route("/").post(async (req, res) => {
     }
 
     try {
-        await questionsData.createQuestion(
+        let result = await questionsData.createQuestion(
             question,
             course_id,
             user_id,
@@ -42,6 +42,13 @@ router.route("/").post(async (req, res) => {
             question_content,
             question_delta
         );
+
+        if (result && result.hasSimilarQuestions && result.hasSimilarQuestions === true) {
+            return res
+                .status(200)
+                .json({ hasSimilarQuestions: true, similarQuestions: result.similarQuestions })
+        }
+
         return res
             .status(200)
             .json({ message: "Question created successfully" });
