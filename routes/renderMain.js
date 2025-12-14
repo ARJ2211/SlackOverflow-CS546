@@ -88,9 +88,23 @@ router.get("/courses/:id", async (req, res) => {
             );
 
             const tempUser = await usersData.getUserById(question.user_id);
+            let roleLabel = "S";
+            if (tempUser.role === "student") {
+                const entry = course.enrolled_students.find(
+                    (s) => s.user_id.toString() === question.user_id.toString()
+                );
+
+                if (entry && entry.is_ta === true) {
+                    roleLabel = "TA";
+                }
+            } else if (tempUser.role === "professor") {
+                roleLabel = "P";
+            }
+
             question.user = {
                 first_name: tempUser.first_name,
                 last_name: tempUser.last_name,
+                role: roleLabel,
             };
 
             let tempTimeAgo = moment(question.created_time).fromNow();
@@ -219,9 +233,24 @@ router.get("/courses/:id/filters", async (req, res) => {
                     (label) => label._id.toString() === labelId.toString()
                 )
             );
+
+            let roleLabel = "S";
+            if (tempUser.role === "student") {
+                const entry = course.enrolled_students.find(
+                    (s) => s.user_id.toString() === question.user_id.toString()
+                );
+
+                if (entry && entry.is_ta === true) {
+                    roleLabel = "TA";
+                }
+            } else if (tempUser.role === "professor") {
+                roleLabel = "P";
+            }
+
             question.user = {
                 first_name: tempUser.first_name,
                 last_name: tempUser.last_name,
+                role: roleLabel,
             };
             question.timeAgo = moment(question.created_time).fromNow();
 
@@ -297,9 +326,22 @@ router.get("/question/:id", async (req, res) => {
         );
 
         const tempUser = await usersData.getUserById(question.user_id);
+        let askRoleLabel = "S";
+        if (tempUser.role === "student") {
+            const entry = course.enrolled_students.find(
+                (s) => s.user_id.toString() === question.user_id.toString()
+            );
+            if (entry && entry.is_ta === true) {
+                askRoleLabel = "TA";
+            }
+        } else if (tempUser.role === "professor") {
+            askRoleLabel = "P";
+        }
+
         question.user = {
             first_name: tempUser.first_name,
             last_name: tempUser.last_name,
+            role: askRoleLabel,
         };
 
         let tempTimeAgo = moment(question.created_time).fromNow();
@@ -312,10 +354,23 @@ router.get("/question/:id", async (req, res) => {
 
         for (const answer of answers) {
             const tempAnswerUser = await usersData.getUserById(answer.user_id);
+            let answerRoleLabel = "S";
+            if (tempAnswerUser.role === "student") {
+                const entry = course.enrolled_students.find(
+                    (s) => s.user_id.toString() === answer.user_id.toString()
+                );
+                if (entry && entry.is_ta === true) {
+                    answerRoleLabel = "TA";
+                }
+            } else if (tempAnswerUser.role === "professor") {
+                answerRoleLabel = "P";
+            }
+
             answer.user = {
                 _id: tempAnswerUser._id.toString(),
                 first_name: tempAnswerUser.first_name,
                 last_name: tempAnswerUser.last_name,
+                role: answerRoleLabel,
             };
 
             let tempAnswerTimeAgo = moment(answer.created_at).fromNow();
@@ -457,7 +512,6 @@ router.get("/analytics", async (req, res) => {
             course_name: course.course_name,
         }));
 
-        // query params (optional) – default to "all"
         const selectedCourse = req.query.courseId || "all";
         const selectedRange = req.query.range || "7d";
 
@@ -533,7 +587,6 @@ router.get("/bookmarks", async (req, res) => {
     try {
         const userId = validator.isValidMongoId(userSesData.id);
 
-        // Get user's courses for sidebar
         if (userSesData.role == "professor") {
             const professorId = validator.isValidMongoId(userSesData.id);
             courses = await coursesData.getCourseByProfessorId(professorId);
@@ -548,13 +601,10 @@ router.get("/bookmarks", async (req, res) => {
             course_name: course.course_name,
         }));
 
-        // Get bookmarked questions
         bookmarkedQuestions =
             await questionsData.getBookmarkedQuestionsByUserId(userId);
 
-        // Enrich bookmarked questions with course info, labels, user info, and bookmark date
         for (const question of bookmarkedQuestions) {
-            // Get course information
             const course = await coursesData.getCourseById(question.course);
             question.courseInfo = {
                 _id: course._id.toString(),
@@ -562,7 +612,6 @@ router.get("/bookmarks", async (req, res) => {
                 course_name: course.course_name,
             };
 
-            // Get labels
             question.labels = question.labels
                 .map((labelId) =>
                     course.labels.find(
@@ -571,29 +620,36 @@ router.get("/bookmarks", async (req, res) => {
                 )
                 .filter((label) => label !== undefined);
 
-            // Get user information
             const tempUser = await usersData.getUserById(question.user_id);
+            let roleLabel = "S";
+            if (tempUser.role === "student") {
+                const entry = course.enrolled_students.find(
+                    (s) => s.user_id.toString() === question.user_id.toString()
+                );
+                if (entry && entry.is_ta === true) {
+                    roleLabel = "TA";
+                }
+            } else if (tempUser.role === "professor") {
+                roleLabel = "P";
+            }
+
             question.user = {
                 first_name: tempUser.first_name,
                 last_name: tempUser.last_name,
+                role: roleLabel,
             };
 
-            // Format time ago
             question.timeAgo = moment(question.created_time).fromNow();
 
-            // Calculate votes (check both upvotes and up_votes for compatibility)
             question.votes =
                 (question.upvotes && question.upvotes.length) ||
                 (question.up_votes && question.up_votes.length) ||
                 0;
 
-            // Get bookmark date (we'll use created_time as bookmark date for now)
-            // In a real implementation, you might want to track when the bookmark was added
             question.bookmarkDate = moment(question.created_time).format(
                 "MMMM Do YYYY, h:mm:ss a"
             );
 
-            // Clean up unnecessary fields
             delete question.embedding;
             delete question.canonical_key;
             delete question.replies;

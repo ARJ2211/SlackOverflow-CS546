@@ -107,7 +107,7 @@ const getCourseMetaFromCLI = async () => {
         });
 
         try {
-            const validatedCourseName = validator.isValidString(
+            const validatedCourseName = validator.isValidCourseName(
                 courseName,
                 "course name"
             );
