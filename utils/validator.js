@@ -177,7 +177,7 @@ export const hashPassword = (pwd) => {
  * We make sure there are no spaces, at least 8 chars,
  * one uppercase, one number and one special char.
  * @param {*} val
- * @returns {String}
+ * @returns {String} hashedPwd
  */
 export const isValidPassword = (val) => {
     isValidString(val);

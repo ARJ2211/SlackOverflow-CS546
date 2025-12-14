@@ -45,7 +45,7 @@ router.route("/profile").patch(async (req, res) => {
             updateProfile.email = email;
         }
         if (password) {
-            password = validator.isValidString(password);
+            password = validator.isValidPassword(password);
             updateProfile.password = password;
         }
     } catch (error) {
