@@ -3,6 +3,7 @@ import {
     questions as questionsCollection,
     users as usersCollection,
     courses as coursesCollection,
+    sessions as sessionsCollection
 } from "../config/mongoCollections.js";
 import moment from "moment";
 import * as validator from "../utils/validator.js";
@@ -490,4 +491,89 @@ const getAnalyticsData = async (professorId, courseId, range) => {
     };
 };
 
-export { getAnalyticsData };
+const getDashboardData = async (userId, role) => {
+    userId = validator.isValidMongoId(userId)
+    role = validator.isValidString(role)
+
+    const coursesColl = await coursesCollection()
+    const questionsColl = await questionsCollection()
+    const usersColl = await usersCollection()
+    const sessionsColl = await sessionsCollection()
+
+    let courses = [];
+
+    if (role === "professor") {
+        courses = await coursesColl.find({
+            created_by: userId
+        }).toArray()
+    } else {
+        courses = await coursesColl.find({
+            "enrolled_students.user_id": userId
+        }).toArray()
+    }
+
+    const courseIds = courses.map(course => course._id)
+
+    const totalCourses = courses.length;
+    let totalQuestions = 0
+    if (courseIds.length > 0) {
+        totalQuestions = await questionsColl.countDocuments({ course: { $in: courseIds } })
+    }
+
+    let totalTAs = 0;
+
+    for (const course of courses) {
+        const tas = course.enrolled_students?.filter(student => student.is_ta === true) || []
+        totalTAs += tas.length
+    }
+
+    const activeUsers = await sessionsColl.countDocuments({
+        expires: { $gt: new Date() },
+        session: { $regex: `"lastSeen":` }
+    });
+
+    const courseMap = {};
+    courses.forEach(course => {
+        courseMap[course._id.toString()] = course.course_id;
+    });
+
+
+    const myQuestionsData = await questionsColl.find({
+        user_id: userId,
+        course: { $in: courseIds }
+    }).sort({ created_time: -1 }).project({ title: 1, course: 1, question: 1, status: 1, created_time: 1 }).toArray();
+
+    const myQuestions = myQuestionsData.map(question => ({
+        _id: question._id.toString(),
+        question: question.question,
+        status: question.status,
+        created_time: moment(question.created_time).fromNow(),
+        courseCode: courseMap[question.course.toString()] || "---"
+    }));
+
+    const recentQuestionsData = await questionsColl
+        .find({
+            course: { $in: courseIds }
+        }).sort({ created_time: -1 }).limit(10).project({ title: 1, course: 1, question: 1, status: 1, created_time: 1 }).toArray();
+
+    const recentQuestions = recentQuestionsData.map(question => ({
+        _id: question._id.toString(),
+        question: question.question,
+        status: question.status,
+        created_time: moment(question.created_time).fromNow(),
+        courseCode: courseMap[question.course.toString()] || "---"
+    }));
+
+
+    return {
+        totalCourses,
+        totalQuestions,
+        totalTAs,
+        activeUsers,
+        myQuestions,
+        recentQuestions
+    }
+
+}
+
+export { getAnalyticsData, getDashboardData };

@@ -17,3 +17,4 @@ export const questions = getCollectionFn("questions");
 export const users = getCollectionFn("users");
 export const courses = getCollectionFn("courses");
 export const answers = getCollectionFn("answers");
+export const sessions = getCollectionFn("sessions");

@@ -17,21 +17,110 @@
                 {{path}}
             </p>
         </div>
-        <button
-            class="bg-[#F0BD66] text-white flex items-center font-medium px-5 py-2 rounded-3xl hover:bg-[#e3aa4e] transition">
 
+        <div class="text-sm text-gray-600">
+            <span class="text-gray-400">Hello,</span>
+            <span class="font-semibold text-gray-800">
+                {{user.first_name}} {{user.last_name}}
 
-            Add
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                class="size-5 stroke-white stroke-[1] ml-2">
-                <path
-                    d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
-            </svg>
-        </button>
+            </span>
+        </div>
     </div>
 
     <!-- Page Content -->
-    <div class="text-gray-500 text-sm">
-        <p>This is your profile page. You can add more content here later.</p>
+    <div class="flex flex-col w-full gap-3 pt-2 flex-1 h-[88%] ">
+
+        <dl class=" grid grid-cols-1 gap-0.5 overflow-hidden rounded-2xl text-center sm:grid-cols-2 lg:grid-cols-4">
+            <div class="flex flex-col bg-[#F0BD66] p-8">
+                <dt class="text-sm font-semibold leading-6 text-white">Total Course </dt>
+                <dd class="order-first text-3xl font-semibold tracking-tight text-white">{{totalCourses}}</dd>
+            </div>
+            <div class="flex flex-col bg-[#F0BD66] p-8">
+                <dt class="text-sm font-semibold leading-6 text-white">Total Questions</dt>
+                <dd class="order-first text-3xl font-semibold tracking-tight text-white">{{totalQuestions}}</dd>
+            </div>
+            <div class="flex flex-col bg-[#F0BD66] p-8">
+                <dt class="text-sm font-semibold leading-6 text-white">Total Teaching assistants</dt>
+                <dd class="order-first text-3xl font-semibold tracking-tight text-white">{{totalTAs}}</dd>
+            </div>
+            <div class="flex flex-col bg-[#F0BD66] p-8">
+                <dt class="text-sm font-semibold leading-6 text-white">Active Users</dt>
+                <dd class="order-first text-3xl font-semibold tracking-tight text-white">{{activeUsers}}</dd>
+            </div>
+        </dl>
+
+        <div class="flex gap-1 mt-3  flex-1  ">
+            <div class="lg:col-span-2 rounded-2xl border border-gray-200 bg-white shadow-sm flex flex-col w-full">
+                <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900">My activity</p>
+                        <p class="text-xs text-gray-500"> Questions asked by me.</p>
+                    </div>
+                    <span class="text-[11px] text-gray-500">All the activities</span>
+                </div>
+                <div class="overflow-x-auto h-full overflow-y-auto">
+                    <table class="min-w-full text-left text-xs text-gray-700">
+                        <thead
+                            class="bg-[#F9FAFB] border-b border-gray-200 text-[11px] uppercase text-gray-500 sticky top-0">
+                            <tr>
+                                <th class="py-2.5 px-4 bg-[#F9FAFB]">Question</th>
+                                <th class="py-2.5 px-4 bg-[#F9FAFB]">Course</th>
+                                <th class="py-2.5 px-4 bg-[#F9FAFB]">Status</th>
+                                <th class="py-2.5 px-4 bg-[#F9FAFB]"> Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentActivityTableBody" class="divide-y divide-gray-100 bg-white">
+                            {{#each myQuestions }}
+
+
+                            <tr class="hover:bg-gray-50 hover:cursor-pointer"
+                                onclick="window.location.href='/main/question/{{this._id}}'">
+                                <td class="py-2.5 px-4">{{this.question}}</td>
+                                <td class="py-2.5 px-4">{{this.courseCode}}</td>
+                                <td class="py-2.5 px-4 ">{{this.status}}</td>
+                                <td class="py-2.5 px-4 whitespace-nowrap">{{this.created_time}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="lg:col-span-2 rounded-2xl border border-gray-200 bg-white shadow-sm flex flex-col w-full">
+                <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900">Recent activity</p>
+                        <p class="text-xs text-gray-500">Questions asked by everyone.</p>
+                    </div>
+                    <span class="text-[11px] text-gray-500">Top 10 activity</span>
+                </div>
+                <div class="overflow-x-auto h-80 overflow-y-auto">
+                    <table class="min-w-full text-left text-xs text-gray-700">
+                        <thead
+                            class="bg-[#F9FAFB] border-b border-gray-200 text-[11px] uppercase text-gray-500 sticky top-0">
+                            <tr>
+                                <th class="py-2.5 px-4 bg-[#F9FAFB]">Question</th>
+                                <th class="py-2.5 px-4 bg-[#F9FAFB]">Course</th>
+                                <th class="py-2.5 px-4 bg-[#F9FAFB]">Status</th>
+                                <th class="py-2.5 px-4 bg-[#F9FAFB]"> Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentActivityTableBody" class="divide-y divide-gray-100 bg-white">
+                            {{#each recentQuestions }}
+
+
+                            <tr class="hover:bg-gray-50 hover:cursor-pointer"
+                                onclick="window.location.href='/main/question/{{this._id}}'">
+                                <td class="py-2.5 px-4">{{this.question}}</td>
+                                <td class="py-2.5 px-4">{{this.courseCode}}</td>
+                                <td class="py-2.5 px-4 ">{{this.status}}</td>
+                                <td class="py-2.5 px-4 whitespace-nowrap">{{this.created_time}}</td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
