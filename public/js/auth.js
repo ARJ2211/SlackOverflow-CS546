@@ -120,9 +120,9 @@ const handleVerification = (event) => {
 
     const email = localStorage.getItem("otpEmail");
     const button = event.target.querySelector("button[type='submit']");
-
+    console.log(otp);
     if (!otp || otp.length < 4) {
-        showToast("Please enter the full 4-digit OTP.", "error");
+        showToast("Please enter the full 6-digit OTP.", "error");
         return;
     }
 
