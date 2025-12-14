@@ -2,14 +2,14 @@
     --ag-header-foreground-color: black;
     --ag-header-background-color: rgba(240, 124, 0, 0);
     --ag-border-color: transparent;
-    --ag-row-border: 2px solid #F0BD66;
+    --ag-row-border: 2px solid var(--primary);
     --ag-background-color: white;
     --ag-row-hover-color: white;
-    --ag-input-border: 2px solid #F0BD66;
+    --ag-input-border: 2px solid var(--primary);
 }
 
 .ag-theme-alpine .ag-header-cell-resize {
-    background-color: #F0BD66;
+    background-color: var(--primary);
     width: 2px;
     height: 15px;
     right: 0;
@@ -30,17 +30,17 @@
 
 
 .ag-checkbox-input-wrapper.ag-checked {
-    background-color: #F0BD66 !important;
+    background-color: var(--primary) !important;
 
-    border-color: #F0BD66 !important;
+    border-color: var(--primary) !important;
 }
 
 .ag-checkbox-input-wrapper:focus-within {
-    border-color: #F0BD66;
-    box-shadow: 0 0 0 2px #F0BD66;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary);
 }
 
 .ag-checkbox-input-wrapper:focus-within .ag-icon-checkbox-checked,
 .ag-checkbox-input-wrapper:focus-within .ag-icon-checkbox-unchecked {
-    color: #F0BD66;
+    color: var(--primary);
 }
