@@ -8,7 +8,7 @@
     <!-- Logo / brand -->
     <a href="/" class="flex items-center gap-3 mb-5 mt-2 group">
       <div
-        class="h-9 w-9 rounded-2xl bg-[#F0BD66] flex items-center justify-center text-white text-base font-semibold shadow-sm group-hover:shadow-md group-hover:scale-[1.03] transition-transform">
+        class="h-9 w-9 rounded-2xl bg-primary flex items-center justify-center text-white text-base font-semibold shadow-sm group-hover:shadow-md group-hover:scale-[1.03] transition-transform">
         S
       </div>
       <div class="flex flex-col leading-tight">
@@ -20,7 +20,7 @@
     <!-- Nav items -->
     <div class="space-y-3 overflow-y-auto max-h-[100%] pb-9">
       <a href="/main/dashboard" class="w-full text-left block shadow-md rounded-xl px-4 py-3 flex items-center justify-between
-               {{#if (eq page 'Dashboard')}} bg-[#F0BD66] text-white
+               {{#if (eq page 'Dashboard')}} bg-primary text-white
                {{else}} bg-white text-gray-700 hover:bg-gray-100{{/if}}">
         <span class="flex items-center font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -34,7 +34,7 @@
       </a>
 
       <a href="/main/bookmarks" class="w-full text-left block shadow-md rounded-xl px-4 py-3 flex items-center justify-between
-               {{#if (eq page 'Bookmarks')}} bg-[#F0BD66] text-white
+               {{#if (eq page 'Bookmarks')}} bg-primary text-white
                {{else}} bg-white text-gray-700 hover:bg-gray-100{{/if}}">
         <span class="flex items-center font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -49,7 +49,7 @@
 
       <!-- Courses -->
       <div id="courses-toggle" class="w-full text-left block shadow-md hover:cursor-pointer rounded-xl px-4 py-3 flex items-center justify-between
-               {{#if (eq page 'Courses')}} bg-[#F0BD66] text-white
+               {{#if (eq page 'Courses')}} bg-primary text-white
                {{else}} bg-white text-gray-700 hover:bg-gray-100{{/if}}">
         <span class="flex items-center text-gray-700 font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -73,7 +73,7 @@
         {{#if courses.length}}
         {{#each courses}}
         <a href="/main/courses/{{this._id}}" class="flex items-center text-sm shadow-md font-medium rounded-lg px-3 py-2
-                     {{#if (eq ../selectedCourse this._id)}} bg-[#F0BD66] text-white
+                     {{#if (eq ../selectedCourse this._id)}} bg-primary text-white
                      {{else}} text-gray-700 bg-white hover:bg-gray-100{{/if}}">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
             stroke="currentColor"
@@ -92,7 +92,7 @@
       {{#if (eq user.role 'professor')}}
       <!-- Management -->
       <div id="management-toggle" class="w-full text-left block shadow-md hover:cursor-pointer rounded-xl px-4 py-3 flex items-center justify-between
-                 {{#if (eq page 'Management')}} bg-[#F0BD66] text-white
+                 {{#if (eq page 'Management')}} bg-primary text-white
                  {{else}} bg-white text-gray-700 hover:bg-gray-100{{/if}}">
         <span class="flex items-center text-gray-700 font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -113,7 +113,7 @@
 
       <div id="management-dropdown" class="ml-6 mt-2 space-y-2 transition-all duration-300">
         <a href="/main/management/course" class="flex items-center text-sm shadow-md font-medium rounded-lg px-3 py-2
-                   {{#if (eq page 'Course Management')}} bg-[#F0BD66] text-white
+                   {{#if (eq page 'Course Management')}} bg-primary text-white
                    {{else}} text-gray-700 bg-white hover:bg-gray-100{{/if}}">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
             stroke="currentColor"
@@ -125,7 +125,7 @@
         </a>
 
         <a href="/main/management/student" class="flex items-center text-sm shadow-md font-medium rounded-lg px-3 py-2
-                   {{#if (eq page 'Student Management')}} bg-[#F0BD66] text-white
+                   {{#if (eq page 'Student Management')}} bg-primary text-white
                    {{else}} text-gray-700 bg-white hover:bg-gray-100{{/if}}">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
             stroke="currentColor"
@@ -140,7 +140,7 @@
 
       {{#if (eq user.role 'professor')}}
       <a href="/main/analytics" class="w-full text-left block shadow-md rounded-xl px-4 py-3 flex items-center justify-between
-                 {{#if (eq page 'Analytics')}} bg-[#F0BD66] text-white
+                 {{#if (eq page 'Analytics')}} bg-primary text-white
                  {{else}} bg-white text-gray-700 hover:bg-gray-100{{/if}}">
         <span class="flex items-center font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -155,7 +155,7 @@
       {{/if}}
 
       <a href="/main/profile" class="w-full text-left block shadow-md rounded-xl px-4 py-3 flex items-center justify-between
-               {{#if (eq page 'Profile')}} bg-[#F0BD66] text-white
+               {{#if (eq page 'Profile')}} bg-primary text-white
                {{else}} bg-white text-gray-700 hover:bg-gray-100{{/if}}">
         <span class="flex items-center font-medium">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"

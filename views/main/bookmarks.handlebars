@@ -8,7 +8,7 @@
             <p class="text-gray-400 text-sm  flex items-center gap-1">
                 <a href="/">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                        class="size-4 hover:text-[#F0BD66] ">
+                        class="size-4 hover:text-primary ">
                         <path fill-rule="evenodd"
                             d="M9.293 2.293a1 1 0 0 1 1.414 0l7 7A1 1 0 0 1 17 11h-1v6a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1v-3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-6H3a1 1 0 0 1-.707-1.707l7-7Z"
                             clip-rule="evenodd" />
@@ -24,12 +24,11 @@
         {{#if bookmarks.length}}
         {{#each bookmarks}}
 
-        <div
-            class="bg-white rounded-3xl shadow-sm py-3 px-6 border border-[#F0BD66] hover:bg-[#fcfaf6] hover:shadow-md">
+        <div class="bg-white rounded-3xl shadow-sm py-3 px-6 border border-primary hover:bg-[#fcfaf6] hover:shadow-md">
             <div class=" flex items-center justify-between mb-2">
                 <div class="flex gap-3">
                     {{#each this.labels}}
-                    <div key="{{this._id}}" class="border border-[#F0BD66] text-[#F0BD66] text-sm  px-4 rounded-3xl ">
+                    <div key="{{this._id}}" class="border border-primary text-primary text-sm  px-4 rounded-3xl ">
                         {{this.name}}
                     </div>
                     {{/each}}
@@ -57,7 +56,7 @@
             </div>
 
             <a href="/main/question/{{this._id}}">
-                <div class="text-lg font-semibold text-gray-900 mb-2 hover:text-[#F0BD66] transition">
+                <div class="text-lg font-semibold text-gray-900 mb-2 hover:text-primary transition">
                     {{this.question}}
                 </div>
             </a>

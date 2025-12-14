@@ -4,15 +4,16 @@
 #courseManagementGrid .ag-cell:focus {
   outline: none !important;
   border: none !important;
-} 
+}
 
 #studentManagementGrid .ag-cell-focus,
 #studentManagementGrid .ag-cell-range-single-cell,
 #studentManagementGrid .ag-cell:focus {
   outline: none !important;
   border: none !important;
-} 
- 
- :root {
-     --primary: #F0BD66;
- }
+}
+
+:root {
+  --primary: #F0BD66;
+  --secondary: #FFF7E8;
+}

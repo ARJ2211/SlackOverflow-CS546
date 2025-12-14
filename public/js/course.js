@@ -422,7 +422,7 @@ const handleLabelsCheckbox = (event) => {
                 let label = document.createElement("div");
                 label.id = "label-" + checkbox.value;
                 label.className =
-                    " text-sm border border-white font-medium rounded-3xl pl-2 pr-1 text-white bg-[#F0BD66]  flex gap-1 ";
+                    " text-sm border border-white font-medium rounded-3xl pl-2 pr-1 text-white bg-primary  flex gap-1 ";
                 label.innerHTML = `
                 <span>${checkbox.getAttribute("data-label")}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
