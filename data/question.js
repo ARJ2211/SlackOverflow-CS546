@@ -50,7 +50,7 @@ export const createQuestion = async (
     const prevSimilarQuestions = await searchQuestion(question, course_id);
     console.log(
         "Previous questions that are similar: " +
-            JSON.stringify(prevSimilarQuestions)
+        JSON.stringify(prevSimilarQuestions)
     );
     if (prevSimilarQuestions.length !== 0) {
         const best = prevSimilarQuestions[0];
@@ -64,7 +64,9 @@ export const createQuestion = async (
             const roundedScore = Number(best.score).toFixed(2);
             const roundedJac = Number(jacScore).toFixed(2);
 
-            throw `ERROR: A similar question already exists (score ${roundedScore}, jaccard ${roundedJac}). Closest match: <strong>${best.question}</strong>`;
+            return { hasSimilarQuestions: true, course_id: course_id, similarQuestions: prevSimilarQuestions }
+
+            // throw `ERROR: A similar question already exists (score ${roundedScore}, jaccard ${roundedJac}). Closest match: <strong>${best.question}</strong>`;
         }
     }
 

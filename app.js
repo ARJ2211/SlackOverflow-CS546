@@ -5,6 +5,7 @@ import { requestLogger } from "./middleware/requestLogger.js";
 import { methodOverride } from "./middleware/methodOverride.js";
 import { sessionConfig } from "./middleware/sessionConfig.js";
 import { setSessionLocals } from "./middleware/auth.js";
+import lastSeenMiddleware from "./middleware/lastSeen.js";
 
 const app = express();
 
@@ -13,6 +14,8 @@ app.use("/public", express.static("public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(sessionConfig);
+app.use(lastSeenMiddleware);
+
 app.use(methodOverride);
 
 // handlebars setup

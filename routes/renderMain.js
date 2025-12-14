@@ -8,6 +8,7 @@ import { getAllStudentsByCourseId } from "../data/students.js";
 import * as usersData from "../data/users.js";
 import moment from "moment";
 import * as answersData from "../data/answer.js";
+import { getDashboardData } from "../data/analytics.js";
 
 const router = Router();
 
@@ -15,6 +16,10 @@ const router = Router();
 router.get("/dashboard", async (req, res) => {
     const userSesData = req.session.user;
     let courses = [];
+    let totalCourses = 0;
+    let totalQuestions = 0;
+    let totalTas = 0;
+    let activeUsers = 0;
 
     try {
         if (userSesData.role == "professor") {
@@ -31,12 +36,20 @@ router.get("/dashboard", async (req, res) => {
             course_name: course.course_name,
         }));
 
+        const dashboardData = await getDashboardData(userSesData.id, userSesData.role);
+
         return res.render("main/dashboard", {
             layout: "main",
             title: "Dashboard",
             page: "Dashboard",
             path: "/ dashboard",
             courses: courses,
+            totalCourses: dashboardData.totalCourses,
+            totalQuestions: dashboardData.totalQuestions,
+            totalTAs: dashboardData.totalTAs,
+            activeUsers: dashboardData.activeUsers,
+            myQuestions: dashboardData.myQuestions,
+            recentQuestions: dashboardData.recentQuestions,
         });
     } catch (error) {
         console.error("/main/dashboard Error:", error);
