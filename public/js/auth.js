@@ -75,8 +75,9 @@ const handleSignUp = (event) => {
         .then(({ status, body }) => {
             if (status !== 200) {
                 showToast(
-                    "No such user found. If you are a student please ask a professor to add you in a course" ||
-                        "Unknown error.",
+                    body.message && body.message !== "user not found"
+                        ? body.message
+                        : "User not found, if you are a student kindly request a professor to add you in a course",
                     "error"
                 );
                 button.disabled = false;

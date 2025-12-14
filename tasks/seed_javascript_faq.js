@@ -73,7 +73,6 @@ const getOrCreateProfessor = async () => {
         ? validator.isValidEmail(normalizedEmail)
         : normalizedEmail;
 
-    // Use your data-layer helper correctly: it returns the full user doc
     const newUser = await createUser(
         firstNameValidated,
         lastNameValidated,
@@ -191,7 +190,6 @@ const seedFaqFileForCourse = async (creator, courseDoc) => {
             };
         })();
 
-    // if your label structure is different, adjust here:
     const generalLabelId =
         generalLabel._id?.toString?.() ?? generalLabel.id ?? generalLabel;
 
@@ -259,12 +257,17 @@ const seedFaqFileForCourse = async (creator, courseDoc) => {
 
 const seedJavaScriptFAQ = async () => {
     // high-level explanation for whoever runs this
-    console.log("\nSeeding JavaScript FAQ questions for SlackOverflow.");
+    console.log(
+        "\nSeeding JavaScript FAQ questions for SlackOverflow. (This will take 3-5 mins)"
+    );
     console.log(
         "You will be asked for a professor email and course details so we can attach the FAQ to a real course and professor."
     );
     console.log(
-        "Important: the professor email MUST be a valid email address that can receive OTP verification emails during sign-up.\n"
+        "Important: the professor email MUST be a VALID EMAIL address that can receive OTP verification emails during sign-up.\n"
+    );
+    console.log(
+        "Professors of Stevens Institute of Technology emails have already been seeded. If you are a professor of Stevens Institute of Technology, kindly enter your SIT email ID\n"
     );
     console.log(
         "Flow:\n" +
