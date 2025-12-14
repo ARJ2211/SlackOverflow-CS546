@@ -33,7 +33,7 @@ The hugging face token will need to be exported as `export HF_TOKEN=hf_asdasd...
 
 From the project root run:
 
-```
+```sh
 npm install
 ```
 
@@ -41,7 +41,7 @@ After installation choose one of the paths below based on the files included in 
 
 ### If the `models` directory is already present (you need not worry about the hugging face token and all)
 
-```
+```sh
 npm run seed
 ```
 
@@ -51,7 +51,7 @@ The seed script asks for a few inputs so follow the prompts.
 
 You need to download the model and set up the vector index.
 
-```
+```sh
 npm run tasks
 ```
 
@@ -59,7 +59,7 @@ This installs Hugging Face CLI if needed downloads the model and creates the vec
 
 ### Start the server
 
-```
+```text
 npm start
 ```
 
@@ -68,3 +68,12 @@ npm start
 SlackOverflow uses MongoDB Atlas.  
 Everyone using the same connection string will see the same data even when running the app on localhost.  
 All courses professors questions answers and analytics are shared unless the connection string is changed.
+
+---
+
+## Reference 
+
+- AG-Grid: https://www.ag-grid.com/javascript-data-grid/getting-started/
+- Quill Editor: https://quilljs.com/docs/quickstart 
+- Tailwind CSS: https://tailwindcss.com/docs/installation
+- Hugging Face: https://huggingface.co/docs
