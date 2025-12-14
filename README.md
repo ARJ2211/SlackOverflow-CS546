@@ -5,10 +5,10 @@ Professors, TAs and students share one clean space for all course questions with
 
 ## Team
 
-Aayush Rajesh Jadhav : ARJ2211  
-Swapnil Jadhav : Tolaj
-Vinci Li : Vicniz  
-Lijing Li : Slowdiiive
+-   Aayush Rajesh Jadhav : ARJ2211
+-   Swapnil Jadhav : Tolaj
+-   Vinci Li : Vicniz
+-   Lijing Li : Slowdiiive
 
 ## Tech Stack
 
@@ -71,9 +71,9 @@ All courses professors questions answers and analytics are shared unless the con
 
 ---
 
-## Reference 
+## Reference
 
-- AG-Grid: https://www.ag-grid.com/javascript-data-grid/getting-started/
-- Quill Editor: https://quilljs.com/docs/quickstart 
-- Tailwind CSS: https://tailwindcss.com/docs/installation
-- Hugging Face: https://huggingface.co/docs
+-   AG-Grid: https://www.ag-grid.com/javascript-data-grid/getting-started/
+-   Quill Editor: https://quilljs.com/docs/quickstart
+-   Tailwind CSS: https://tailwindcss.com/docs/installation
+-   Hugging Face: https://huggingface.co/docs
