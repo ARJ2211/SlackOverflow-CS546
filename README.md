@@ -1,53 +1,70 @@
-# SlackOverflow – Course Q&A Board
+# SlackOverflow - Course Q&A Board
 
-A centralized, AI-assisted Q&A board for university courses.  
-Professors, TAs, and students share one clean space for all course questions, with labels, search, and vector-based duplicate detection.
-
----
+A centralized AI assisted Q&A board for university courses.  
+Professors, TAs and students share one clean space for all course questions with labels, search and vector based duplicate detection.
 
 ## Team
 
--   Aayush Rajesh Jadhav : ARJ2211
--   Vinci Li : Vicniz
--   Lijing Li : Slowdiiive
--   Swapnil Jadhav : Tolaj
-
----
+Aayush Rajesh Jadhav : ARJ2211  
+Swapnil Jadhav : Tolaj
+Vinci Li : Vicniz  
+Lijing Li : Slowdiiive
 
 ## Tech Stack
 
--   Node.js + Express
--   MongoDB (Atlas for vector store)
--   Handlebars templates + Tailwind-styled UI
--   Vector embeddings model for semantic duplicate detection
-
----
+Node.js and Express  
+MongoDB Atlas for data and vector search  
+Handlebars templates with Tailwind styled UI  
+Vector embeddings model for semantic duplicate detection
 
 ## Getting Started
 
-### 1. Prerequisites
+### Prerequisites
 
--   Node.js (v18+ recommended)
--   npm
--   Hugging face CLI (Although a script will help you install it, but its best to have it pre-installed)
--   MongoDB instance reachable from your machine  
-    (connection string is configured in the project’s Mongo config or via environment variables)
+Node.js version 18 or newer  
+npm  
+MongoDB Atlas access  
+Hugging Face CLI only needed if the model directory is missing
 
-If you need a `.env`, create it based on `.env.example` and set your MongoDB URI and any Hugging Face / embedding model keys (export token to HF_TOKEN) as required by the codebase.
+If environment variables are needed, copy `.env.example` to `.env` and set the MongoDB URI and the HF token if required.
+The hugging face token will need to be exported as `export HF_TOKEN=hf_asdasd....`
 
----
+## Installation and Setup
 
-## Installation and Run Commands
+From the project root run:
 
-From the project root:
-
-```bash
-# 1. Install node dependencies
+```
 npm install
+```
 
-# 2. Install huggingface-cli, set up vector index for vector store, seed database with professors list for SIT
+After installation choose one of the paths below based on the files included in the submitted zip.
+
+### If the `models` directory is already present (you need not worry about the hugging face token and all)
+
+```
+npm run seed
+```
+
+The seed script asks for a few inputs so follow the prompts.
+
+### If the `models` directory is not present (you will have to export your HF_TOKEN and download the model into the project)
+
+You need to download the model and set up the vector index.
+
+```
 npm run tasks
+```
 
-# 3. Start the server
+This installs Hugging Face CLI if needed downloads the model and creates the vector index before running the seed script.
+
+### Start the server
+
+```
 npm start
 ```
+
+## Important Information About Data Consistency
+
+SlackOverflow uses MongoDB Atlas.  
+Everyone using the same connection string will see the same data even when running the app on localhost.  
+All courses professors questions answers and analytics are shared unless the connection string is changed.
