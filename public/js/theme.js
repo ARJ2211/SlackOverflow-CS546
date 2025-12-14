@@ -3,6 +3,7 @@ const applyCustomTheme = () => {
     const secondary = document.getElementById('secondaryColor').value;
     const tertiary = document.getElementById('tertiaryColor').value;
 
+
     document.documentElement.style.setProperty('--primary', primary);
     document.documentElement.style.setProperty('--secondary', secondary);
     document.documentElement.style.setProperty('--tertiary', tertiary);
