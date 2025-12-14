@@ -261,7 +261,7 @@ const actionCellRenderer = (params) => {
             });
     });
 
-    container.appendChild(editBtn);
+    // container.appendChild(editBtn);
     container.appendChild(deleteBtn);
 
     return container;
