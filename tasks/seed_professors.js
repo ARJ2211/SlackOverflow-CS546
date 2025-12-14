@@ -80,15 +80,15 @@ const seedProfessors = async () => {
             // //  increment for the manual user
             // progressBar.increment(1, { name: "Dr. Aayush" });
 
-            await usersUtils.createUser(
-                "Swapnil",
-                "Jadhav",
-                "swapnilhgf@gmail.com",
-                "professor"
-            );
+            // await usersUtils.createUser(
+            //     "Swapnil",
+            //     "Jadhav",
+            //     "swapnilhgf@gmail.com",
+            //     "professor"
+            // );
 
-            // final increment for the manual user
-            progressBar.increment(1, { name: "Swapnil Jadhav" });
+            // // final increment for the manual user
+            // progressBar.increment(1, { name: "Swapnil Jadhav" });
         } finally {
             // stop/clear the bar line and restore logging
             progressBar.stop();
