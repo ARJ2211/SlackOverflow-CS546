@@ -1,16 +1,65 @@
+const gridDiv = document.querySelector("#studentManagementGrid");
+const studentsData = JSON.parse(gridDiv.getAttribute("data-students") || "[]");
+const coursesData = JSON.parse(gridDiv.getAttribute("data-courses") || "[]");
+
+// build a map: course_code -> course _id
+const courseCodeToId = {};
+coursesData.forEach((c) => {
+    if (c.course_id && c._id) {
+        courseCodeToId[c.course_id] = c._id;
+    }
+});
+
 const initializeGrid = (gridDiv, students) => {
-    console.log(students)
+    console.log(students);
     const columnDefs = [
-        { headerName: "First Name", field: "first_name" },
-        { headerName: "Last Name", field: "last_name" },
-        { headerName: "Email", field: "email" },
-
-        { headerName: "Course Code", field: "course_code" },
-        { headerName: "Course Name", field: "course_name", },
-        { headerName: "Role", field: "is_ta", editable: true, },
-
-        { headerName: "Status", field: "status", cellRenderer: statusCellRenderer, },
-        { headerName: "Action", field: "action", floatingFilter: false, cellRenderer: actionCellRenderer },
+        {
+            headerName: "First Name",
+            field: "first_name",
+            headerTooltip: "Student's first name.",
+        },
+        {
+            headerName: "Last Name",
+            field: "last_name",
+            headerTooltip: "Student's last name.",
+        },
+        {
+            headerName: "Email",
+            field: "email",
+            headerTooltip:
+                "Student's email address used for login and invites.",
+        },
+        {
+            headerName: "Course Code",
+            field: "course_code",
+            headerTooltip: "Short course code, e.g. CS-546.",
+        },
+        {
+            headerName: "Course Name",
+            field: "course_name",
+            headerTooltip:
+                "Full name of the course this student is enrolled in.",
+        },
+        {
+            headerName: "Toggle TA",
+            field: "is_ta",
+            headerTooltip:
+                "Click the switch to promote/demote this student as a TA for this course.",
+            cellRenderer: roleCellRenderer,
+        },
+        {
+            headerName: "Status",
+            field: "status",
+            headerTooltip: "Account status of the student (ACTIVE / INACTIVE).",
+            cellRenderer: statusCellRenderer,
+        },
+        {
+            headerName: "Action",
+            field: "action",
+            floatingFilter: false,
+            headerTooltip: "Remove this student from the course.",
+            cellRenderer: actionCellRenderer,
+        },
     ];
 
     const defaultColDef = {
@@ -29,79 +78,225 @@ const initializeGrid = (gridDiv, students) => {
         pagination: true,
         paginationPageSize: 8,
         paginationAutoPageSize: false,
+        tooltipShowDelay: 500,
+        tooltipHideDelay: 2000,
     };
 
     agGrid.createGrid(gridDiv, gridOptions);
-}
+};
 
 const statusCellRenderer = (params) => {
-    if (params.value == "inactive") {
-        return `<div class="text-red-600">${params.value}</div>`
+    const isInactive = params.value === "inactive";
 
-    } else {
-        return `<div class="text-green-600">${params.value}</div>`
-    }
-}
+    const base =
+        "px-2 py-0.5 rounded-full text-xs font-medium capitalize inline-block";
 
-const actionCellRenderer = (params) => {
-    const container = document.createElement('div');
-    container.className = 'flex items-center justify-center bg- h-full gap-2';
+    return `
+        <span class="${isInactive
+            ? base + " bg-red-500/10 text-red-400 border border-red-500/30"
+            : base +
+            " bg-emerald-500/10 text-emerald-300 border border-emerald-500/30"
+        }">
+            ${params.value}
+        </span>
+    `;
+};
 
-    const editBtn = document.createElement('div');
-    editBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="text-[#f0bd66] size-5 hover:cursor-pointer hover:text-[#e3aa4e] transition">
-            <path d="m5.433 13.917 1.262-3.155A4 4 0 0 1 7.58 9.42l6.92-6.918a2.121 2.121 0 0 1 3 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 0 1-.65-.65Z" />
-            <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0 0 10 3H4.75A2.75 2.75 0 0 0 2 5.75v9.5A2.75 2.75 0 0 0 4.75 18h9.5A2.75 2.75 0 0 0 17 15.25V10a.75.75 0 0 0-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5Z" />
-        </svg>
+const roleCellRenderer = (params) => {
+    const data = params.data;
+    const isTa = !!data.is_ta;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.title = "Click to toggle between Student and TA";
+
+    const baseClasses =
+        "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold " +
+        "shadow-sm border transition focus:outline-none focus:ring-1 focus:ring-offset-1 " +
+        "cursor-pointer";
+
+    const labelText = isTa ? "TA" : "Student";
+    const dotClass = isTa ? "bg-emerald-200" : "bg-amber-700/80";
+    const pillClasses = isTa
+        ? baseClasses +
+        " bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-500 hover:border-emerald-500"
+        : baseClasses +
+        " bg-primary text-black border-[#e2a94f] hover:bg-[#f7c878] hover:border-[#f7c878]";
+
+    btn.className = pillClasses;
+    btn.innerHTML = `
+        <span class="w-2.5 h-2.5 rounded-full ${dotClass}"></span>
+        <span class="text-[11px] tracking-wide whitespace-nowrap">${labelText}</span>
+        <span class="ml-2 flex items-center gap-1 text-[10px] uppercase tracking-wide opacity-80 whitespace-nowrap">
+            <span class="hidden md:inline">Click</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                 fill="currentColor" class="w-3 h-3">
+                <path fill-rule="evenodd"
+                      d="M7.22 4.22a.75.75 0 0 1 1.06 0L12.53 8.47a.75.75 0 0 1 0 1.06L8.28 13.78a.75.75 0 1 1-1.06-1.06L10.69 10 7.22 6.53a.75.75 0 0 1 0-1.06Z"
+                      clip-rule="evenodd" />
+            </svg>
+        </span>
     `;
 
-    editBtn.addEventListener('click', () => {
-        const data = params.data;
-        console.log('Edit clicked for', data);
-        alert(`Edit ${data.course_name}`);
-        // Your edit logic here
+    btn.addEventListener("click", () => {
+        const courseId = courseCodeToId[data.course_code];
+        const studentId = data._id;
+
+        if (!courseId || !studentId) {
+            console.error("Missing courseId or studentId for TA toggle", {
+                courseId,
+                studentId,
+                data,
+            });
+            showToast("Could not resolve course or student id.", "error");
+            return;
+        }
+
+        btn.disabled = true;
+
+        fetch(`/courses/${courseId}/ta/${studentId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+        })
+            .then(async (res) => {
+                const body = await res.json().catch(() => ({}));
+                return { status: res.status, body };
+            })
+            .then(({ status, body }) => {
+                if (status !== 200) {
+                    showToast(
+                        body.message || "Failed to toggle TA status.",
+                        "error"
+                    );
+                    btn.disabled = false;
+                    return;
+                }
+
+                const newIsTa = !!body.is_ta;
+                data.is_ta = newIsTa;
+
+                const newLabelText = newIsTa ? "TA" : "Student";
+                const newDotClass = newIsTa
+                    ? "bg-emerald-200"
+                    : "bg-amber-700/80";
+                const newPillClasses = newIsTa
+                    ? baseClasses +
+                    " bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-500 hover:border-emerald-500"
+                    : baseClasses +
+                    " bg-primary text-black border-[#e2a94f] hover:bg-[#f7c878] hover:border-[#f7c878]";
+
+                btn.className = newPillClasses;
+                btn.innerHTML = `
+                    <span class="w-2.5 h-2.5 rounded-full ${newDotClass}"></span>
+                    <span class="text-[11px] tracking-wide whitespace-nowrap">${newLabelText}</span>
+                    <span class="ml-2 flex items-center gap-1 text-[10px] uppercase tracking-wide opacity-80 whitespace-nowrap">
+                        <span class="hidden md:inline">Click</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                             fill="currentColor" class="w-3 h-3">
+                            <path fill-rule="evenodd"
+                                  d="M7.22 4.22a.75.75 0 0 1 1.06 0L12.53 8.47a.75.75 0 0 1 0 1.06L8.28 13.78a.75.75 0 1 1-1.06-1.06L10.69 10 7.22 6.53a.75.75 0 0 1 0-1.06Z"
+                                  clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                `;
+
+                showToast(
+                    newIsTa
+                        ? "Student is now a Teaching Assistant."
+                        : "Student is now a regular student.",
+                    "success"
+                );
+
+                btn.disabled = false;
+            })
+            .catch((err) => {
+                console.error("Toggle TA error:", err);
+                showToast("Server error. Please try again.", "error");
+                btn.disabled = false;
+            });
     });
 
-    const deleteBtn = document.createElement('div');
+    return btn;
+};
+
+const actionCellRenderer = (params) => {
+    const container = document.createElement("div");
+    container.className = "flex items-center justify-center h-full gap-2";
+
+    const deleteBtn = document.createElement("div");
     deleteBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="text-[#f0bd66] size-5 hover:cursor-pointer hover:text-red-500 transition'">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="text-primary size-5 hover:cursor-pointer hover:text-red-500 transition">
             <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z" clip-rule="evenodd"/>
         </svg>
     `;
 
-    deleteBtn.addEventListener('click', () => {
+    deleteBtn.addEventListener("click", () => {
         const data = params.data;
-        const confirmDelete = confirm(`Are you sure you want to delete ${data.course_name}?`);
-        if (confirmDelete) {
-            params.api.applyTransaction({ remove: [data] });
+
+        const confirmDelete = confirm(
+            `Are you sure you want to remove ${data.email} from ${data.course_code}?`
+        );
+        if (!confirmDelete) return;
+
+        const courseId = courseCodeToId[data.course_code];
+        const studentId = data._id;
+
+        if (!courseId || !studentId) {
+            console.error("Missing courseId or studentId", {
+                courseId,
+                studentId,
+                data,
+            });
+            showToast("Could not resolve course or student id.", "error");
+            return;
         }
+
+        fetch(`/courses/${courseId}/students/${studentId}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+        })
+            .then(async (res) => {
+                const body = await res.json().catch(() => ({}));
+                return { status: res.status, body };
+            })
+            .then(({ status, body }) => {
+                if (status !== 200) {
+                    showToast(
+                        body.message || "Failed to remove student from course.",
+                        "error"
+                    );
+                    return;
+                }
+
+                showToast("Student removed from course.", "success");
+                params.api.applyTransaction({ remove: [data] });
+            })
+            .catch((err) => {
+                console.error("Delete student error:", err);
+                showToast("Server error. Please try again.", "error");
+            });
     });
 
-    // container.appendChild(editBtn);
     container.appendChild(deleteBtn);
-
     return container;
-}
+};
 
 const handleAddStudentModal = () => {
-
-    const modal = document.getElementById('addStudentModal');
+    const modal = document.getElementById("addStudentModal");
     if (modal) {
-        if (modal.classList.contains('hidden')) {
-            modal.classList.remove('hidden');
+        if (modal.classList.contains("hidden")) {
+            modal.classList.remove("hidden");
         } else {
-            modal.classList.add('hidden');
+            modal.classList.add("hidden");
         }
     }
-}
+};
 
 const handleSaveStudent = (event) => {
-
     event.preventDefault();
 
     const email = event.target.email.value.trim();
-    const is_ta = event.target.is_ta.value.trim() === 'true';
-
+    const is_ta = event.target.is_ta.value.trim() === "true";
     const courseUuid = event.target.courseUuid.value.trim();
 
     const button = event.target.querySelector("button[type='submit']");
@@ -111,13 +306,13 @@ const handleSaveStudent = (event) => {
     fetch(`/courses/${courseUuid}/students`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, is_ta })
+        body: JSON.stringify({ email, is_ta }),
     })
         .then(async (res) => {
             const body = await res.json();
             return { status: res.status, body };
-        }
-        ).then(({ status, body }) => {
+        })
+        .then(({ status, body }) => {
             if (status !== 200) {
                 showToast(body.message || "unknown error.", "error");
                 button.disabled = false;
@@ -132,9 +327,8 @@ const handleSaveStudent = (event) => {
             setTimeout(() => {
                 window.location.reload();
             }, 1200);
-
         })
-        .catch(err => {
+        .catch((err) => {
             console.error("handleSaveStudent error:", err);
             showToast("Server error. Please try again.", "error");
             button.disabled = false;
@@ -144,16 +338,4 @@ const handleSaveStudent = (event) => {
     return false;
 };
 
-
-
-
-
-
-
-
-
-
-
-const gridDiv = document.querySelector('#studentManagementGrid');
-const studentsData = JSON.parse(gridDiv.getAttribute('data-students') || '[]');
 initializeGrid(gridDiv, studentsData);

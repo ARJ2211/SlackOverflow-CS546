@@ -1,3 +1,19 @@
- :root {
-     --primary: #F0BD66;
- }
+/* Remove AG Grid blue focus/selection outline in Course Management grid */
+#courseManagementGrid .ag-cell-focus,
+#courseManagementGrid .ag-cell-range-single-cell,
+#courseManagementGrid .ag-cell:focus {
+  outline: none !important;
+  border: none !important;
+}
+
+#studentManagementGrid .ag-cell-focus,
+#studentManagementGrid .ag-cell-range-single-cell,
+#studentManagementGrid .ag-cell:focus {
+  outline: none !important;
+  border: none !important;
+}
+
+:root {
+  --primary: #F0BD66;
+  --secondary: #FFF7E8;
+}

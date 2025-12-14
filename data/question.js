@@ -1,4 +1,8 @@
-import { Normalize, Jaccard, Tokens } from "../utils/ragUtils/jaccardNormalizer.js";
+import {
+    Normalize,
+    Jaccard,
+    Tokens,
+} from "../utils/ragUtils/jaccardNormalizer.js";
 import { questions } from "../config/mongoCollections.js";
 import { getEmbedding } from "../utils/ragUtils/getEmbeddings.js";
 import * as validator from "../utils/validator.js";
@@ -6,6 +10,7 @@ import { answers } from "../config/mongoCollections.js";
 
 const THRESOLD = 0.9;
 const JACCARD_THRESHOLD = 0.65;
+const COMBINED_THRESHOLD = 0.8;
 
 /**
  * Insert a question into the questions collection along with
@@ -13,32 +18,55 @@ const JACCARD_THRESHOLD = 0.65;
  * @param {*} question
  * @returns {Object}
  */
-export const createQuestion = async (question, course_id, user_id, labels = [], question_content, question_delta) => {
+export const createQuestion = async (
+    question,
+    course_id,
+    user_id,
+    labels = [],
+    question_content,
+    question_delta
+) => {
     course_id = validator.isValidMongoId(course_id);
     question = validator.isValidString(question);
     question_content = validator.isValidString(question_content);
     question_delta = validator.isValidString(question_delta);
-
+    labels = validator.isValidLabels(labels);
+    console.log(labels);
     const questionsColl = await questions();
 
     const canonical_key = Normalize(question);
-    const exact = await questionsColl.findOne({ canonical_key });
-    if (exact) {
-        throw `ERROR: This question already exists (exact/near-exact match) for question ${exact.question}!`;
-    }
+    /**
+     * Commenting this line out because let it hit
+     * the database and get a score out of it
+     */
+    // const exact = await questionsColl.findOne({ canonical_key });
+    // if (exact) {
+    //     throw `ERROR: This question already exists (exact/near-exact match) for question ${exact.question}!`;
+    // }
 
     let embedding = await getEmbedding(question);
 
     await new Promise((r) => setTimeout(r, 1500)); // allow Atlas to index
-    const prevSimilarQuestions = await searchQuestion(question);
-
+    const prevSimilarQuestions = await searchQuestion(question, course_id);
+    console.log(
+        "Previous questions that are similar: " +
+        JSON.stringify(prevSimilarQuestions)
+    );
     if (prevSimilarQuestions.length !== 0) {
         const best = prevSimilarQuestions[0];
         const jacScore = Jaccard(Tokens(question), Tokens(best.question));
 
         // only block if it's both semantically very close AND has high token overlap
-        if (best.score >= THRESOLD && jacScore >= JACCARD_THRESHOLD) {
-            throw `ERROR: This question already exists with score ${best.score} for question ${best.question}! JACCARD SORE: ${jacScore}`;
+        if (
+            (best.score >= THRESOLD && jacScore >= JACCARD_THRESHOLD) ||
+            best.combined_score >= COMBINED_THRESHOLD
+        ) {
+            const roundedScore = Number(best.score).toFixed(2);
+            const roundedJac = Number(jacScore).toFixed(2);
+
+            return { hasSimilarQuestions: true, course_id: course_id, similarQuestions: prevSimilarQuestions }
+
+            // throw `ERROR: A similar question already exists (score ${roundedScore}, jaccard ${roundedJac}). Closest match: <strong>${best.question}</strong>`;
         }
     }
 
@@ -55,10 +83,10 @@ export const createQuestion = async (question, course_id, user_id, labels = [], 
         labels: labels,
         up_votes: [],
         bookmarks: [],
-        accepted_answer_id: null,
+        accepted_answer_id: [],
         status: "open",
         answer_count: [],
-        views: []
+        views: [],
     };
 
     const { insertedId } = await questionsColl.insertOne(doc);
@@ -68,13 +96,20 @@ export const createQuestion = async (question, course_id, user_id, labels = [], 
 };
 
 /**
- * Get the top 5 similar questions that the user has asked
- * @param {*} query
- * @param {*} param1
- * @returns
+ * Get the top 5 similar questions that the user has asked within a course
+ * @param {string} query
+ * @param {string} courseId
+ * @param {{ k?: number, numCandidates?: number }} param2
+ * @returns {Promise<Array>}
  */
-export const searchQuestion = async (query, { k = 5, numCandidates } = {}) => {
-    query = validator.isValidString(query);
+export const searchQuestion = async (
+    query,
+    courseId,
+    { k = 5, numCandidates } = {}
+) => {
+    query = validator.isValidString(query, "query");
+    const courseObjectId = validator.isValidMongoId(courseId, "courseId");
+
     const questionsColl = await questions();
     const queryVector = await getEmbedding(query);
     const indexName = "vector_index";
@@ -88,6 +123,9 @@ export const searchQuestion = async (query, { k = 5, numCandidates } = {}) => {
                 queryVector,
                 numCandidates: candidates,
                 limit: k,
+                filter: {
+                    course: courseObjectId, // assumes field name is `course_id`
+                },
             },
         },
         {
@@ -105,9 +143,13 @@ export const searchQuestion = async (query, { k = 5, numCandidates } = {}) => {
     const qTokens = Tokens(query);
     for (const sq of similarQuestions) {
         sq.jaccard_score = Jaccard(qTokens, Tokens(sq.question));
-        // re-rank scores cuz why not (best of both worlds)
+        // combine vector score + Jaccard
         sq.combined_score = 0.8 * sq.score + 0.2 * sq.jaccard_score;
     }
+
+    // optional: actually re-rank by combined_score
+    similarQuestions.sort((a, b) => b.combined_score - a.combined_score);
+
     return similarQuestions;
 };
 
@@ -120,27 +162,61 @@ export const searchQuestion = async (query, { k = 5, numCandidates } = {}) => {
  */
 export const updateQuestion = async (filter, obj) => {
     const questionsColl = await questions();
+
     filter = validator.isValidObject(filter);
     obj = validator.isValidObject(obj);
-    if (obj.hasOwnProperty("question")) {
-        var new_question = obj.question;
-        var canonical_key = Normalize(obj.question);
-        let existingQuestion = await searchQuestion(obj.question);
 
-        existingQuestion = existingQuestion.filter((question) => question._id.toString() != filter._id.toString())
-
-        if (
-            existingQuestion.length > 0 &&
-            existingQuestion[0].score > THRESOLD
-        ) {
-
-            throw `ERROR: similar question already exists, ${existingQuestion[0].question}, score: ${existingQuestion[0].score}`;
+    // Remove undefined fields so we don't overwrite with undefined
+    for (const key of Object.keys(obj)) {
+        if (obj[key] === undefined) {
+            delete obj[key];
         }
-        var embedding = await getEmbedding(new_question);
+    }
+
+    // Get existing question so we know the course and id
+    const existingQuestion = await questionsColl.findOne(filter);
+    if (!existingQuestion) {
+        throw `ERROR: Question not found.`;
+    }
+
+    // If the text of the question is being changed, run duplicate check
+    if (Object.prototype.hasOwnProperty.call(obj, "question")) {
+        const new_question = obj.question;
+        const canonical_key = Normalize(new_question);
+
+        // use the course of the existing question for vector search
+        let similarQuestions = await searchQuestion(
+            new_question,
+            existingQuestion.course.toString()
+        );
+
+        // ignore self
+        similarQuestions = similarQuestions.filter(
+            (q) => q._id.toString() !== existingQuestion._id.toString()
+        );
+
+        if (similarQuestions.length > 0) {
+            const best = similarQuestions[0];
+            const jacScore = Jaccard(
+                Tokens(new_question),
+                Tokens(best.question)
+            );
+            const combinedScore = 0.8 * best.score + 0.2 * jacScore;
+
+            if (
+                (best.score >= THRESOLD && jacScore >= JACCARD_THRESHOLD) ||
+                combinedScore >= COMBINED_THRESHOLD
+            ) {
+                const roundedScore = Number(best.score).toFixed(2);
+                const roundedJac = Number(jacScore).toFixed(2);
+                throw `ERROR: A similar question already exists (score ${roundedScore}, jaccard ${roundedJac}). Closest match: <strong>${best.question}</strong>`;
+            }
+        }
+
+        const embedding = await getEmbedding(new_question);
         obj = { ...obj, embedding, canonical_key };
     }
 
-    canonical_key;
     const updateObj = {
         $set: {
             ...obj,
@@ -150,44 +226,47 @@ export const updateQuestion = async (filter, obj) => {
     const updatedObj = await questionsColl.findOneAndUpdate(filter, updateObj, {
         returnDocument: "after",
     });
-    if (!updateObj || updatedObj === null) throw `ERROR: document not updated.`;
+
+    if (!updatedObj || updatedObj === null) {
+        throw `ERROR: document not updated.`;
+    }
+
     return updatedObj;
 };
 
-export const updateAnswerCount = async (questionId, userId, action = 'add') => {
-
+export const updateAnswerCount = async (questionId, userId, action = "add") => {
     questionId = validator.isValidMongoId(questionId);
     userId = validator.isValidMongoId(userId);
 
     const questionsColl = await questions();
 
-    const question = await questionsColl.findOne({ _id: questionId })
+    const question = await questionsColl.findOne({ _id: questionId });
     if (!question) {
-        throw "Question not found"
+        throw "Question not found";
     }
 
     let query;
 
-    if (action == 'remove') {
-        const index = question.answer_count.map(id => id.toString()).indexOf(userId.toString())
+    if (action == "remove") {
+        const index = question.answer_count
+            .map((id) => id.toString())
+            .indexOf(userId.toString());
         if (index !== -1) {
-            question.answer_count.splice(index, 1)
+            question.answer_count.splice(index, 1);
         }
-        query = { $set: { answer_count: question.answer_count } }
+        query = { $set: { answer_count: question.answer_count } };
     } else {
-        query = { $push: { answer_count: userId } }
+        query = { $push: { answer_count: userId } };
     }
 
-    await questionsColl.updateOne({ _id: questionId }, query)
+    await questionsColl.updateOne({ _id: questionId }, query);
 
     const updatedQuestion = await questionsColl.findOne({ _id: questionId });
 
-    return updatedQuestion.answer_count
-
-}
+    return updatedQuestion.answer_count;
+};
 
 export const updateViews = async (questionId, userId) => {
-
     questionId = validator.isValidMongoId(questionId);
     userId = validator.isValidMongoId(userId);
 
@@ -200,68 +279,94 @@ export const updateViews = async (questionId, userId) => {
 
     const question = await questionsColl.findOne({ _id: questionId });
 
-    return question.views
-}
+    return question.views;
+};
 
 export const updateUpVotes = async (questionId, userId) => {
-
     let query;
 
-    questionId = validator.isValidMongoId(questionId)
-    userId = validator.isValidMongoId(userId)
+    questionId = validator.isValidMongoId(questionId);
+    userId = validator.isValidMongoId(userId);
 
-    const questionsColl = await questions()
+    const questionsColl = await questions();
 
-    const question = await questionsColl.findOne({ _id: questionId })
+    const question = await questionsColl.findOne({ _id: questionId });
 
     if (!question) {
-        throw `Question ${questionId} not found`
+        throw `Question ${questionId} not found`;
     }
 
-    const hasUpvoted = question.up_votes.map(id => id.toString()).includes(userId.toString())
-
+    const hasUpvoted = question.up_votes
+        .map((id) => id.toString())
+        .includes(userId.toString());
 
     if (hasUpvoted) {
-        query = { $pull: { up_votes: userId } }
+        query = { $pull: { up_votes: userId } };
     } else {
-        query = { $addToSet: { up_votes: userId } }
+        query = { $addToSet: { up_votes: userId } };
     }
     const updateInfo = await questionsColl.updateOne(
         { _id: questionId },
         query
     );
 
-    const updatedQuestion = await questionsColl.findOne({ _id: questionId })
+    const updatedQuestion = await questionsColl.findOne({ _id: questionId });
 
-    return updatedQuestion.up_votes
-}
+    return updatedQuestion.up_votes;
+};
 
 export const updateStatus = async (questionId, status) => {
-    questionId = validator.isValidMongoId(questionId)
-    status = validator.isValidString(status)
+    questionId = validator.isValidMongoId(questionId);
+    status = validator.isValidString(status);
 
-    if (!(status == 'open' || status == 'closed')) {
-        throw `Invalid Status: ${status}`
+    if (!(status == "open" || status == "closed")) {
+        throw `Invalid Status: ${status}`;
     }
 
-    const questionsColl = await questions()
+    const questionsColl = await questions();
 
     const updateInfo = await questionsColl.updateOne(
         { _id: questionId },
         { $set: { status: status } }
-    )
+    );
 
-    const question = await questionsColl.findOne({ _id: questionId })
+    const question = await questionsColl.findOne({ _id: questionId });
 
-    return question.status
+    return question.status;
+};
 
-}
+export const updateAcceptedAnswerId = async (
+    questionId,
+    answer_id,
+    is_accepted
+) => {
+    questionId = validator.isValidMongoId(questionId);
+    answer_id = validator.isValidMongoId(answer_id);
+    is_accepted = validator.isValidBoolean(is_accepted, "is_accepted");
+    const questionsColl = await questions();
+
+    let query;
+
+    if (!is_accepted) {
+        query = { $pull: { accepted_answer_id: answer_id } };
+    } else {
+        query = { $addToSet: { accepted_answer_id: answer_id } };
+    }
+    const updateInfo = await questionsColl.updateOne(
+        { _id: questionId },
+        query
+    );
+
+    const question = await questionsColl.findOne({ _id: questionId });
+
+    return question.accepted_answer_id;
+};
 
 export const getQuestionById = async (questionId) => {
     questionId = validator.isValidMongoId(questionId);
 
     const questionsColl = await questions();
-    const question = await questionsColl.findOne({ _id: questionId })
+    const question = await questionsColl.findOne({ _id: questionId });
 
     return question;
 };
@@ -283,7 +388,6 @@ export const getQuestionsByCourseId = async (courseId) => {
     return questionsArray;
 };
 
-
 export const getQuestionsByCourseIdFiltered = async (courseId, filters) => {
     courseId = validator.isValidMongoId(courseId);
 
@@ -291,29 +395,37 @@ export const getQuestionsByCourseIdFiltered = async (courseId, filters) => {
         question = "",
         status_open = "",
         status_closed = "",
-        labels = []
-    } = filters
+        labels = [],
+    } = filters;
 
-    let query = { course: courseId };
+    const query = { course: courseId };
 
+    // TEXT SEARCH (AND)
     if (question.trim() !== "") {
         question = validator.isValidString(question);
-        question = question.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+        question = question.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         query.question = { $regex: new RegExp(question, "i") };
     }
 
+    // STATUS (open / closed)
     if (status_open && !status_closed) {
         query.status = "open";
     } else if (!status_open && status_closed) {
         query.status = "closed";
     }
+    // if both toggles on or both off → no status filter
 
+    // LABELS (OR)
     if (labels && labels.length > 0) {
-        labels = labels.map((id) => {
-            return validator.isValidMongoId(id, "query.labels");
+        const inValues = [];
+
+        labels.forEach((id) => {
+            const objId = validator.isValidMongoId(id, "query.labels"); // ObjectId
+            inValues.push(objId); // match if stored as ObjectId
+            inValues.push(objId.toString()); // match if stored as string
         });
 
-        query["labels"] = { $all: labels };
+        query.labels = { $in: inValues };
     }
 
     const questionsColl = await questions();
@@ -324,7 +436,6 @@ export const getQuestionsByCourseIdFiltered = async (courseId, filters) => {
 
     return questionsArray;
 };
-
 
 /**
  * Get all questions bookmarked by a user
@@ -354,19 +465,20 @@ export const addBookmark = async (questionId, userId) => {
 
     const questionsColl = await questions();
 
-    const question = await questionsColl.findOne({ _id: questionId })
+    const question = await questionsColl.findOne({ _id: questionId });
 
     if (!question) {
-        throw `Question ${questionId} not found`
+        throw `Question ${questionId} not found`;
     }
 
-    const hasBookmarked = question.bookmarks.map(id => id.toString()).includes(userId.toString())
-
+    const hasBookmarked = question.bookmarks
+        .map((id) => id.toString())
+        .includes(userId.toString());
 
     if (hasBookmarked) {
-        query = { $pull: { bookmarks: userId } }
+        query = { $pull: { bookmarks: userId } };
     } else {
-        query = { $addToSet: { bookmarks: userId } }
+        query = { $addToSet: { bookmarks: userId } };
     }
 
     const updateResult = await questionsColl.updateOne(
@@ -374,9 +486,9 @@ export const addBookmark = async (questionId, userId) => {
         query
     );
 
-    const updatedQuestion = await questionsColl.findOne({ _id: questionId })
+    const updatedQuestion = await questionsColl.findOne({ _id: questionId });
 
-    return updatedQuestion.bookmarks
+    return updatedQuestion.bookmarks;
 };
 
 /**
@@ -397,7 +509,10 @@ export const removeBookmark = async (questionId, userId) => {
     }
 
     // Check if user has bookmarked this question
-    if (!question.bookmarks || !question.bookmarks.some(id => id.toString() === userId.toString())) {
+    if (
+        !question.bookmarks ||
+        !question.bookmarks.some((id) => id.toString() === userId.toString())
+    ) {
         throw "User has not bookmarked this question";
     }
 
@@ -417,7 +532,6 @@ export const removeBookmark = async (questionId, userId) => {
  * @returns {Object}
  */
 export const deleteQuestion = async (questionId, user_id) => {
-
     questionId = validator.isValidMongoId(questionId, "question id");
     user_id = validator.isValidMongoId(user_id, "user id");
 
@@ -427,11 +541,11 @@ export const deleteQuestion = async (questionId, user_id) => {
     const question = await questionsColl.findOne({ _id: questionId });
 
     if (!question) {
-        throw `Question ${questionId} not found`
+        throw `Question ${questionId} not found`;
     }
 
     if (question.user_id.toString() !== user_id.toString()) {
-        throw "You are not allowed to delete this question."
+        throw "You are not allowed to delete this question.";
     }
 
     await answersColl.deleteMany({ question_id: questionId });
@@ -439,7 +553,7 @@ export const deleteQuestion = async (questionId, user_id) => {
     const deletedResult = await questionsColl.deleteOne({ _id: questionId });
 
     if (deletedResult.deletedCount === 0) {
-        throw "Failed to delete question."
+        throw "Failed to delete question.";
     }
 
     return deletedResult;

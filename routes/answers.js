@@ -102,6 +102,10 @@ router
         try {
             await answersData.updateAnswer(answer_id, { answer, answer_delta, answer_content, user_id, is_accepted });
 
+            if (is_accepted !== undefined && typeof is_accepted === 'boolean' && is_accepted != null) {
+                await questionsData.updateAcceptedAnswerId(question_id, answer_id, is_accepted);
+            }
+
             if (is_accepted) {
                 await questionsData.updateStatus(question_id, 'closed')
             }

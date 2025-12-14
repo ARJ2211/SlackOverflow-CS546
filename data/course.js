@@ -1,5 +1,5 @@
 import { ObjectId } from "mongodb";
-import { courses, users } from "../config/mongoCollections.js";
+import { courses, users, questions } from "../config/mongoCollections.js";
 import randomName from "@scaleway/random-name";
 import { createUser, sendSaveOTP, getUserById } from "./users.js";
 import * as validator from "../utils/validator.js";
@@ -367,8 +367,8 @@ export const enrollStudentToCourse = async (id, email, is_ta) => {
 };
 
 /**
- * Deletes a course data
- * @param {string} id - Course ID
+ * Deletes a course from database
+ * @param {string} id - Course ID (e.g. "CS-546")
  * @returns {Object} Deletion status
  */
 export const deleteCourse = async (course_id) => {
@@ -379,14 +379,29 @@ export const deleteCourse = async (course_id) => {
     // Check if course exists
     const course = await courseColl.findOne({ course_id: course_id });
     if (!course) {
-        throw "404 course not found";
+        throw { status: 404, message: "Course not found" };
+    }
+    //I also need to see if students are still in the course
+    if (course.enrolled_students && course.enrolled_students.length > 0) {
+        throw {
+            status: 400,
+            message:
+                "Course can't be deleted with existing students. Please remove the students first",
+        };
+    }
+
+    if (course.questions && course.questions.length > 0) {
+        throw {
+            status: 400,
+            message: "Course can't be deleted with existing questions!",
+        };
     }
 
     // Show deletion
     const deletionResult = await courseColl.deleteOne({ course_id: course_id });
 
     if (deletionResult.deletedCount === 0) {
-        throw "500 fail to delete course";
+        throw { status: 500, message: "Failed to delete course" };
     }
 
     return {
@@ -394,4 +409,207 @@ export const deleteCourse = async (course_id) => {
         course_name: course.course_name,
         message: `"${course.course_name}" has been successfully deleted`,
     };
+};
+
+/**
+ * Unenroll student from course's enrolled_students array
+ * @param {ObjectId} courseId - Course MongoDB ID
+ * @param {ObjectId} studentId - Student user MongoDB ID
+ * @returns {Object} Updated course document
+ */
+export const removeStudentFromCourse = async (courseId, studentId) => {
+    const courseColl = await courses();
+
+    // Check if course exists
+    const existingCourse = await courseColl.findOne({ _id: courseId });
+    if (!existingCourse) {
+        throw { status: 404, message: "Course NOT found" };
+    }
+
+    //enrolled?
+    const isEnrolled = existingCourse.enrolled_students.some(
+        (student) => student.user_id.toString() === studentId.toString()
+    );
+
+    if (!isEnrolled) {
+        throw {
+            status: 404,
+            message: "Student is NOT enrolled in this course",
+        };
+    }
+
+    const updatedCourse = await courseColl.findOneAndUpdate(
+        { _id: courseId },
+        {
+            $pull: {
+                enrolled_students: { user_id: studentId },
+            },
+        },
+        { returnDocument: "after" }
+    );
+
+    if (!updatedCourse || updatedCourse === null) {
+        throw {
+            status: 400,
+            message: "Student couldn't be removed from course",
+        };
+    }
+    return updatedCourse;
+};
+
+/**
+ * Toggle TA status of a student inside a course
+ * @param {ObjectId} courseId - Course MongoDB ID
+ * @param {ObjectId} studentId - Student user MongoDB ID
+ * @returns {Object} Updated course document
+ */
+export const toggleTaStatus = async (courseId, studentId) => {
+    const courseColl = await courses();
+
+    // Check if course exists
+    const course = await courseColl.findOne({ _id: courseId });
+    if (!course) {
+        throw { status: 404, message: "Course NOT found" };
+    }
+
+    // Find the student inside enrolled_students
+    const idx = course.enrolled_students.findIndex(
+        (s) => s.user_id.toString() === studentId.toString()
+    );
+
+    if (idx === -1) {
+        throw {
+            status: 404,
+            message: "Student NOT enrolled in this course",
+        };
+    }
+
+    // Flip the is_ta value
+    const current = course.enrolled_students[idx].is_ta;
+    const newValue = !current;
+
+    // Update the DB
+    const updatedCourse = await courseColl.findOneAndUpdate(
+        { _id: courseId, "enrolled_students.user_id": studentId },
+        {
+            $set: {
+                "enrolled_students.$.is_ta": newValue,
+            },
+        },
+        { returnDocument: "after" }
+    );
+
+    if (!updatedCourse) {
+        throw {
+            status: 400,
+            message: "Failed to update TA status",
+        };
+    }
+
+    return updatedCourse;
+};
+
+/**
+ * Used for removing a label from a course
+ * this will not allow it to remove if this
+ * is the only label on some quietsion in that course
+ * @param {ObjectId} courseId
+ * @param {ObjectId} labelId
+ * @returns
+ */
+export const removeLabelFromCourse = async (courseId, labelId) => {
+    const courseColl = await courses();
+    const questionsColl = await questions();
+
+    let courseObjectId;
+    let labelObjectId;
+
+    try {
+        courseObjectId = validator.isValidMongoId(courseId);
+        labelObjectId = validator.isValidMongoId(labelId);
+    } catch (e) {
+        throw { status: 400, message: e };
+    }
+
+    // 0. Make sure course exists and has this label at all
+    const existingCourse = await courseColl.findOne({
+        _id: courseObjectId,
+        "labels._id": labelObjectId,
+    });
+
+    if (!existingCourse) {
+        throw {
+            status: 404,
+            message: "Course or label not found",
+        };
+    }
+
+    // 1. Find all questions within that course
+    const allQuestions = await questionsColl
+        .find({ course: courseObjectId })
+        .project({ question: 1, labels: 1 })
+        .toArray();
+
+    // 2–3. Iterate, check labels and collect blocking questions
+    const blockingQuestions = [];
+    let totalUsing = 0;
+
+    for (const q of allQuestions) {
+        if (!Array.isArray(q.labels) || q.labels.length === 0) continue;
+
+        // does this question use the label at all?
+        const usesLabel = q.labels.some(
+            (id) => id.toString() === labelObjectId.toString()
+        );
+        if (!usesLabel) continue;
+
+        totalUsing++;
+
+        // is it the ONLY label on this question?
+        if (q.labels.length === 1) {
+            blockingQuestions.push(q);
+        }
+    }
+
+    if (blockingQuestions.length > 0) {
+        const example = blockingQuestions[0]?.question || "";
+        throw {
+            status: 400,
+            message:
+                `Cannot remove this label. It is the only label on ` +
+                `${blockingQuestions.length} question(s), and is used on ` +
+                `${totalUsing} question(s) in this course.` +
+                (example ? ` Example: "${example}"` : ""),
+        };
+    }
+
+    // 4. Safe to remove: first pull the label from all questions in this course
+    await questionsColl.updateMany(
+        {
+            course: courseObjectId,
+            labels: labelObjectId,
+        },
+        {
+            $pull: { labels: labelObjectId },
+        }
+    );
+
+    // 5. Then remove the label from the course itself
+    const updatedCourse = await courseColl.findOneAndUpdate(
+        { _id: courseObjectId },
+        {
+            $pull: { labels: { _id: labelObjectId } },
+            $set: { updated_at: new Date() },
+        },
+        { returnDocument: "after" }
+    );
+
+    if (!updatedCourse || updatedCourse === null) {
+        throw {
+            status: 400,
+            message: "data not updated.",
+        };
+    }
+
+    return updatedCourse;
 };
