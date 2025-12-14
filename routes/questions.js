@@ -230,7 +230,7 @@ router.post("/:id/bookmarks", async (req, res) => {
     }
 });
 
-router.delete("/bookmarks", async (req, res) => {
+router.delete("/bookmarks/:id", async (req, res) => {
     const userSesData = req.session.user;
     let questionId;
     let userId;
@@ -241,7 +241,7 @@ router.delete("/bookmarks", async (req, res) => {
         }
         // Validate question_id from request body
         questionId = validator.isValidMongoId(
-            req.body.question_id,
+            req.params.id,
             "question_id"
         );
         userId = validator.isValidMongoId(userSesData.id, "userId");
