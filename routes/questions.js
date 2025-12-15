@@ -6,6 +6,7 @@ import { getUserById } from "../data/users.js";
 import * as validator from "../utils/validator.js";
 import { handleError } from "../utils/helperFunctions.js";
 import { Router } from "express";
+import xss from "xss";
 
 const router = Router();
 
@@ -29,6 +30,10 @@ router.route("/").post(async (req, res) => {
         question = validator.isValidString(question);
         question_content = validator.isValidString(question_content);
         question_delta = validator.isValidString(question_delta);
+
+        question = xss(question);
+        question_content = xss(question_content);
+        question_delta = xss(question_delta);
     } catch (e) {
         return handleError(res, e);
     }
@@ -43,10 +48,15 @@ router.route("/").post(async (req, res) => {
             question_delta
         );
 
-        if (result && result.hasSimilarQuestions && result.hasSimilarQuestions === true) {
-            return res
-                .status(200)
-                .json({ hasSimilarQuestions: true, similarQuestions: result.similarQuestions })
+        if (
+            result &&
+            result.hasSimilarQuestions &&
+            result.hasSimilarQuestions === true
+        ) {
+            return res.status(200).json({
+                hasSimilarQuestions: true,
+                similarQuestions: result.similarQuestions,
+            });
         }
 
         return res
@@ -69,6 +79,7 @@ router
 
             if (question) {
                 question = validator.isValidString(question, "question");
+                question = xss(question);
             }
 
             if (question_content) {
@@ -76,6 +87,7 @@ router
                     question_content,
                     "question_content"
                 );
+                question_content = xss(question_content);
             }
 
             if (question_delta) {
@@ -83,6 +95,7 @@ router
                     question_delta,
                     "question_delta"
                 );
+                question_delta = xss(question_delta);
             }
 
             if (labels && Array.isArray(labels) && labels.length > 0) {
@@ -240,10 +253,7 @@ router.delete("/bookmarks/:id", async (req, res) => {
             return res.status(401).json({ message: "User session not found" });
         }
         // Validate question_id from request body
-        questionId = validator.isValidMongoId(
-            req.params.id,
-            "question_id"
-        );
+        questionId = validator.isValidMongoId(req.params.id, "question_id");
         userId = validator.isValidMongoId(userSesData.id, "userId");
     } catch (e) {
         return handleError(res, e);
