@@ -37,7 +37,7 @@
                     <span>Reset</span>
 
                     <svg class="size-5 pointer-events-none ml-2" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3" />
                     </svg>
@@ -59,8 +59,7 @@
             <div class="flex items-center justify-between mb-2">
                 <div class="flex flex-wrap gap-2">
                     {{#each this.labels}}
-                    <div key="{{this._id}}"
-                        class="border border-primary text-primary text-xs px-3 py-0.5 rounded-2xl bg-secondary">
+                    <div class="border border-primary text-primary text-xs px-3 py-0.5 rounded-2xl bg-secondary">
                         {{this.name}}
                     </div>
                     {{/each}}
@@ -242,7 +241,7 @@
                                         <input id="{{this._id}}" name="label" onchange="handleLabelsCheckbox(event)"
                                             type="checkbox" value="{{this._id}}" data-label="{{this.name}}"
                                             class="accent-primary w-4 h-4 rounded-md">
-                                        <label for="dropdown-checkbox" class="text-sm font-medium text-heading">
+                                        <label for="{{this._id}}" class="text-sm font-medium text-heading">
                                             {{this.name}}
                                         </label>
                                     </div>
@@ -272,10 +271,10 @@
                         <select class="ql-font"></select>
 
                         <select class="ql-size">
-                            <option value="small"></option>
-                            <option selected></option>
-                            <option value="large"></option>
-                            <option value="huge"></option>
+                            <option value="small">small</option>
+                            <option selected>Normal</option>
+                            <option value="large">large</option>
+                            <option value="huge">huge</option>
                         </select>
 
                         <span class="ql-formats">
