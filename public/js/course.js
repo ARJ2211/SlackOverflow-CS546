@@ -22,7 +22,6 @@ const handleSaveQuestion = (event) => {
         return false;
     }
 
-
     if (labels.length === 0) {
         showToast("Labels cannot be empty, please add a label", "error");
 
@@ -101,12 +100,19 @@ const handleSaveQuestion = (event) => {
                 return;
             }
 
-            if (body.hasSimilarQuestions && body.hasSimilarQuestions == true && body.similarQuestions.length > 0) {
-                renderSimilarQuestions(body.similarQuestions)
-                showToast("We found some similar questions. Please review them before posting.", "info")
+            if (
+                body.hasSimilarQuestions &&
+                body.hasSimilarQuestions == true &&
+                body.similarQuestions.length > 0
+            ) {
+                renderSimilarQuestions(body.similarQuestions);
+                showToast(
+                    "We found some similar questions. Please review them before posting.",
+                    "info"
+                );
                 button.disabled = false;
-                button.innerText = "Ask question"
-                return
+                button.innerText = "Ask question";
+                return;
             }
 
             showToast("Question created successfully!", "success");
@@ -128,60 +134,62 @@ const handleSaveQuestion = (event) => {
 };
 
 const renderSimilarQuestions = (similarQuestions) => {
-
-    const similarQuestionsIds = similarQuestions.map(item => item._id);
-    console.log(similarQuestions)
-    const questions = document.querySelectorAll('[id^="question-"]')
-    document.getElementById('openFilter').classList.add("hidden")
-    document.getElementById('similarView').classList.add("flex")
-    document.getElementById('similarView').classList.remove("hidden")
-    questions.forEach(item => {
-        const id = item.id.replace('question-', '')
-        const similarQuestion = similarQuestions.find(q => q._id === id);
-        const container = item.querySelector('.status-container');
-
+    const similarQuestionsIds = similarQuestions.map((item) => item._id);
+    console.log(similarQuestions);
+    const questions = document.querySelectorAll('[id^="question-"]');
+    document.getElementById("openFilter").classList.add("hidden");
+    document.getElementById("similarView").classList.add("flex");
+    document.getElementById("similarView").classList.remove("hidden");
+    questions.forEach((item) => {
+        const id = item.id.replace("question-", "");
+        const similarQuestion = similarQuestions.find((q) => q._id === id);
+        const container = item.querySelector(".status-container");
 
         if (!similarQuestionsIds.includes(id)) {
-            item.style.display = 'none'
-
+            item.style.display = "none";
         } else {
-            const oldStats = item.querySelector('.question-stats')
+            const oldStats = item.querySelector(".question-stats");
             if (oldStats) {
-                oldStats.remove()
+                oldStats.remove();
             }
 
-            const statsDiv = document.createElement('div')
-            statsDiv.className = 'question-stats flex gap-2 items-center'
+            const statsDiv = document.createElement("div");
+            statsDiv.className = "question-stats flex gap-2 items-center";
 
             statsDiv.innerHTML = `
-                <div class='border border-blue-300 text-blue-500 text-xs px-4 py-0.5 rounded-2xl bg-gray-50'>Score:  ${similarQuestion.score.toFixed(3)}</div>
-                <div class='border border-blue-300 text-blue-500 text-xs px-4 py-0.5 rounded-2xl bg-gray-50'>Jaccard:  ${similarQuestion.jaccard_score.toFixed(3)}</div>
-                <div class='border border-blue-300 text-blue-500 text-xs px-4 py-0.5 rounded-2xl bg-gray-50'> Combined:  ${similarQuestion.combined_score.toFixed(3)}</div>
-            `
+                <div class='border border-blue-300 text-blue-500 text-xs px-4 py-0.5 rounded-2xl bg-gray-50'>Score:  ${similarQuestion.score.toFixed(
+                    3
+                )}</div>
+                <div class='border border-blue-300 text-blue-500 text-xs px-4 py-0.5 rounded-2xl bg-gray-50'>Jaccard:  ${similarQuestion.jaccard_score.toFixed(
+                    3
+                )}</div>
+                <div class='border border-blue-300 text-blue-500 text-xs px-4 py-0.5 rounded-2xl bg-gray-50'> Combined:  ${similarQuestion.combined_score.toFixed(
+                    3
+                )}</div>
+            `;
 
             if (container && container.parentNode) {
                 container.parentNode.insertBefore(statsDiv, container);
             }
 
-            item.style.display = 'block'
+            item.style.display = "block";
         }
     });
-}
+};
 
 const handleResetQuestionsView = () => {
-
-    const questions = document.querySelectorAll('[id^="question-"]')
-    document.getElementById('openFilter').classList.remove("hidden")
-    document.getElementById('similarView').classList.remove("flex")
-    document.getElementById('similarView').classList.add("hidden")
-    questions.forEach(item => {
-        item.style.display = 'block'
-        const statsDiv = item.querySelector('.question-stats')
+    const questions = document.querySelectorAll('[id^="question-"]');
+    document.getElementById("openFilter").classList.remove("hidden");
+    document.getElementById("similarView").classList.remove("flex");
+    document.getElementById("similarView").classList.add("hidden");
+    questions.forEach((item) => {
+        item.style.display = "block";
+        const statsDiv = item.querySelector(".question-stats");
         if (statsDiv) {
-            statsDiv.remove()
+            statsDiv.remove();
         }
     });
-}
+};
 
 const handleFilterDropdown = (event) => {
     // don't let this click bubble to the outer onclick (handleOutsideClick)
@@ -345,7 +353,7 @@ const handleQuillSetup = () => {
     const wrapper = document.getElementById("questionEditor");
     if (!wrapper) return;
 
-    wrapper.style.height = "60px";
+    // wrapper.style.height = "60px";
 
     const editorEl = wrapper.querySelector(".ql-editor");
     if (editorEl) {

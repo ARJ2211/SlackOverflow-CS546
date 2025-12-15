@@ -1,11 +1,4 @@
-/* Quill editor containers */
-#questionEditor,
-#answerEditor,
-#updateQuestionEditor,
-#updateAnswerEditor {
-    position: relative;
-    overflow: visible; /* let tooltip escape the card content */
-}
+
 
 /* Inner editable area (default for all editors) */
 #updateAnswerEditor .ql-editor,
