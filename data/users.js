@@ -72,6 +72,36 @@ export const updateUser = async (filter, obj) => {
     return updatedObj;
 };
 
+export const deleteUser = async (userId) => {
+    const usersColl = await users();
+    userId = validator.isValidMongoId(userId);
+    const user = await usersColl.findOne({ _id: userId });
+    if (!user) {
+        throw { status: 404, message: "User NOT found" };
+    }
+    
+    const coursesCollection = await courses();
+    const enrolledCourses = await coursesCollection.find({ 
+        "enrolled_students._id": userId 
+    }).toArray();
+    
+    if (enrolledCourses.length > 0) {
+        throw { 
+            status: 400, 
+            message: "Student is already Enrolled! Can't delete the student, so please remove all the courses" 
+        };
+    }
+    
+    const deleted =  await usersColl.deleteOne({ _id: userId });
+    
+
+    if (deleted.deletedCount === 0) {
+        throw { status: 500, message: "The User couldn't be deleted!" };
+    }
+    
+    return { deleted: true, userId: userId.toString() };
+
+}
 /**
  * Returns the details of the professor by the
  * email id
