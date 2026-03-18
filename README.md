@@ -1,4 +1,4 @@
-# SlackOverflow - Course Q&A Board
+# SlackOverflow - Course Q&A Board.
 
 A centralized AI assisted Q&A board for university courses.  
 Professors, TAs and students share one clean space for all course questions with labels, search and vector based duplicate detection.
